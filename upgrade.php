@@ -656,6 +656,7 @@ function paypal_upgrade()
 			
 		case '1.6.0' :
 		case '1.6.1' :
+		case '1.6.2' :
         
 		default :
 			// update plugin version number
@@ -677,8 +678,8 @@ function paypal_upgrade()
                 } else {
                   COM_errorLog("PAYPAL - Can't move paypal files to {$_PAY_CONF['paypal_folder']} folder." );
                 }
+                PAYPAL_delTree($_CONF['path_html'] . $_PAY_CONF['paypal_folder'].'_old');
             }
-            PAYPAL_delTree($_CONF['path_html'] . $_PAY_CONF['paypal_folder'].'_old');
             
             /* This code is for statistics ONLY */
             $message =  'Completed paypal plugin upgrade: ' . date('m d Y',time()) . "   AT " . date('H:i', time()) . "\n";
