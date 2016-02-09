@@ -33,7 +33,7 @@ if (strpos(strtolower($_SERVER['PHP_SELF']), 'upgrade.php') !== false) {
 
 function paypal_upgrade()
 {
-    global $_CONF, $_TABLES, $_USER, $_DB_dbms, $LANG_PAYPAL_1;
+    global $_CONF, $_TABLES, $_USER, $_DB_dbms, $LANG_PAYPAL_1, $_PAY_CONF;
 
     $currentVersion = DB_getItem($_TABLES['plugins'], 'pi_version',
                                     "pi_name = 'paypal'");
@@ -655,6 +655,7 @@ function paypal_upgrade()
                 'text', 0, 0, 0, 120, true, 'paypal');
 			
 		case '1.6.0' :
+		case '1.6.1' :
         
 		default :
 			// update plugin version number
@@ -664,9 +665,20 @@ function paypal_upgrade()
 	        COM_errorLog( "Updated paypal plugin from v$currentVersion to v$code_version", 1 );
             
             //move public_html/paypal to custom folder if needed
-            if ($_PAY_CONF['paypal_folder'] != 'paypal') {
-                rename($_CONF['path_html'] . 'paypal',$_CONF['path_html'] . $_PAY_CONF['paypal_folder']);
+            if ($_PAY_CONF['paypal_folder'] != 'paypal' && $_PAY_CONF['paypal_folder'] != '') {
+                if ( rename($_CONF['path_html'] . $_PAY_CONF['paypal_folder'],$_CONF['path_html'] . $_PAY_CONF['paypal_folder'].'_old') ) {
+                   COM_errorLog("PAYPAL - Renamed {$_PAY_CONF['paypal_folder']} folder." );
+                } else {
+                  COM_errorLog("PAYPAL - Can't rename {$_PAY_CONF['paypal_folder']} folder." );
+                }
+                sleep (5);
+                if( rename($_CONF['path_html'] . 'paypal',$_CONF['path_html'] . $_PAY_CONF['paypal_folder']) ) {
+                   COM_errorLog("PAYPAL - Moved paypal files to {$_PAY_CONF['paypal_folder']} folder." );
+                } else {
+                  COM_errorLog("PAYPAL - Can't move paypal files to {$_PAY_CONF['paypal_folder']} folder." );
+                }
             }
+            PAYPAL_delTree($_CONF['path_html'] . $_PAY_CONF['paypal_folder'].'_old');
             
             /* This code is for statistics ONLY */
             $message =  'Completed paypal plugin upgrade: ' . date('m d Y',time()) . "   AT " . date('H:i', time()) . "\n";
@@ -677,4 +689,12 @@ function paypal_upgrade()
 	
     return true;
 }
+
+function PAYPAL_delTree($dir) {
+   $files = array_diff(scandir($dir), array('.','..'));
+    foreach ($files as $file) {
+      (is_dir("$dir/$file") && !is_link($dir)) ? PAYPAL_delTree("$dir/$file") : unlink("$dir/$file");
+    }
+    return rmdir($dir);
+} 
 ?>
