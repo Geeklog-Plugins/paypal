@@ -1,0 +1,28 @@
+{# begin {templatelocation} #}
+
+ <td style="width:{width}%;">
+ <div id="product-list-item-contener">
+	<div id="product-list-item">
+	  <div id="product-list-description">
+		<div style="float:right;"><p>{rating}</p></div>
+		<h2>{link_name}</h2>{edit} 
+		<div id="product-list-image">
+		  {small_pic}
+	    </div>
+		<div id="product-list-details">
+		<p class="product-list-short_description">{hidden}{short_description}</p>
+		{item_id}
+		<p class="product-list-details">{details}</p>
+        <p><span class="product-list-price" style="{display_price}">{price_ref} {discount} {price} {currency} {free_shipping}</span> {recurrent}</p>
+		{add2cart}{buy_now}{customisable}{login}
+		</div>
+	  </div>
+	  <div style="clear:both; text-align:center;"></div>
+	</div>
+</div>
+</td>
+
+{# end {templatelocation} #}
+
+
+

@@ -1,0 +1,7 @@
+{# begin {templatelocation} #}
+
+ <tr valign="top">
+  {catrow}
+ </tr>
+
+{# end {templatelocation} #}

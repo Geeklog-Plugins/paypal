@@ -1,0 +1,8 @@
+{# begin {templatelocation} #}
+
+<!-- cart_block_end.thtml -->
+		<tr>
+			<td id="jcart-footer" colspan="4">
+			<p><span id="jcart-subtotal">{subtotal}</span>{checkout}</p>
+
+{# end {templatelocation} #}

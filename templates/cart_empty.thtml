@@ -1,0 +1,6 @@
+{# begin {templatelocation} #}
+
+<!-- cart_empty.thtml -->
+        <tr><td colspan="4" class="empty">{empty}</td></tr>
+
+{# end {templatelocation} #}

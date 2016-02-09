@@ -1,0 +1,6 @@
+{# begin {templatelocation} #}
+
+<form class="uk-form" action="{site_url}/admin/plugins/paypal/product_edit.php" method="GET">
+<table class="product-list" cellpadding="5" cellspacing="10"> 
+
+{# end {templatelocation} #}

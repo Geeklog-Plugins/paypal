@@ -1,0 +1,9 @@
+{# begin {templatelocation} #}
+
+<!-- cart_block_start.thtml -->
+<div id="jcart_block" name="jcart_block">
+  <p><strong id="jcart-title">{cart_title}</strong> ({itemcount})</p>
+  <form method="post" action="{form_action}">
+	  <table border="0" cellspacing="1px" cellmargin="0">
+
+{# end {templatelocation} #}

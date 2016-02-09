@@ -1,0 +1,7 @@
+{# begin {templatelocation} #}
+
+<div name="product_list">
+{title}
+<table class="product_list" cellspacing="5" border="0" width="100%">
+
+{# end {templatelocation} #}

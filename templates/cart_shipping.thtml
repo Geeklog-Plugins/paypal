@@ -1,0 +1,8 @@
+{# begin {templatelocation} #}
+
+		<div id="shipping_cart">
+        <h2>{choose_shipping}</h2>
+        {shipping_radio_buttons}
+		</div>
+
+{# end {templatelocation} #}
