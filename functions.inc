@@ -114,8 +114,8 @@ function plugin_getheadercode_paypal()
 	
 	$_SCRIPTS->setCSSFile('paypal_css', '/' . $_PAY_CONF['paypal_folder'] . '/css/paypal_160.css');
     $_SCRIPTS->setCSSFile('paypal_datepicker_css', '/jquery/datepicker/datepicker.css');
-	
-	if (SEC_hasRights('paypal.admin') && function_exists('PAYPAL_plot')) {
+ 
+    if (stripos(COM_getCurrentURL(), 'plugins/paypal/purchase_history.php') !== FALSE && SEC_hasRights('paypal.admin') && function_exists('PAYPAL_plot')) {
 	    
 		$_SCRIPTS->setCSSFile('paypal_css_jqplot', '/' . $_PAY_CONF['paypal_folder'] . '/css/jquery.jqplot.css');
 		
