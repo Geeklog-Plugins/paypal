@@ -106,14 +106,15 @@ function plugin_getheadercode_paypal()
 	
 	$_SCRIPTS->setJavaScriptLibrary('jquery');
 	
-	$pos = strpos($_SERVER['PHP_SELF'],'/informations.php');
-	
-    if($pos === false) {
-	    $_SCRIPTS->setJavaScriptFile('paypal_cart', '/' . $_PAY_CONF['paypal_folder'] . '/js/jcart-javascript.php');
-	}
+    if(stripos(COM_getCurrentURL(), '/' . $_PAY_CONF['paypal_folder'] . '/') !== FALSE) {
+        if(stripos(COM_getCurrentURL(), 'informations.php') === FALSE) {
+            $_SCRIPTS->setJavaScriptFile('paypal_cart', '/' . $_PAY_CONF['paypal_folder'] . '/js/jcart-javascript.php');
+        }
+    }
 	
 	$_SCRIPTS->setCSSFile('paypal_css', '/' . $_PAY_CONF['paypal_folder'] . '/css/paypal_160.css');
-    $_SCRIPTS->setCSSFile('paypal_datepicker_css', '/jquery/datepicker/datepicker.css');
+    
+    if (stripos(COM_getCurrentURL(), 'admin/plugins/paypal/') !== FALSE ) $_SCRIPTS->setCSSFile('paypal_datepicker_css', '/jquery/datepicker/datepicker.css');
  
     if (stripos(COM_getCurrentURL(), 'plugins/paypal/purchase_history.php') !== FALSE && SEC_hasRights('paypal.admin') && function_exists('PAYPAL_plot')) {
 	    
@@ -198,7 +199,7 @@ function plugin_getuseroption_paypal() {
 
 function plugin_autotags_paypal($op, $content = '', $autotag = '')
 {
-    global $_CONF, $_TABLES, $LANG_PAYPAL_1, $_PAY_CONF;
+    global $_CONF, $_TABLES, $LANG_PAYPAL_1, $_PAY_CONF,$_SCRIPTS;
 
     if ($op == 'tagname') {
         return array('paypal', 'paypal_product');
@@ -208,6 +209,7 @@ function plugin_autotags_paypal($op, $content = '', $autotag = '')
 			'paypal_product' => $LANG_PAYPAL_1['autotag_desc_paypal_product'],
             );
 	} elseif ($op == 'parse') {
+        
         $pid = COM_applyFilter($autotag['parm1']);
         if (is_numeric($pid) && $pid > 0) {
             switch( $autotag['tag'] ) {
@@ -223,6 +225,7 @@ function plugin_autotags_paypal($op, $content = '', $autotag = '')
                     break;
 
                 case 'paypal_product' :
+                    $_SCRIPTS->setJavaScriptFile('paypal_cart', '/' . $_PAY_CONF['paypal_folder'] . '/js/jcart-javascript.php');
                     $html = PAYPAL_displayProducts($pid,1);
                     $content = str_replace($autotag['tagstr'], $html, $content);
                     break;
@@ -914,7 +917,11 @@ function PAYPAL_displayCart ($block = 0)
 */
 function phpblock_paypal_displayProducts ($A = array(), $args = array())
 {
-	if (!is_numeric($args[0])) $args[0] = '';
+	global $_SCRIPTS;
+    
+    $_SCRIPTS->setJavaScriptFile('paypal_cart', '/' . $_PAY_CONF['paypal_folder'] . '/js/jcart-javascript.php');
+    
+    if (!is_numeric($args[0])) $args[0] = '';
 	if (!is_numeric($args[1])) $args[1] = '';
 	$retval = PAYPAL_displayProducts($pid = '', 2, $args[0], $args[1]);
 
@@ -1544,9 +1551,12 @@ function phpblock_paypal_searchBlock()
 */
 function phpblock_paypal_randomBlock()
 {
-	global $_CONF, $_TABLES, $_PAY_CONF;
+	global $_CONF, $_TABLES, $_PAY_CONF, $_SCRIPTS;
 	
 	$retval = '';
+    
+    $_SCRIPTS->setJavaScriptFile('paypal_cart', '/' . $_PAY_CONF['paypal_folder'] . '/js/jcart-javascript.php');
+    
 	$T = COM_newTemplate($_CONF['path'] . 'plugins/paypal/templates/blocks');
 	$T->set_file('random_block', 'random_block.thtml');
 	// Get on random product from database
