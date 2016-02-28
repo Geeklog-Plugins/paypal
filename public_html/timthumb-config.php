@@ -24,9 +24,9 @@
 // +---------------------------------------------------------------------------+
 
 /**
-* @package Monitor
+* @package Paypal
 */
 
-require_once 'lib-common.php';
+require_once '../lib-common.php';
 if(! defined('FILE_CACHE_DIRECTORY') )          define ('FILE_CACHE_DIRECTORY', $_CONF['path_images'] . '/cache');
 ?>
