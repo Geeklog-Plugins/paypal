@@ -1,0 +1,9 @@
+{
+  "schema": 1,
+  "id": "paypal",
+  "name": "Paypal",
+  "icon": "public_html/images/paypal.gif",
+  "requires": {
+    "geeklog": "1.8.0"
+  }
+}
