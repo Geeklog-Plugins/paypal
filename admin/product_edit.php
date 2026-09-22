@@ -931,9 +931,7 @@ switch ($_REQUEST['op']) {
         break;
 }
 
-$display = COM_siteHeader('none') . paypal_admin_menu() . $display;
-$display .= COM_siteFooter();
-
-COM_output($display);
+$display = paypal_admin_menu() . $display;
+COM_output(PAYPAL_createHTMLDocument($display));
 
 ?>
