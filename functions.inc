@@ -81,6 +81,7 @@ if ( empty($_USER['uid']) ) {
  * Load our config
  */
 require_once $_CONF['path_system'].'classes/config.class.php';
+require_once ($_CONF['path'] . 'plugins/paypal/lib/configuration.php');
 $c = config::get_instance();
 $_PAY_CONF = $c->get_config('paypal');
 
@@ -155,7 +156,6 @@ require_once ($_CONF['path'] . 'plugins/paypal/interoperability.php');
 require_once ($_CONF['path'] . 'plugins/paypal/services.inc.php');
 require_once ($_CONF['path'] . 'plugins/paypal/storage.php');
 require_once ($_CONF['path'] . 'plugins/paypal/uninstall.php');
-require_once ($_CONF['path'] . 'plugins/paypal/lib/configuration.php');
 
 /*
 * Include classes
