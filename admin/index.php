@@ -1067,8 +1067,7 @@ if ( !file_exists($_PAY_CONF['path_images']) || !is_writable($_PAY_CONF['path_im
         'save', 'delete',
         'save_shipper', 'delete_shipper',
         'save_shipping_to', 'delete_shipping_to',
-        'save_shipping_cost', 'delete_shipping_cost',
-        'move'
+        'save_shipping_cost', 'delete_shipping_cost'
     );
 
     if (in_array($_REQUEST['op'], $mutatingOps, true)
