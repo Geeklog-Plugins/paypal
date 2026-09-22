@@ -130,6 +130,8 @@ function PAYPAL_getProductForm($product = array(), $type = 'product') {
     $template = new Template($_CONF['path'] . 'plugins/paypal/templates');
     $template->set_file(array('product' => 'product_form.thtml'));
     $template->set_var('site_url', $_CONF['site_url']);
+    $template->set_var('gltoken_name', CSRF_TOKEN);
+    $template->set_var('gltoken', SEC_createToken());
 	$template->set_var('xhtml', XHTML);
     
     if ($_CONF['advanced_editor'] == 1) {
@@ -749,6 +751,11 @@ function PAYPAL_deleteImage ($image)
  */
 switch ($_REQUEST['op']) {
     case 'delete':
+        if (!SEC_checkToken()) {
+            COM_accessLog('PayPal: invalid CSRF token on product deletion.');
+            echo COM_refresh($_CONF['site_admin_url'] . '/plugins/paypal/index.php');
+            exit;
+        }
         $deletedProductId = isset($_REQUEST['id']) ? (int) $_REQUEST['id'] : 0;
 	    DB_delete($_TABLES['paypal_products'], 'id', $deletedProductId);
 		if (DB_affectedRows('') == 1) {
@@ -765,6 +772,11 @@ switch ($_REQUEST['op']) {
         break;
 
     case 'save':
+        if (!SEC_checkToken()) {
+            COM_accessLog('PayPal: invalid CSRF token on product save.');
+            echo COM_refresh($_CONF['site_admin_url'] . '/plugins/paypal/index.php');
+            exit;
+        }
         
 		// price can only contain numbers and a decimal
         $price = str_replace(",","",$_REQUEST['price']);
