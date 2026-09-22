@@ -139,10 +139,10 @@ function plugin_getheadercode_paypal()
 
     $cartBlockEnabled = false;
     if (isset($GLOBALS['_TABLES']['blocks'])) {
-        $cartBlockEnabled = DB_count(
+        $cartBlockEnabled = (int) DB_getItem(
             $GLOBALS['_TABLES']['blocks'],
-            'phpblockfn',
-            'phpblock_paypal_cart'
+            'bid',
+            "type = 'phpblock' AND phpblockfn = 'phpblock_paypal_cart' AND is_enabled = 1"
         ) > 0;
     }
 
