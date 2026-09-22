@@ -36,7 +36,9 @@
 
 
 // CONTINUE THE SESSION
-session_start();
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
 
 // OUTPUT PHP FILE AS JAVASCRIPT
 header('content-type:application/x-javascript');
