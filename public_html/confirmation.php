@@ -42,7 +42,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 }
 // INITIALIZE JCART AFTER SESSION START
 $cart =& $_SESSION['jcart'];
-if (!is_object($cart)) {
+if (!($cart instanceof jcart)) {
     $cart = new jcart();
 }
 
