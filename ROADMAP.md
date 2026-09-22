@@ -113,3 +113,14 @@ requests:
 
 - Integrated the extended feature set directly into the standard plugin: product attributes, attribute types, manual subscriptions, expiration notifications, recurring-payment NVP helpers, and sales statistics.
 The `PAYPALPRO_*` function names are retained only as an internal compatibility contract; no separate Pro package is required.
+
+## PayPal compatibility and security (2026)
+
+- Supports PayPal Sandbox and Live through the maintained legacy IPN and NVP/SOAP endpoints.
+- IPN verification uses `ipnpb.sandbox.paypal.com` and `ipnpb.paypal.com` with TLS verification enabled.
+- NVP calls use `api-3t.sandbox.paypal.com/nvp` and `api-3t.paypal.com/nvp` with TLS verification and HTTP status checks.
+- API credentials can be supplied through `PAYPAL_API_USERNAME`, `PAYPAL_API_PASSWORD`, and `PAYPAL_API_SIGNATURE` environment variables; these take precedence over Geeklog configuration values.
+- Server-side IPN validation checks receiver identity, transaction uniqueness, currency, product prices, enabled attributes, and allowed shipping amounts before fulfillment.
+- Refund and reversal IPNs revoke related purchases/subscriptions and group access.
+- Payment/order tables use InnoDB on new installs and are migrated to InnoDB during the 1.7.0 upgrade.
+- PayPal classifies IPN, Website Payments Standard, and NVP/SOAP as legacy integrations. A future major release should migrate checkout to the current PayPal Orders REST API / JavaScript SDK while preserving an upgrade path for existing sites.
