@@ -14,6 +14,7 @@
 	
 <form action="{site_url}/admin/plugins/paypal/product_edit.php" method="POST" enctype="multipart/form-data"  class="uk-form">
 {id}{product_type}
+<input type="hidden" name="{gltoken_name}" value="{gltoken}" {xhtml}>
   <fieldset style="margin-top: 10px;"><legend><b>{informations}</b></legend>
   	<h2>{item_id_label} <input type="text" name="item_id" value="{item_id}" size="20" maxlength="80" {xhtml}></h2>
 	<h2>{name_label}<font color="red">*</font> <input type="text" name="name" value="{name}" size="80" maxlength="255" {xhtml}></h2>
