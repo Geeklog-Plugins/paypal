@@ -93,7 +93,7 @@ class jcart {
 		if ($valid_item_qty !== false && $valid_item_price !== false)
 			{
 			// IF THE ITEM IS ALREADY IN THE CART, INCREASE THE QTY
-			if( $this->itemqtys[$item_id] > 0 )
+			if (isset($this->itemqtys[$item_id]) && $this->itemqtys[$item_id] > 0)
 				{
 				$this->itemqtys[$item_id] = $item_qty + $this->itemqtys[$item_id];
 				$this->_update_total();
@@ -255,7 +255,7 @@ class jcart {
 		{
 		$this->itemcount = 0;
 		$this->total = 0;
-		if(sizeof($this->items > 0))
+		if (sizeof($this->items) > 0)
 			{
 			foreach($this->items as $item)
 				{
@@ -272,7 +272,7 @@ class jcart {
 		{
 		$this->itemcount = 0;
 		$this->totalweight = 0;
-		if(sizeof($this->items > 0))
+		if (sizeof($this->items) > 0)
 			{
 			foreach($this->items as $item)
 				{
