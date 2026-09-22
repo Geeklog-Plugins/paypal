@@ -51,7 +51,7 @@ paypal_filterVars($vars, $_REQUEST);
 
 $display = paypal_user_menu();
 
-require_once ($_CONF['path'] . 'plugins/paypal/proversion/paypalfunctions.php');
+require_once ($_CONF['path'] . 'plugins/paypal/lib/paypal_nvp.php');
 	
 $finalPaymentAmount = isset($_SESSION['Payment_Amount']) ? (float) $_SESSION['Payment_Amount'] : 0.0;
 $data = array();
