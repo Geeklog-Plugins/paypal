@@ -519,8 +519,14 @@ function paypal_upgrade()
 				// Allow all serialized data to be available to the template
 				$ipn ='';
 				if ($B['ipn_data'] != '') {
-					$out = preg_replace('!s:(\d+):"(.*?)";!se', "'s:'.strlen('$2').':\"$2\";'", $B['ipn_data'] ); 
-					$ipn = unserialize($out);
+                    $out = preg_replace_callback(
+                        '!s:(\\d+):"(.*?)";!s',
+                        function ($matches) {
+                            return 's:' . strlen($matches[2]) . ':"' . $matches[2] . '";';
+                        },
+                        $B['ipn_data']
+                    );
+					$ipn = @unserialize($out);
 					
 					if ($ipn['quantity1'] != '') {
 					    //multi products
@@ -667,6 +673,35 @@ function paypal_upgrade()
             
             // PayPal 1.7.0: IPN logs must support IPv6 addresses.
             DB_query("ALTER TABLE {$_TABLES['paypal_ipnlog']} MODIFY ip_addr varchar(45) NOT NULL");
+
+            // PayPal 1.7.0: payment/order tables use transactional storage.
+            $paypalTables = array(
+                'paypal_ipnlog',
+                'paypal_downloads',
+                'paypal_products',
+                'paypal_purchases',
+                'paypal_images',
+                'paypal_categories',
+                'paypal_subscriptions',
+                'paypal_users',
+                'paypal_attributes',
+                'paypal_attribute_type',
+                'paypal_product_attribute',
+                'paypal_stock',
+                'paypal_delivery',
+                'paypal_stock_movements',
+                'paypal_providers',
+                'paypal_shipper_service',
+                'paypal_shipping_to',
+                'paypal_shipping_cost',
+                'paypal_recurrent'
+            );
+
+            foreach ($paypalTables as $tableKey) {
+                if (isset($_TABLES[$tableKey])) {
+                    DB_query("ALTER TABLE {$_TABLES[$tableKey]} ENGINE=InnoDB", 1);
+                }
+            }
 
             // PayPal 1.7.0 deliberately performs no public-directory rename here.
             // Shared plugin files may serve several Geeklog sites whose persisted
