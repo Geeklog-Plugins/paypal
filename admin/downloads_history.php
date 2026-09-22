@@ -73,8 +73,7 @@ function PAYPAL_listDownloads()
     $query_arr = array(
         'table'          => 'paypal_downloads',
         'sql'            => $sql,
-        'query_fields'   => array('id', 'product_id', 'file', 'dl_date', 'user_id'),
-        'default_filter' => COM_getPermSQL ('AND', 0, 3)
+        'query_fields'   => array('id', 'product_id', 'file', 'dl_date', 'user_id')
     );
 
     $retval .= ADMIN_list('paypal', 'plugin_getListField_paypal_downloads',
