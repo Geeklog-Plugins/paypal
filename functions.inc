@@ -717,7 +717,7 @@ function paypal_genButton($type, $vars) {
         $button->set_var('user_id', $vars['user_id']);
     }
     if (empty($vars['business'])) {
-        $button->set_var('business', $_PAY_CONF['receiverEmailAddr'][0]);
+        $button->set_var('business', $_PAY_CONF['receiverEmailAddr']);
     } else {
         $button->set_var('business', $vars['business']);
     }
