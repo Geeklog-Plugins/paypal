@@ -134,22 +134,33 @@ function PAYPAL_getProductForm($product = array(), $type = 'product') {
     $template->set_var('gltoken', SEC_createToken());
 	$template->set_var('xhtml', XHTML);
     
-    if ($_CONF['advanced_editor'] == 1) {
-        $_SCRIPTS->setJavaScriptLibrary('jquery');
-        $_SCRIPTS->setJavaScriptFile('ckeditor', '/editors/ckeditor/ckeditor.js');
-        $ckeditor = '        var geeklogEditorName = "ckeditor";
-        var geeklogAllowedHtml = [];
-        jQuery(function() {
-            CKEDITOR.replace( \'description\', {
-             customConfig: \'' .  $_CONF['site_url'] . '/editors/ckeditor/config.js\',
-             toolbar: \'toolbar0\',
-             height:500
-            });
-        });';
-        $_SCRIPTS->setJavaScript($ckeditor , true);
-	} else {
-	    $template->set_var('adveditor','');
-	}
+    $advancedEditorEnabled = !empty($_CONF['advanced_editor'])
+        && (!isset($_USER['advanced_editor']) || !empty($_USER['advanced_editor']));
+
+    if ($advancedEditorEnabled) {
+        if (function_exists('COM_setupAdvancedEditor')) {
+            COM_setupAdvancedEditor(
+                '/paypal/js/product-editor.js',
+                'paypal.admin'
+            );
+        } else {
+            // Geeklog 2.1.x fallback for installations without the editor API.
+            $_SCRIPTS->setJavaScriptLibrary('jquery');
+            $_SCRIPTS->setJavaScriptFile(
+                'paypal_ckeditor',
+                '/editors/ckeditor/ckeditor.js'
+            );
+            $ckeditor = 'jQuery(function() {'
+                . 'if (typeof CKEDITOR !== "undefined" && '
+                . '!CKEDITOR.instances.description) {'
+                . 'CKEDITOR.replace("description");'
+                . '}'
+                . '});';
+            $_SCRIPTS->setJavaScript($ckeditor, true);
+        }
+    } else {
+        $template->set_var('adveditor', '');
+    }
     
     ($product['product_type'] == '') ? $prod_type_ini = 2 : $prod_type_ini = $product['product_type'];
     
