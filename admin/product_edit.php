@@ -749,8 +749,12 @@ function PAYPAL_deleteImage ($image)
  */
 switch ($_REQUEST['op']) {
     case 'delete':
-	    DB_delete($_TABLES['paypal_products'], 'id', $_REQUEST['id']);
+        $deletedProductId = isset($_REQUEST['id']) ? (int) $_REQUEST['id'] : 0;
+	    DB_delete($_TABLES['paypal_products'], 'id', $deletedProductId);
 		if (DB_affectedRows('') == 1) {
+            if (function_exists('PLG_itemDeleted')) {
+                PLG_itemDeleted((string) $deletedProductId, 'paypal');
+            }
 			$msg = $LANG_PAYPAL_1['deletion_succes'];
 		} else {
 			$msg = $LANG_PAYPAL_1['deletion_fail'];
@@ -857,7 +861,8 @@ switch ($_REQUEST['op']) {
             $sql = "INSERT INTO {$_TABLES['paypal_products']} SET $sql ";
         }
         DB_query($sql);
-        if (DB_error()) {
+        $paypalSaveSucceeded = !DB_error();
+        if (!$paypalSaveSucceeded) {
             $msg = $LANG_PAYPAL_1['save_fail'];
         } else {
             $msg = $LANG_PAYPAL_1['save_success'];
@@ -874,6 +879,16 @@ switch ($_REQUEST['op']) {
 		    $last_pid = $_REQUEST['id'];
 		}
 		PAYPAL_saveImage ($_REQUEST, $_FILES, $last_pid);
+
+        if ($paypalSaveSucceeded) {
+            if ((int) $_REQUEST['active'] === 1 && (int) $_REQUEST['hidden'] === 0) {
+                if (function_exists('PLG_itemSaved')) {
+                    PLG_itemSaved((string) $last_pid, 'paypal');
+                }
+            } elseif (function_exists('PLG_itemDeleted')) {
+                PLG_itemDeleted((string) $last_pid, 'paypal');
+            }
+        }
 		
         // save complete, return to product list
         echo COM_refresh($_CONF['site_url'] . '/admin/plugins/paypal/index.php?msg=' . urlencode($msg));
