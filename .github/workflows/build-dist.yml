@@ -71,6 +71,12 @@ jobs:
             exit 1
           fi
 
+          # Prevent publishing an archive containing PHP syntax errors.
+          # Include .inc files because Geeklog plugin bootstrap files use that extension.
+          find build/paypal -type f \
+            \( -name '*.php' -o -name '*.inc' \) -print0 \
+            | xargs -0 -n1 php -l
+
           rm -f "dist/${ARCHIVE}"
           (
             cd build
