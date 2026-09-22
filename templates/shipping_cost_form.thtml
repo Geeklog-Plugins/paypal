@@ -1,7 +1,9 @@
 {# begin {templatelocation} #}
 
 <form action="{admin_url}/plugins/paypal/index.php?mode=shipping" method="POST" class="uk-form paypal_form">
-	<fieldset style="margin-top: 10px;"><legend><b>{main_settings}</b></legend>
+	
+<input type="hidden" name="{gltoken_name}" value="{gltoken}">
+<fieldset style="margin-top: 10px;"><legend><b>{main_settings}</b></legend>
 	
 	{shipping_id}
 	
