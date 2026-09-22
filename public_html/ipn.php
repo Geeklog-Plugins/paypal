@@ -50,12 +50,21 @@ require_once('../lib-common.php');
 
 require_once($_CONF['path'] . 'plugins/paypal/classes/IPN.class.php');
 
-// Process IPN request
+// Acknowledge receipt immediately. PayPal expects a fast HTTP 200 response.
+http_response_code(200);
+header('Content-Type: text/plain; charset=UTF-8');
+header('Connection: close');
+echo "OK";
+
+if (function_exists('fastcgi_finish_request')) {
+    fastcgi_finish_request();
+} else {
+    @ob_flush();
+    @flush();
+}
+
+// Process the verified IPN after acknowledging receipt.
 $ipn = new IPN();
 $ipn->Process($_POST);
-
-
-// Finished (this isn't necessary...but heck...why not?)
-echo "Thanks";
 
 ?>
