@@ -117,8 +117,7 @@ function PAYPAL_getListField_paypal_recurring($fieldname, $fieldvalue, $A, $icon
 
 //Main
 
-$display = COM_siteHeader('none');
-$display .= paypal_admin_menu();
+$display = paypal_admin_menu();
 
 if (!empty($_REQUEST['msg'])) $display .= COM_showMessageText( stripslashes($_REQUEST['msg']), $LANG_PAYPAL_1['message']);
 
@@ -131,11 +130,9 @@ switch ($_REQUEST['mode']) {
         $display .= COM_endBlock();
 	}
 
-$display .= COM_siteFooter();
-
 //For testing 
 //plugin_runScheduledTask_paypal();
 
-COM_output($display);
+COM_output(PAYPAL_createHTMLDocument($display, $LANG_PAYPAL_1['recurring_list']));
 
 ?>
