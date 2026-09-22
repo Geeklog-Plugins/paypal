@@ -358,8 +358,13 @@ if ($paypalMode == 'edit' && SEC_checkToken()) {
 			. " WHERE txn_id = '{$paypalTxnSql}'";
 	DB_query($sql);
 	
-	// Send the purchaser a confirmation email (if set to do so in config.php)
-	if ($_PAY_CONF['purchase_email_user'] ) {
+    // Build the message once and honor user/anonymous delivery settings.
+    $purchaseUserId = isset($ipn['custom']) ? (int) $ipn['custom'] : 1;
+    $isAnonymousPurchase = ($purchaseUserId === 1);
+    $sendPurchaserEmail = $isAnonymousPurchase
+        ? !empty($_PAY_CONF['purchase_email_anon'])
+        : !empty($_PAY_CONF['purchase_email_user']);
+
 		// setup templates
 		$message = COM_newTemplate($_CONF['path'] . 'plugins/paypal/templates/email');
 		$message->set_file(array('subject' => 'purchase_by_check_complete_subject.thtml',
@@ -403,10 +408,19 @@ if ($paypalMode == 'edit' && SEC_checkToken()) {
 		} else {
 			$message->set_var('attached_files', $LANG_PAYPAL_EMAIL['download_files']);
 			$text = $message->parse('output', 'message');
-			COM_mail($ipn['payer_email'], $subject, $text,
-					 $_PAY_CONF['receiverEmailAddr'], true);
+            if ($sendPurchaserEmail && !empty($ipn['payer_email'])) {
+                COM_mail(
+                    $ipn['payer_email'],
+                    $subject,
+                    $text,
+                    $_PAY_CONF['receiverEmailAddr'],
+                    true
+                );
+                if ($_PAY_CONF['debug']) {
+                    COM_errorLog('Email was sent to ' . $ipn['payer_email']);
+                }
+            }
 		}
-		if ($_PAY_CONF['debug']) COM_errorLog('Email was sent');
 	}
 	//Send email to receiver
 	COM_mail($_PAY_CONF['receiverEmailAddr'], $subject, $subject . ' >> ' . $text, '', true);
