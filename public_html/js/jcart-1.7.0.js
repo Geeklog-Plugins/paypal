@@ -15,7 +15,20 @@
         if ($cart.length) {
             $cart.html(data);
             $('.jcart-hide').remove();
+        updateCartBlockVisibility();
         }
+    }
+
+    function updateCartBlockVisibility() {
+        var $outer = $('#paypal-cart-dynamic-block');
+        var $content = $('#paypal-cart-block');
+
+        if (!$outer.length || !$content.length) {
+            return;
+        }
+
+        var isEmpty = $content.find('.paypal-cart-summary__item').length === 0;
+        $outer.toggleClass('paypal-cart-dynamic-block--empty', isEmpty);
     }
 
     function refreshCartBlock(data) {
@@ -23,14 +36,23 @@
         if ($block.length) {
             $block.html(data);
             $('.jcart-hide').remove();
+            updateCartBlockVisibility();
         }
+    }
+
+    function refreshBlock(cfg) {
+        $.get(cfg.relayBlockUrl, function (data) {
+            refreshCartBlock(data);
+        });
     }
 
     function postCart(payload) {
         var cfg = config();
 
-        $.post(cfg.relayUrl, payload, refreshCart);
-        $.post(cfg.relayBlockUrl, payload, refreshCartBlock);
+        $.post(cfg.relayUrl, payload, function (data) {
+            refreshCart(data);
+            refreshBlock(cfg);
+        });
     }
 
     $(function () {
@@ -89,8 +111,10 @@
                 jcart_is_checkout: cartState()
             };
 
-            $.get(cfg.relayUrl, payload, refreshCart);
-            $.get(cfg.relayBlockUrl, payload, refreshCartBlock);
+            $.get(cfg.relayUrl, payload, function (data) {
+                refreshCart(data);
+                refreshBlock(cfg);
+            });
         });
 
         var updateTimer = null;
