@@ -34,7 +34,7 @@ jobs:
 
           VERSION="1.7.0"
           MIN_GL="2.1.1"
-          ARCHIVE="paypal_${VERSION}_${MIN_GL}_build-${GITHUB_RUN_NUMBER}.zip"
+          ARCHIVE="paypal_${VERSION}_${MIN_GL}.zip"
 
           rm -rf build
           mkdir -p build/paypal dist
@@ -95,7 +95,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: paypal-1.7.0-installable
-          path: dist/paypal_1.7.0_2.1.1_build-*.zip
+          path: dist/paypal_1.7.0_2.1.1.zip
           if-no-files-found: error
           retention-days: 30
 
@@ -107,7 +107,20 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
 
-          git add -f "dist/paypal_1.7.0_2.1.1_build-${GITHUB_RUN_NUMBER}.zip"
+          ARCHIVE="paypal_1.7.0_2.1.1.zip"
+          TMP_ARCHIVE="${RUNNER_TEMP}/${ARCHIVE}"
+
+          cp "dist/${ARCHIVE}" "${TMP_ARCHIVE}"
+
+          # Refresh from the latest branch tip before committing the generated
+          # binary. This keeps one stable archive name while avoiding binary
+          # rebase conflicts when another commit lands during the build.
+          git fetch origin "${GITHUB_REF_NAME}"
+          git reset --hard "origin/${GITHUB_REF_NAME}"
+
+          mkdir -p dist
+          cp "${TMP_ARCHIVE}" "dist/${ARCHIVE}"
+          git add -f "dist/${ARCHIVE}"
 
           if git diff --cached --quiet; then
             echo 'Archive is already up to date.'
@@ -115,11 +128,4 @@ jobs:
           fi
 
           git commit -m 'Build PayPal 1.7.0 archive [skip ci]'
-
-          # Another commit may have reached the branch while this workflow was
-          # building the archive. Rebase the bot commit before pushing so a
-          # harmless race does not fail the workflow with a non-fast-forward.
-          git fetch origin "${GITHUB_REF_NAME}"
-          git rebase "origin/${GITHUB_REF_NAME}"
-
           git push origin HEAD:${GITHUB_REF_NAME}
