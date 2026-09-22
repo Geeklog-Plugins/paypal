@@ -39,16 +39,7 @@
  */
 require_once '../../lib-common.php';
 
-// START SESSION
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
-
-// INITIALIZE JCART AFTER SESSION START
-if (!isset($_SESSION['jcart']) || !($_SESSION['jcart'] instanceof jcart)) {
-    $_SESSION['jcart'] = new jcart();
-}
-$cart =& $_SESSION['jcart'];
+$cart = PAYPAL_getCart();
 
 $updateCart = !empty($_POST['jcart_update_cart']);
 $emptyCart = !empty($_POST['jcart_empty']);
