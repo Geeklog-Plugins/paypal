@@ -105,6 +105,35 @@ if (!array_key_exists('enable_pay_by_check', $_PAY_CONF)
     $_PAY_CONF = $c->get_config('paypal');
 }
 
+$dynamicBlockDefaults = array(
+    'cart_block_enabled' => array(1, 'select', 3, 60),
+    'cart_block_isleft' => array(0, 'select', 3, 61),
+    'cart_block_order' => array(50, 'text', 0, 62),
+    'random_block_enabled' => array(1, 'select', 3, 65),
+    'random_block_isleft' => array(0, 'select', 3, 66),
+    'random_block_order' => array(60, 'text', 0, 67),
+);
+$dynamicBlockConfigChanged = false;
+foreach ($dynamicBlockDefaults as $name => $definition) {
+    if (!array_key_exists($name, $_PAY_CONF)) {
+        $c->add(
+            $name,
+            $definition[0],
+            $definition[1],
+            1,
+            8,
+            $definition[2],
+            $definition[3],
+            true,
+            'paypal'
+        );
+        $dynamicBlockConfigChanged = true;
+    }
+}
+if ($dynamicBlockConfigChanged) {
+    $_PAY_CONF = $c->get_config('paypal');
+}
+
 /*
 * Include specific paypal config file
 */
@@ -146,9 +175,12 @@ function plugin_getheadercode_paypal()
         ) > 0;
     }
 
+    $dynamicCartEnabled = !empty($_PAY_CONF['cart_block_enabled']);
+
     if ((stripos($currentUrl, '/' . $_PAY_CONF['paypal_folder'] . '/') !== false
             && stripos($currentUrl, 'informations.php') === false)
         || $cartBlockEnabled
+        || $dynamicCartEnabled
     ) {
             $cartConfig = array(
                 'relayUrl' => $jcart['url'] . 'jcart-relay.php',
@@ -200,6 +232,114 @@ function plugin_getmenuitems_paypal()
     }
 
     return array($label => $_PAY_CONF['site_url'] . '/index.php');
+}
+
+/**
+ * Return PayPal dynamic blocks using the Geeklog block API.
+ *
+ * Existing legacy PHP blocks are detected by phpblockfn and take precedence,
+ * which avoids duplicates on upgraded sites.
+ *
+ * @param string $side  left or right
+ * @param string $topic current topic
+ * @return array
+ */
+function plugin_getBlocks_paypal($side, $topic = '')
+{
+    global $_PAY_CONF, $_TABLES, $LANG_PAYPAL_1;
+
+    $blocks = array();
+    $side = ($side === 'left') ? 'left' : 'right';
+
+    $legacyCart = (int) DB_getItem(
+        $_TABLES['blocks'],
+        'bid',
+        "type = 'phpblock' AND phpblockfn = 'phpblock_paypal_cart' AND is_enabled = 1"
+    );
+    $cartSide = !empty($_PAY_CONF['cart_block_isleft']) ? 'left' : 'right';
+    if (!$legacyCart && !empty($_PAY_CONF['cart_block_enabled']) && $side === $cartSide) {
+        $blocks[] = array(
+            'name' => 'paypal_cart',
+            'type' => 'dynamic',
+            'onleft' => $cartSide === 'left' ? 1 : 0,
+            'title' => isset($LANG_PAYPAL_1['cart']) ? $LANG_PAYPAL_1['cart'] : 'Cart',
+            'blockorder' => isset($_PAY_CONF['cart_block_order']) ? (int) $_PAY_CONF['cart_block_order'] : 50,
+            'content' => phpblock_paypal_cart(),
+            'allow_autotags' => false,
+            'help' => ''
+        );
+    }
+
+    $legacyRandom = (int) DB_getItem(
+        $_TABLES['blocks'],
+        'bid',
+        "type = 'phpblock' AND phpblockfn = 'phpblock_paypal_randomBlock' AND is_enabled = 1"
+    );
+    $randomSide = !empty($_PAY_CONF['random_block_isleft']) ? 'left' : 'right';
+    if (!$legacyRandom && !empty($_PAY_CONF['random_block_enabled']) && $side === $randomSide) {
+        $content = phpblock_paypal_randomBlock();
+        if ($content !== '') {
+            $blocks[] = array(
+                'name' => 'paypal_random_product',
+                'type' => 'dynamic',
+                'onleft' => $randomSide === 'left' ? 1 : 0,
+                'title' => isset($LANG_PAYPAL_1['random_product'])
+                    ? $LANG_PAYPAL_1['random_product']
+                    : 'Random product',
+                'blockorder' => isset($_PAY_CONF['random_block_order']) ? (int) $_PAY_CONF['random_block_order'] : 60,
+                'content' => $content,
+                'allow_autotags' => false,
+                'help' => ''
+            );
+        }
+    }
+
+    return $blocks;
+}
+
+/**
+ * Describe PayPal dynamic blocks to Geeklog configuration consumers.
+ *
+ * @param string $side
+ * @param string $topic
+ * @return array
+ */
+function plugin_getBlocksConfig_paypal($side, $topic = '')
+{
+    global $_PAY_CONF, $LANG_PAYPAL_1;
+
+    return array(
+        array(
+            'plugin' => 'PayPal',
+            'name' => 'paypal_cart',
+            'title' => isset($LANG_PAYPAL_1['cart']) ? $LANG_PAYPAL_1['cart'] : 'Cart',
+            'type' => 'dynamic',
+            'onleft' => empty($_PAY_CONF['cart_block_isleft']) ? 0 : 1,
+            'blockorder' => isset($_PAY_CONF['cart_block_order']) ? (int) $_PAY_CONF['cart_block_order'] : 50,
+            'allow_autotags' => false,
+            'help' => '',
+            'enable' => empty($_PAY_CONF['cart_block_enabled']) ? 0 : 1,
+            'topic_option' => 'all',
+            'topic' => array(),
+            'inherit' => array()
+        ),
+        array(
+            'plugin' => 'PayPal',
+            'name' => 'paypal_random_product',
+            'title' => isset($LANG_PAYPAL_1['random_product'])
+                ? $LANG_PAYPAL_1['random_product']
+                : 'Random product',
+            'type' => 'dynamic',
+            'onleft' => empty($_PAY_CONF['random_block_isleft']) ? 0 : 1,
+            'blockorder' => isset($_PAY_CONF['random_block_order']) ? (int) $_PAY_CONF['random_block_order'] : 60,
+            'allow_autotags' => false,
+            'help' => '',
+            'enable' => empty($_PAY_CONF['random_block_enabled']) ? 0 : 1,
+            'topic_option' => 'all',
+            'topic' => array(),
+            'inherit' => array()
+        )
+    );
 }
 
 /**
