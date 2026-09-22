@@ -612,3 +612,8 @@
 .paypal-admin-button-primary {
   font-weight: 700;
 }
+
+
+.paypal-admin-config-form {
+  margin: 0;
+}
