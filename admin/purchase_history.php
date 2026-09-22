@@ -251,10 +251,13 @@ if ($paypalMode == 'edit' && SEC_checkToken()) {
 	$sql = "SELECT * FROM {$_TABLES['paypal_ipnlog']} WHERE txn_id = '{$paypalTxnSql}'";
 	$res = DB_query($sql);
 	$A = DB_fetchArray($res);
+    if (!is_array($A)) {
+        $A = array();
+    }
 
 	// Allow all serialized data to be available to the template
-	$ipn ='';
-	if ($A['ipn_data'] != '') {
+	$ipn = array();
+	if (!empty($A['ipn_data'])) {
         $out = preg_replace_callback(
             '!s:(\\d+):"(.*?)";!s',
             function ($matches) {
@@ -313,9 +316,12 @@ if ($paypalMode == 'edit' && SEC_checkToken()) {
 	    $sql = "SELECT * FROM {$_TABLES['paypal_products']} WHERE id = '{$ipn['item_number']}'";
 		$res = DB_query($sql);
 		$product = DB_fetchArray($res);
+        if (!is_array($product)) {
+            $product = array();
+        }
 		
 		//product is downloadable give access to product
-		if ($product['product_type'] == 1) $files[] = $_PAY_CONF['download_path'] . $product['file'];
+		if (isset($product['product_type']) && $product['product_type'] == 1 && !empty($product['file'])) $files[] = $_PAY_CONF['download_path'] . $product['file'];
 		$names[] = $ipn['quantity'] . ' x ' . $ipn['item_name'] . ' | ' .  ($ipn['mc_gross']/$ipn['quantity']) . ' ' . $_PAY_CONF['currency'];
 
 		$sql = "UPDATE {$_TABLES['paypal_purchases']} SET purchase_date = NOW()";
