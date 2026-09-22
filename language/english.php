@@ -431,6 +431,7 @@ $LANG_PAYPAL_ADMIN = array(
 );
 
 $LANG_PAYPAL_CART = array(
+    'merchant_not_configured' => 'The PayPal merchant account is not configured. In Sandbox, use the Merchant ID or confirmed email of the Sandbox Business account.',
     'cart'                    => 'Your shopping cart',
 	'item'                    => 'item',
 	'items'                   => 'items',
@@ -525,7 +526,7 @@ $LANG_confignames['paypal'] = array(
 	'hide_paypal_menu'           => 'Hide Paypal menu',
 	'paypal_login_required'      => 'Paypal login required',
 	'paypalURL'                  => 'Paypal url',
-	'receiverEmailAddr'          => 'Receiver email address',
+	'receiverEmailAddr'          => 'PayPal Merchant ID or confirmed email',
 	'currency'                   => 'Currency',
 	'anonymous_buy'              => 'Anonymous user can buy',
     'purchase_email_user'        => 'Email User upon purchase',
