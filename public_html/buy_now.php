@@ -42,21 +42,22 @@ paypal_access_check('paypal.user');
 
 
 $valid_process = true;
-$item_id = $_POST['item_number'];
-$item_price = $_POST['amount'];
+$display = '';
+$req = '';
+$item_id = isset($_POST['item_number']) ? $_POST['item_number'] : '';
+$item_price = isset($_POST['amount']) ? $_POST['amount'] : '';
 $paypalURL = 'https://' . $_PAY_CONF['paypalURL'] . '/cgi-bin/webscr?cmd=_xclick';
 
 
 /* MAIN */
 
-$display .= PAYPAL_siteHeader();
 $display .= paypal_user_menu();
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 $_SESSION["user_id"] = $_USER['uid'];
-$_SESSION["item_id"] = $_POST['item_number'];
+$_SESSION["item_id"] = $item_id;
 
 $A = DB_fetchArray(DB_query("SELECT * FROM {$_TABLES['paypal_products']} WHERE id = '{$item_id}' LIMIT 1"));
 
@@ -105,8 +106,8 @@ if ($A['type'] == 'recurrent') {
 		$ErrorSeverityCode = urldecode($resArray["L_SEVERITYCODE0"]);
 
 		$display .= "<p>SetExpressCheckout API call failed.</p>";
-		if( $_SESSION['curl_error_no'] != '' ) $ErrorCode = $_SESSION['curl_error_no']; 
-		if( $_SESSION['curl_error_msg'] != '' ) $ErrorLongMsg = $_SESSION['curl_error_msg']; 
+		if (!empty($_SESSION['curl_error_no'])) $ErrorCode = $_SESSION['curl_error_no']; 
+		if (!empty($_SESSION['curl_error_msg'])) $ErrorLongMsg = $_SESSION['curl_error_msg']; 
 		$display .= "<p>Detailed Error Message: " . $ErrorLongMsg;
 		$display .= "</p><p>Short Error Message: " . $ErrorShortMsg;
 		$display .= "</p><p>Error Code: " . $ErrorCode;
@@ -127,7 +128,7 @@ if ($A['type'] == 'recurrent') {
 	$PAYPAL_POST['return'] = $_PAY_CONF['site_url'] . '/index.php?mode=endTransaction';
 	$PAYPAL_POST['notify_url'] = $_PAY_CONF['site_url'] . '/ipn.php';
 	//TODO how to choose shipping cost? Do not use Buy now button...
-	$PAYPAL_POST['handling_cart'] = $_POST['shipping'];
+	$PAYPAL_POST['handling_cart'] = isset($_POST['shipping']) ? $_POST['shipping'] : 0;
 	$PAYPAL_POST['rm'] = '2';
 	$PAYPAL_POST['cbt'] = $LANG_PAYPAL_1['cbt'] . ' ' . $_CONF['site_name'];
 	$PAYPAL_POST['cancel_return'] = $_PAY_CONF['site_url'] . '/index.php?mode=cancel';
@@ -153,8 +154,6 @@ if ($A['type'] == 'recurrent') {
 	}
 }
 
-$display .= PAYPAL_siteFooter();
-
-COM_output($display);
+COM_output(PAYPAL_createHTMLDocument($display));
 
 ?>
