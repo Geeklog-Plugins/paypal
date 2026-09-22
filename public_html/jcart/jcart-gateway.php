@@ -54,7 +54,7 @@ $updateCart = !empty($_POST['jcart_update_cart']);
 $emptyCart = !empty($_POST['jcart_empty']);
 $checkoutPage = isset($_POST['jcart_checkout_page']) ? $_POST['jcart_checkout_page'] : $_PAY_CONF['site_url'] . '/checkout.php';
 $payBy = isset($_POST['pay_by']) ? $_POST['pay_by'] : '';
-$shipping = isset($shipping) && is_numeric($_POST['shipping']) ? $_POST['shipping'] : '0.00';
+$shipping = isset($_POST['shipping']) && is_numeric($_POST['shipping']) ? $_POST['shipping'] : '0.00';
 
 // WHEN JAVASCRIPT IS DISABLED THE UPDATE AND EMPTY BUTTONS ARE DISPLAYED
 // RE-DISPLAY THE CART IF THE VISITOR CLICKS EITHER BUTTON
@@ -144,7 +144,7 @@ else
 	else if ($valid_prices === true)
 		{
 			if ($payBy == 'check') {
-			   echo COM_refresh($_PAY_CONF['site_url'] . '/informations.php?shipping=' . $_POST['shipping'] . '&pay_by=check');
+			   echo COM_refresh($_PAY_CONF['site_url'] . '/informations.php?shipping=' . $shipping . '&pay_by=check');
 			   exit();
 			} else {
 				// PAYPAL COUNT STARTS AT ONE INSTEAD OF ZERO
@@ -169,8 +169,8 @@ else
 				$items_query_string .= '&rm=2';
 				$items_query_string .= '&no_note=1';
 
-				$items_query_string .= '&handling_cart=' . $_POST['shipping'];
-				//$items_query_string .= '&shipping_cart=' . $_POST['shipping'];
+				$items_query_string .= '&handling_cart=' . $shipping;
+				//$items_query_string .= '&shipping_cart=' . $shipping;
 				$items_query_string .= '&custom=' . $_USER['uid'];
 				$items_query_string .= '&cbt=' . urlencode($LANG_PAYPAL_1['cbt'] . ' ' . $_CONF['site_name']);
 				$items_query_string .= '&charset=' . $_CONF['default_charset'];
