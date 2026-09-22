@@ -1,5 +1,7 @@
 # PayPal 1.7.0 release notes
 
+- Integrated the former Pro-version feature set into the standard plugin: product attributes, attribute types, manual subscriptions, expiration notifications, recurring-payment NVP helpers, and sales statistics.
+
 PayPal 1.7.0 is a stabilization and interoperability release for the Geeklog
 PayPal plugin.
 
