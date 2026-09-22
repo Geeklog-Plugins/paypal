@@ -48,8 +48,8 @@
 global $_CONF, $_TABLES, $_USER, $_DB_table_prefix, $_PLUGINS, $_PAY_CONF;
 global $LANG_PAYPAL_1, $LANG_PAYPAL_ADMIN, $LANG_PAYPAL_CART, $LANG_PAYPAL_TYPE;
 global $LANG_PAYPAL_EMAIL, $LANG_PAYPAL_LOGIN, $LANG_PAYPAL_MESSAGE, $LANG_PAYPAL_PAYMENT;
-global $LANG_configsections, $LANG_confignames, $LANG_configsubgroups, $LANG_fs, $LANG_configselects;
-global $PLG_paypal_MESSAGE3002;
+global $LANG_configsections, $LANG_confignames, $LANG_configsubgroups, $LANG_tab, $LANG_fs, $LANG_configselects;
+global $LANG_PAYPAL_TOOLTIPS, $PLG_paypal_MESSAGE3002;
 
 if (isset($_SERVER['PHP_SELF']) && strpos(strtolower($_SERVER['PHP_SELF']), 'functions.inc') !== false) {
     die ('This file can not be used on its own.');
