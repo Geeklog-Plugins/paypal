@@ -646,32 +646,53 @@ function paypal_admin_menu() {
  * @param array $vars associative array of variable name => type (type in (number,alpha,text,html))
  * @param array &$arr reference to associative array of variable name => value
  */
-function paypal_filterVars($vars, &$arr) {
-    // Normalize optional request variables before filtering. PHP 8 reports
-    // undefined array keys where older PHP versions silently returned NULL.
+function paypal_filterVars($vars, &$arr)
+{
     foreach ($vars as $var => $type) {
-        if (!isset($arr[$var])) {
-            $arr[$var] = '';
+        $target =& $arr;
+        $key = $var;
+
+        // Support HTML form array notation such as perm_owner[0].
+        if (preg_match('/^([^\\[]+)\\[([^\\]]+)\\]$/', $var, $matches)) {
+            $base = $matches[1];
+            $nestedKey = $matches[2];
+
+            if (!isset($arr[$base]) || !is_array($arr[$base])) {
+                $arr[$base] = array();
+            }
+
+            $target =& $arr[$base];
+            $key = $nestedKey;
+        }
+
+        if (!isset($target[$key])) {
+            $target[$key] = '';
         }
 
         switch ($type) {
             case 'number':
-                $arr[$var] = COM_applyFilter($arr[$var], true);
+                $target[$key] = COM_applyFilter($target[$key], true);
                 break;
 
             case 'html':
-                $arr[$var] = COM_checkHTML($arr[$var], 'paypal.admin');
+                $target[$key] = COM_checkHTML($target[$key], 'paypal.admin');
                 break;
 
             case 'text':
-                $arr[$var] = htmlspecialchars(strip_tags(COM_stripslashes($arr[$var])));
+                $target[$key] = htmlspecialchars(
+                    strip_tags(COM_stripslashes($target[$key])),
+                    ENT_QUOTES,
+                    'UTF-8'
+                );
                 break;
 
             case 'alpha':
             default:
-                $arr[$var] = COM_applyFilter($arr[$var], false);
+                $target[$key] = COM_applyFilter($target[$key], false);
                 break;
         }
+
+        unset($target);
     }
 }
 
