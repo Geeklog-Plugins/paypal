@@ -296,7 +296,7 @@ function PAYPAL_getListField_categories($fieldname, $fieldvalue, $A, $icon_arr)
  */
 function PAYPAL_getCategoryForm( $category = array() ) {
 
-    global $_CONF, $_PAY_CONF, $LANG_PAYPAL_1, $LANG_PAYPAL_ADMIN, $LANG_ACCESS, $_TABLES;
+    global $_CONF, $_PAY_CONF, $LANG_PAYPAL_1, $LANG_PAYPAL_ADMIN, $LANG_ACCESS, $_TABLES, $_USER;
 
     //PHP 5.4 set all $catory[key] 
 	PAYPAL_setAllKeys($category, array('cat_id', 'cat_name', 'description', 'enabled', 'image', 'perm_owner', 'owner_id', 'group_id', 'perm_group', 'perm_members', 'perm_anon'));
