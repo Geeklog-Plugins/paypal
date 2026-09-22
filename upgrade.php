@@ -665,6 +665,9 @@ function paypal_upgrade()
             DB_query("UPDATE {$_TABLES['plugins']} SET pi_version = '$code_version', pi_gl_version = '$pi_gl_version' WHERE pi_name = 'paypal'");
 	        COM_errorLog( "Updated paypal plugin from v$currentVersion to v$code_version", 1 );
             
+            // PayPal 1.7.0: IPN logs must support IPv6 addresses.
+            DB_query("ALTER TABLE {$_TABLES['paypal_ipnlog']} MODIFY ip_addr varchar(45) NOT NULL");
+
             // PayPal 1.7.0 deliberately performs no public-directory rename here.
             // Shared plugin files may serve several Geeklog sites whose persisted
             // plugin versions are upgraded independently.
