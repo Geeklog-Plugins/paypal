@@ -137,8 +137,19 @@ function plugin_getheadercode_paypal()
 
     $_SCRIPTS->setJavaScriptLibrary('jquery');
 
-    if (stripos($currentUrl, '/' . $_PAY_CONF['paypal_folder'] . '/') !== false
-        && stripos($currentUrl, 'informations.php') === false) {
+    $cartBlockEnabled = false;
+    if (isset($GLOBALS['_TABLES']['blocks'])) {
+        $cartBlockEnabled = DB_count(
+            $GLOBALS['_TABLES']['blocks'],
+            'phpblockfn',
+            'phpblock_paypal_cart'
+        ) > 0;
+    }
+
+    if ((stripos($currentUrl, '/' . $_PAY_CONF['paypal_folder'] . '/') !== false
+            && stripos($currentUrl, 'informations.php') === false)
+        || $cartBlockEnabled
+    ) {
             $cartConfig = array(
                 'relayUrl' => $jcart['url'] . 'jcart-relay.php',
                 'relayBlockUrl' => $jcart['url'] . 'jcart-relay-block.php',
@@ -832,17 +843,9 @@ function phpblock_paypal_displayProducts($A = array(), $args = array())
 */
 function phpblock_paypal_cart()
 {
-    global $_SESSION;
-
-    if (!isset($_SESSION['jcart']) || !($_SESSION['jcart'] instanceof jcart)) {
-        return '';
-    }
-
-    if ($_SESSION['jcart']->is_empty()) {
-        return '';
-    }
-
-    return '<div class="paypal-cart-block">' . PAYPAL_displayCart(1) . '</div>';
+    return '<div id="paypal-cart-block" class="paypal-cart-block">'
+        . PAYPAL_displayCart(1)
+        . '</div>';
 }
 
 /**
