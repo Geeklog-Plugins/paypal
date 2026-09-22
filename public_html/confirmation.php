@@ -36,15 +36,7 @@
  */
 require_once '../lib-common.php';
 
-// START SESSION
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
-// INITIALIZE JCART AFTER SESSION START
-$cart =& $_SESSION['jcart'];
-if (!($cart instanceof jcart)) {
-    $cart = new jcart();
-}
+$cart = PAYPAL_getCart();
 
 // take user back to the homepage if the plugin is not active
 if (!in_array('paypal', $_PLUGINS) || COM_isAnonUser() || ($cart->itemcount) < 1) {
@@ -63,6 +55,8 @@ paypal_filterVars($vars, $_REQUEST);
 
 /* valid price, access and active product only */
 $items = array();
+$namesfromcart = array();
+$item_price = array();
 $i = 1;
 $quantities = array();
 $valid_prices = true;
