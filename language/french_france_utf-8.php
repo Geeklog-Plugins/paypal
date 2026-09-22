@@ -194,7 +194,7 @@ $LANG_PAYPAL_1 = array(
 	'create_subscription'     => 'créer une nouvelle adhésion',
 	'subscriptions_empty'     => 'Il n\'y a pas d\'adhésion.',
 	'add_to_group'            => 'Groupe',
-	'create_new_subscription' => 'Création d\'une nouvelle souscription - Fonction Paypal Pro',
+	'create_new_subscription' => 'Création d\'une nouvelle souscription',
 	'edit_subscription'       => 'Edition de la souscription',
 	'subscription_informations' => 'Informations sur la souscription',
 	'notification'            => 'Notification',
@@ -447,9 +447,7 @@ $LANG_PAYPAL_EMAIL = array(
 );
 
 $LANG_PAYPAL_PRO = array (
-    'pro_feature'                     => 'Note: You are using the paypal plugin limited edition.  To get full features you need to upgrade to Paypal Pro plugin version.',
-    'pro_feature_manual_subscription' => 'L\'ajout de d\'adhésions manuellement fait partie des fonction de la version Pro du plugin Paypal. Merci de passer à <a href="http://geeklog.fr/wiki/plugins:paypal#paypal-pro" target="_blank">Paypal Pro</a> si vous souhaitez bénéficier de cette fonctionnalité.',
-	'add_attributes'                  => 'Enregistrez d\'abord votre produit, puis vous pourrez ajouter des attributs. Nota bene: Vous devez créer au moins un attribut avant de pouvoir l\'ajouter.',
+    'add_attributes' => 'Enregistrez d\'abord votre produit, puis vous pourrez ajouter des attributs. Vous devez créer au moins un attribut avant de pouvoir l\'ajouter.',
 );
 
 $LANG_PAYPAL_LOGIN = array(
@@ -543,7 +541,7 @@ $LANG_confignames['paypal'] = array(
 	'categoryHeading'            => 'Categories header',
 	'seo_shop_title'             => 'SEO shop title',
 	'displayCatDescription'      => 'Display category description',
-	'attribute_thumbnail_size'   => 'Attribute thumbnail size  (Pro version)',
+	'attribute_thumbnail_size'   => 'Taille des miniatures des attributs',
 	//Paypal 1.6
 	'API_UserName'               => 'API UserName',
     'API_Password' 	             => 'API Password',
