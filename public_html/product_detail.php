@@ -47,7 +47,14 @@
 require_once '../lib-common.php';
 
 // Incoming variable filter
-$vars = array('product' => 'number');
+$vars = array(
+    'product' => 'number',
+    'order' => 'text',
+    'page' => 'number',
+    'query' => 'text',
+    'rt_id' => 'number',
+    'mode' => 'alpha',
+);
 paypal_filterVars($vars, $_REQUEST);
 
 $pid = $_REQUEST['product'];
@@ -313,7 +320,8 @@ function PAYPAL_get_review( &$comments, $order, $url, $delete_option = false, $p
             $template->set_var( 'hide_if_preview', '' );
         }
 
-        $template->set_var( 'date', strftime( $_CONF['date'], $A['nice_date'] ));
+        $reviewDate = COM_getUserDateTimeFormat($A['nice_date']);
+        $template->set_var('date', $reviewDate[0]);
 
         // If deletion is allowed, displays delete link (this varible is for the owner of the rating)
         // Now check if you show individual rating or review
@@ -677,13 +685,16 @@ if (DB_numRows($res) != 1) {
 }
 
 $A = DB_fetchArray($res);
+$type = isset($A['type']) ? $A['type'] : 'product';
+$display = '';
+$saved_images = '';
 
 if ($A['customisable'] != 0 && !function_exists('PAYPALPRO_displayAttributes') ) {
     echo COM_refresh($_PAY_CONF['site_url'] . '/index.php');
 	exit;
 }
 
-$display .= PAYPAL_siteHeader($A['name'] . ' - '  . $A['cat_name']);
+$pageTitle = $A['name'] . ' - ' . $A['cat_name'];
 
 if (SEC_hasRights('paypal.user,paypal.admin', 'OR')) {
     $display .= paypal_user_menu();
@@ -915,11 +926,9 @@ if ( ( $A['active'] == 1   && SEC_hasAccess2($A) ) || SEC_hasRights('paypal.admi
 //Display cart
 $display .= '<div id="cart">' . PAYPAL_displayCart() .'</div>';
 
-$display .= PAYPAL_siteFooter();
-
 //hit +1
 hitProduct($A['id']);
 
-COM_output($display);
+COM_output(PAYPAL_createHTMLDocument($display, $pageTitle));
 
 ?>
