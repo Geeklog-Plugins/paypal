@@ -348,8 +348,19 @@ function plugin_getBlocks_paypal($side, $topic = '')
         'bid',
         "type = 'phpblock' AND phpblockfn = 'phpblock_paypal_cart' AND is_enabled = 1"
     );
+    $requestPath = '';
+    if (!empty($_SERVER['REQUEST_URI'])) {
+        $parsedPath = parse_url((string) $_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        $requestPath = is_string($parsedPath) ? $parsedPath : '';
+    }
+    $isCheckoutPage = substr($requestPath, -13) === '/checkout.php';
+
     $cartSide = !empty($_PAY_CONF['cart_block_isleft']) ? 'left' : 'right';
-    if (!$legacyCart && !empty($_PAY_CONF['cart_block_enabled']) && $side === $cartSide) {
+    if (!$isCheckoutPage
+        && !$legacyCart
+        && !empty($_PAY_CONF['cart_block_enabled'])
+        && $side === $cartSide
+    ) {
         $cart = PAYPAL_getCart();
         $cartIsEmpty = $cart->is_empty();
 
@@ -1150,6 +1161,16 @@ function phpblock_paypal_displayProducts($A = array(), $args = array())
 */
 function phpblock_paypal_cart()
 {
+    $requestPath = '';
+    if (!empty($_SERVER['REQUEST_URI'])) {
+        $parsedPath = parse_url((string) $_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        $requestPath = is_string($parsedPath) ? $parsedPath : '';
+    }
+
+    if (substr($requestPath, -13) === '/checkout.php') {
+        return '';
+    }
+
     return '<div id="paypal-cart-block" class="paypal-cart-block">'
         . PAYPAL_displayCart(1)
         . '</div>';
