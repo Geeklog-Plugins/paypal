@@ -50,10 +50,12 @@ require_once('../../../lib-common.php');
 paypal_access_check('paypal.admin');
 
 // Incoming variable filter
-$vars = array('txn_id' => 'alpha',
-			  'msg' => 'text',
-			  'mode'   => 'alpha'
-			);
+$vars = array(
+    'txn_id' => 'alpha',
+    'msg' => 'text',
+    'mode' => 'alpha',
+    'period' => 'alpha',
+);
 paypal_filterVars($vars, $_REQUEST);
 
 /**
@@ -414,7 +416,7 @@ $display .= COM_startBlock($LANG_PAYPAL_1['sales_history']);
 
 if (!empty($_REQUEST['msg'])) $display .= COM_showMessageText( stripslashes($_REQUEST['msg']), $LANG_PAYPAL_1['message']);
 			
-if(function_exists('PAYPAL_plot')) $display .= PAYPAL_plot();
+$display .= PAYPAL_plot(isset($_REQUEST['period']) ? $_REQUEST['period'] : '12m');
 $display .= PAYPAL_listTransactions();
 $display .= COM_endBlock();
 
