@@ -431,6 +431,7 @@ $LANG_PAYPAL_ADMIN = array(
 );
 
 $LANG_PAYPAL_CART = array(
+    'merchant_not_configured' => 'Le compte marchand PayPal n’est pas configuré. En Sandbox, utilisez l’identifiant marchand ou l’adresse e-mail confirmée du compte Business Sandbox.',
     'cart'                    => 'Votre panier',
 	'item'                    => 'article',
 	'items'                   => 'articles',
@@ -525,7 +526,7 @@ $LANG_confignames['paypal'] = array(
 	'hide_paypal_menu'           => 'Hide Paypal menu',
 	'paypal_login_required'      => 'Paypal login required',
 	'paypalURL'                  => 'Paypal url',
-	'receiverEmailAddr'          => 'Receiver email address',
+	'receiverEmailAddr'          => 'Identifiant marchand PayPal ou e-mail confirmé',
 	'currency'                   => 'Currency',
 	'anonymous_buy'              => 'Anonymous user can buy',
     'purchase_email_user'        => 'Email User upon purchase',
