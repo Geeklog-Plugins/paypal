@@ -49,7 +49,7 @@ require_once '../lib-common.php';
 paypal_access_check();
 
 /* Purchase history for anonymous users/paypal viewers doesn't make sense */
-if (!SEC_hasRights('paypal.user','paypal.admin','OR') || COM_isAnonUser() ) {
+if (!SEC_hasRights('paypal.user,paypal.admin', 'OR') || COM_isAnonUser() ) {
     $display = COM_siteHeader();
     $display .= paypal_viewer_menu();
     $display .= PAYPAL_loginRequiredForm();
