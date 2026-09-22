@@ -2831,7 +2831,8 @@ function PAYPAL_handlePurchase( $products, $quantity, $data, $names, $prices, $r
 		//Log our IPN
 		PAYPAL_Log(str_replace("'", '&rsquo;', $ipn));
 		
-		// list of product names
+        // list of product names
+        $products_list = '';
 		for ($i2 = 1; $i2 < count($products) +1; $i2++) {
 			$products_list .= '<p>' . $namelist[$i2] . '</p>';
 		}
