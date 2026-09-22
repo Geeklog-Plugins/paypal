@@ -40,7 +40,9 @@
 require_once '../../lib-common.php';
 
 // START SESSION
-session_start();
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
 
 // INITIALIZE JCART AFTER SESSION START
 $cart =& $_SESSION['jcart']; if(!is_object($cart)) $cart = new jcart();
