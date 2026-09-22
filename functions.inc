@@ -705,31 +705,36 @@ function paypal_genButton($type, $vars) {
 }
 
 /**
-*   Create a cart.
-*   Shows products in the cart.
-*
-*   @param                  $block = 1 if it's the cart block
-*   @return                 HTML for the block
-*/
-function PAYPAL_displayCart ($block = 0)
+ * Return the current shopping cart, creating it when needed.
+ *
+ * @return jcart
+ */
+function PAYPAL_getCart()
 {
-    global $_CONF, $_PAY_CONF, $jcart;
-
-	include_once ($_CONF['path'] . 'plugins/paypal/paypal.php');
-	
-    // Start session
     if (session_status() !== PHP_SESSION_ACTIVE) {
         session_start();
     }
-	
-    // Initialize jcart after session start
+
     if (!isset($_SESSION['jcart']) || !($_SESSION['jcart'] instanceof jcart)) {
         $_SESSION['jcart'] = new jcart();
     }
-    $cart =& $_SESSION['jcart'];
-	$retval = $cart->display_cart($jcart,$block);
-	
-    return $retval;
+
+    return $_SESSION['jcart'];
+}
+
+/**
+ * Render the shopping cart.
+ *
+ * @param int $block 1 when rendering the cart block
+ * @return string
+ */
+function PAYPAL_displayCart($block = 0)
+{
+    global $jcart;
+
+    $cart = PAYPAL_getCart();
+
+    return $cart->display_cart($jcart, $block);
 }
 
 /**
