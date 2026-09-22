@@ -161,8 +161,9 @@ class BaseIPN {
 		//$cert = __DIR__ . "./cacert.pem";
 		//curl_setopt($ch, CURLOPT_CAINFO, $cert);
 
-		$res = curl_exec($ch);
-		
+        $res = curl_exec($ch);
+        $verified = false;
+
 		if (curl_errno($ch) != 0) {
 		    // cURL error
 			if(DEBUG) COM_errorLog("PAYPAL-IPN: Can't connect to PayPal to validate IPN message: " . curl_error($ch));
