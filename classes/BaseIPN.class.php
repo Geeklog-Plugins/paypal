@@ -381,6 +381,59 @@ class BaseIPN {
         return true;
     }
 
+    function handleReversal($in)
+    {
+        global $_TABLES;
+
+        $sourceTxnId = '';
+        if (!empty($in['parent_txn_id'])) {
+            $sourceTxnId = (string) $in['parent_txn_id'];
+        } elseif (!empty($in['txn_id'])) {
+            $sourceTxnId = (string) $in['txn_id'];
+        }
+
+        if ($sourceTxnId === '') {
+            return false;
+        }
+
+        $safeTxnId = DB_escapeString($sourceTxnId);
+        $status = strtolower(isset($in['payment_status']) ? $in['payment_status'] : 'reversed');
+        $safeStatus = DB_escapeString($status);
+
+        DB_query(
+            "UPDATE {$_TABLES['paypal_purchases']} "
+            . "SET status = '{$safeStatus}' WHERE txn_id = '{$safeTxnId}'"
+        );
+
+        $res = DB_query(
+            "SELECT id, user_id, add_to_group "
+            . "FROM {$_TABLES['paypal_subscriptions']} "
+            . "WHERE txn_id = '{$safeTxnId}'"
+        );
+
+        while ($subscription = DB_fetchArray($res)) {
+            $userId = (int) $subscription['user_id'];
+            $groupId = (int) $subscription['add_to_group'];
+
+            if ($userId > 1 && $groupId > 1) {
+                PAYPAL_removeFromGroup($groupId, $userId, 'PAYPAL - REFUND/REVERSAL');
+            }
+        }
+
+        DB_query(
+            "UPDATE {$_TABLES['paypal_subscriptions']} "
+            . "SET status = '{$safeStatus}' WHERE txn_id = '{$safeTxnId}'"
+        );
+
+        if (DEBUG) {
+            COM_errorLog(
+                'PAYPAL-IPN: transaction ' . $sourceTxnId . ' marked ' . $status
+            );
+        }
+
+        return true;
+    }
+
     /**
      * Process an incoming IPN transaction
      *
@@ -441,9 +494,11 @@ class BaseIPN {
             $logId = $this->Log($in, true);
         }
 
+        if ($this->isStatusReversed($in['payment_status'])) {
+            return $this->handleReversal($in);
+        }
+
         if (!$this->isStatusCompleted($in['payment_status'])) {
-            // Not logged since this probably isn't an error
-            // $this->handleFailure(PAYPAL_FAILURE_COMPLETED, "PAYPAL-IPN: IPN($logId) Status not complete");
             return false;
         }
 
