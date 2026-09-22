@@ -395,20 +395,29 @@ if ($paypalMode == 'edit' && SEC_checkToken()) {
 		
 		$subject = trim($message->parse('output', 'subject'));
 
-		// if specified to mail attachment, do so, otherwise skip attachment
-		if ( (( is_numeric((int)$ipn['custom']) && (int)$ipn['custom'] != 1 &&
-				$_PAY_CONF['purchase_email_user_attach'] ) ||
-			  ( (!is_numeric((int)$ipn['custom']) || (int)$ipn['custom'] == 1) &&
-				$_PAY_CONF['purchase_email_anon_attach'] )) &&
-			  count($files) > 0  ) {
-			$message->set_var('attached_files', $LANG_PAYPAL_EMAIL['attached_files']);
-			$text = $message->parse('output', 'message');
-			paypal_mailAttachment($ipn['payer_email'], $subject, $text, $files,
-								  $_PAY_CONF['receiverEmailAddr']);
-		} else {
-			$message->set_var('attached_files', $LANG_PAYPAL_EMAIL['download_files']);
-			$text = $message->parse('output', 'message');
-            if ($sendPurchaserEmail && !empty($ipn['payer_email'])) {
+        // Attach purchased files only when both the purchaser email and the
+        // matching attachment setting are enabled.
+        $attachFiles = (
+            (!$isAnonymousPurchase && !empty($_PAY_CONF['purchase_email_user_attach']))
+            || ($isAnonymousPurchase && !empty($_PAY_CONF['purchase_email_anon_attach']))
+        ) && count($files) > 0;
+
+        $message->set_var(
+            'attached_files',
+            $attachFiles ? $LANG_PAYPAL_EMAIL['attached_files'] : $LANG_PAYPAL_EMAIL['download_files']
+        );
+        $text = $message->parse('output', 'message');
+
+        if ($sendPurchaserEmail && !empty($ipn['payer_email'])) {
+            if ($attachFiles) {
+                paypal_mailAttachment(
+                    $ipn['payer_email'],
+                    $subject,
+                    $text,
+                    $files,
+                    $_PAY_CONF['receiverEmailAddr']
+                );
+            } else {
                 COM_mail(
                     $ipn['payer_email'],
                     $subject,
@@ -416,12 +425,13 @@ if ($paypalMode == 'edit' && SEC_checkToken()) {
                     $_PAY_CONF['receiverEmailAddr'],
                     true
                 );
-                if ($_PAY_CONF['debug']) {
-                    COM_errorLog('Email was sent to ' . $ipn['payer_email']);
-                }
             }
-		}
-	}
+
+            if ($_PAY_CONF['debug']) {
+                COM_errorLog('Email was sent to ' . $ipn['payer_email']);
+            }
+        }
+
 	//Send email to receiver
 	COM_mail($_PAY_CONF['receiverEmailAddr'], $subject, $subject . ' >> ' . $text, '', true);
 	$_REQUEST['msg'] = $LANG_PAYPAL_1['order_validated'];
