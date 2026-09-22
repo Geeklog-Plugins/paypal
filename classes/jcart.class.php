@@ -236,6 +236,11 @@ class jcart {
 		}
 
 
+    function is_empty()
+        {
+        return $this->itemcount <= 0;
+        }
+
 	// EMPTY THE CART
 	function empty_cart()
 		{
@@ -488,8 +493,7 @@ class jcart {
 
 		// IF ANY ITEMS IN THE CART
 		if($this->itemcount > 0) {
-		    define("CART_EMPTY", false);
-            $categories = array();
+$categories = array();
 			// DISPLAY LINE ITEMS
 			foreach($this->get_contents() as $item) {
 				// ADD THE ITEM ID AS THE INPUT ID ATTRIBUTE
@@ -514,8 +518,7 @@ class jcart {
 		// THE CART IS EMPTY
 		else
 			{
-			define("CART_EMPTY", true);
-            $cart->set_var('empty', '<strong>' . $text['empty_message'] . '</strong>');
+$cart->set_var('empty', '<strong>' . $text['empty_message'] . '</strong>');
 			$retval .= $cart->parse('', 'cart_empty');
 			}
 
