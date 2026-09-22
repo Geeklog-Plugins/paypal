@@ -671,9 +671,11 @@ function paypal_upgrade()
             DB_query("UPDATE {$_TABLES['plugins']} SET pi_version = '$code_version', pi_gl_version = '$pi_gl_version' WHERE pi_name = 'paypal'");
 	        COM_errorLog( "Updated paypal plugin from v$currentVersion to v$code_version", 1 );
             
-            // PayPal 1.7.0: ensure Buy Now has a persisted configuration item.
+            // PayPal 1.7.0: ensure Buy Now has a persisted configuration item
+            // and migrate the historical misspelled check-payment setting.
             $c = config::get_instance();
             $paypalConfig = $c->get_config('paypal');
+
             if (!array_key_exists('enable_buy_now', $paypalConfig)) {
                 $c->add(
                     'enable_buy_now',
@@ -686,6 +688,28 @@ function paypal_upgrade()
                     true,
                     'paypal'
                 );
+            }
+
+            if (!array_key_exists('enable_pay_by_check', $paypalConfig)) {
+                $checkPaymentEnabled = array_key_exists('enable_pay_by_ckeck', $paypalConfig)
+                    ? (int) $paypalConfig['enable_pay_by_ckeck']
+                    : 0;
+
+                $c->add(
+                    'enable_pay_by_check',
+                    $checkPaymentEnabled,
+                    'select',
+                    0,
+                    0,
+                    3,
+                    70,
+                    true,
+                    'paypal'
+                );
+            }
+
+            if (array_key_exists('enable_pay_by_ckeck', $paypalConfig)) {
+                $c->del('enable_pay_by_ckeck', 'paypal');
             }
 
             // PayPal 1.7.0: IPN logs must support IPv6 addresses.
