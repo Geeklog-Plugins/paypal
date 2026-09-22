@@ -756,3 +756,62 @@
 .paypal-cart-dynamic-block--empty {
   display: none !important;
 }
+
+
+/* Checkout progress */
+.paypal-checkout-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .75rem;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  list-style: none;
+  counter-reset: paypal-checkout-step;
+}
+
+.paypal-checkout-step {
+  position: relative;
+  min-height: 3.5rem;
+  padding: .85rem 1rem .85rem 3.15rem;
+  border: 1px solid rgba(127,127,127,.22);
+  border-radius: .65rem;
+  background: rgba(127,127,127,.045);
+  line-height: 1.35;
+  opacity: .72;
+}
+
+.paypal-checkout-step::before {
+  counter-increment: paypal-checkout-step;
+  content: counter(paypal-checkout-step);
+  position: absolute;
+  top: 50%;
+  left: .85rem;
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-weight: 700;
+  transform: translateY(-50%);
+}
+
+.paypal-checkout-step.is-active {
+  opacity: 1;
+  font-weight: 700;
+  border-width: 2px;
+}
+
+.paypal-checkout-step.is-complete {
+  opacity: .9;
+}
+
+.paypal-checkout-step.is-complete::before {
+  content: "✓";
+}
+
+@media (max-width: 760px) {
+  .paypal-checkout-steps {
+    grid-template-columns: 1fr;
+  }
+}
