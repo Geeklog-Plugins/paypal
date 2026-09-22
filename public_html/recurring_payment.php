@@ -53,7 +53,9 @@ $display .= PAYPAL_siteHeader();
 
 $display .= paypal_user_menu();
 
-session_start();
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
 
 require_once ("recurring/paypalfunctions.php");
 
