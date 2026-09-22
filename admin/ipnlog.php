@@ -88,8 +88,7 @@ function PAYPAL_listIPNlog()
     $query_arr = array(
         'table'          => 'paypal_ipnlog',
         'sql'            => $sql,
-        'query_fields'   => array('id', 'ip_addr', 'time', 'verified', 'txn_id', 'ipn_data'),
-        'default_filter' => COM_getPermSQL ('AND', 0, 3)
+        'query_fields'   => array('id', 'ip_addr', 'time', 'verified', 'txn_id', 'ipn_data')
     );
 
     $retval .= ADMIN_list('paypal', 'plugin_getListField_paypal_IPNlog',
@@ -189,10 +188,13 @@ function PAYPAL_ipnlog_single($id, $txn_id) {
     $csrfTokenValue = SEC_createToken();
 
     $js = 'jQuery(document).ready(function() {
-	    jQuery(".paypal_handle_purchase").live("click", function() {
-			var action = jQuery(this).attr("class");
+	    jQuery(".paypal_handle_purchase").on("click", function() {
+			var action = "paypal_handle_purchase";
 			var ipn = jQuery(this).attr("ipn");
-			var string = \'&action=\' + action + \'&ipn=\' + ipn;
+			var string = \'action=\' + encodeURIComponent(action)
+                + \'&ipn=\' + encodeURIComponent(ipn)
+                + \'&' . rawurlencode($csrfTokenName) . '=\'
+                + encodeURIComponent(\'' . rawurlencode($csrfTokenValue) . '\');
 			if (confirm(\'' . $LANG_PAYPAL_1['confirm_handle_purchase'] . '\')) {	
 				//jQuery(this).parent().parent().fadeOut("slow");
 				jQuery.ajax({
@@ -247,8 +249,7 @@ function PAYPAL_ipnlog_single($id, $txn_id) {
     $ipnlog->set_var('gross_payment', $LANG_PAYPAL_1['gross_payment']);
     $ipnlog->set_var('payment_status_label', $LANG_PAYPAL_1['payment_status']);
 	$ipnlog->set_var('ipn_data', $LANG_PAYPAL_1['ipn_data']);
-	$ipnlog->set_var('mc_gross', $A['mc_gross']);
-	$ipnlog->set_var('mc_currency', $_PAY_CONF['currency']);
+    $ipnlog->set_var('mc_currency', $_PAY_CONF['currency']);
 	$ipnlog->set_var('txn_id', $A['txn_id']);
 	
 	// Allow all serialized data to be available to the template
@@ -287,6 +288,8 @@ function PAYPAL_ipnlog_single($id, $txn_id) {
         }
 	}
 
+    $ipnlog->set_var('mc_gross', isset($ipn['mc_gross']) ? $ipn['mc_gross'] : '');
+
     // Display the specified ipnlog row
     $ipnlog->set_var('id', $A['id']);
     $ipnlog->set_var('ip_addr', $A['ip_addr']);
@@ -319,11 +322,14 @@ function PAYPAL_ipnlog_single($id, $txn_id) {
 		if ( $input_ipn == 1 ) {
 		    //Display textarea for new IPN
 			$js2 = 'jQuery(".paypal_ipn_replace").delegate(".paypal_new_ipn","click",function() {
-							var action = jQuery(this).attr("class");
+							var action = "paypal_new_ipn";
 							var id = jQuery(this).attr("id");
 							var content = jQuery("textarea#ipn_textarea").val();
-							content = encodeURIComponent(content);
-							var string = \'&action=\' + action + \'&ipn=\' + id + \'&content=\' + content;
+							var string = \'action=\' + encodeURIComponent(action)
+                                + \'&ipn=\' + encodeURIComponent(id)
+                                + \'&content=\' + encodeURIComponent(content)
+                                + \'&' . rawurlencode($csrfTokenName) . '=\'
+                                + encodeURIComponent(\'' . rawurlencode($csrfTokenValue) . '\');
 											
 							jQuery.ajax({
 								type: "POST",
