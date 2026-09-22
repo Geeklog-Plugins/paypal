@@ -85,9 +85,15 @@ class BaseIPN {
 		// reading posted data directly from $_POST causes serialization
 		// issues with array data in POST. Reading raw POST data from input stream instead.
 
-		$raw_post_data = file_get_contents('php://input');
+        $raw_post_data = file_get_contents('php://input');
+        if (!is_string($raw_post_data) || $raw_post_data === '') {
+            return false;
+        }
+
 		$raw_post_array = explode('&', $raw_post_data);
 		$myPost = array();
+        $get_magic_quotes_exists = false;
+        $verified = false;
 		foreach ($raw_post_array as $keyval) {
 				$keyval = explode ('=', $keyval);
 				if (count($keyval) == 2)
@@ -132,10 +138,9 @@ class BaseIPN {
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
 		curl_setopt($ch, CURLOPT_FORBID_REUSE, 1);
 
-		if(DEBUG) {
-				curl_setopt($ch, CURLOPT_HEADER, 1);
-				curl_setopt($ch, CURLINFO_HEADER_OUT, 1);
-		}
+		if (DEBUG) {
+            curl_setopt($ch, CURLINFO_HEADER_OUT, 1);
+        }
 
 		// CONFIG: Optional proxy configuration
 		//curl_setopt($ch, CURLOPT_PROXY, $proxy);
@@ -167,8 +172,8 @@ class BaseIPN {
 		} else {
 			// Log the entire HTTP response if debug is switched on.
 			if(DEBUG) {
-				COM_errorLog("PAYPAL-IPN: HTTP request of validation request:". curl_getinfo($ch, CURLINFO_HEADER_OUT) ." for IPN payload: $req");
-				COM_errorLog("PAYPAL-IPN: HTTP response of validation request: $res");
+				COM_errorLog("PAYPAL-IPN: Validation request sent to " . $paypal_url);
+				COM_errorLog("PAYPAL-IPN: HTTP verification response: " . trim((string) $res));
 			}
 			
 			// Inspect IPN 
@@ -185,10 +190,9 @@ class BaseIPN {
 				$verified = false;
 				// log for manual investigation
 				// Add business logic here which deals with invalid IPN messages
-				if(DEBUG) COM_errorLog("PAYPAL-IPN: Paypal response is Invalid - IPN: " . $req);
+				if(DEBUG) COM_errorLog("PAYPAL-IPN: PayPal response is INVALID");
 			} else {
-			   if(DEBUG) COM_errorLog("PAYPAL-IPN: Paypal headers are: " . $headers);
-			   if(DEBUG) COM_errorLog("PAYPAL-IPN: Paypal response is: " . $res);
+			   if (DEBUG) COM_errorLog("PAYPAL-IPN: Unexpected PayPal verification response: " . $response);
 			}
 
 			curl_close($ch);
