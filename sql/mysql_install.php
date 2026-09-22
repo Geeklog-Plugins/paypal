@@ -37,7 +37,7 @@ if (strpos(strtolower($_SERVER['PHP_SELF']), 'mysql_install.php') !== false) {
 
 $_SQL[] = "CREATE TABLE {$_TABLES['paypal_ipnlog']} (
     id int auto_increment,
-    ip_addr varchar(15) NOT NULL,
+    ip_addr varchar(45) NOT NULL,
     time datetime NOT NULL,
     verified tinyint(1) default '0',
     txn_id varchar(255),
