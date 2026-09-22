@@ -49,16 +49,13 @@ class jcart {
 	var $itemname = array();
 	var $itemweights = array();
 
-	// CONSTRUCTOR FUNCTION
-	function cart() {}
-
 	// GET CART CONTENTS
 	function get_contents()
 		{
 		$items = array();
 		foreach($this->items as $tmp_item)
 			{
-			$item = FALSE;
+			$item = array();
 
 			$item['id'] = $tmp_item;
 			$item['qty'] = $this->itemqtys[$tmp_item];
@@ -73,7 +70,7 @@ class jcart {
 
 
 	// ADD AN ITEM
-	function add_item($item_id, $item_qty=1, $item_price, $item_name, $item_weight)
+	function add_item($item_id, $item_qty = 1, $item_price = 0, $item_name = '', $item_weight = 0)
 		{
 		// VALIDATION
 		$valid_item_qty = $valid_item_price = false;
