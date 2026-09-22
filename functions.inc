@@ -2404,33 +2404,45 @@ function PAYPAL_Breadcrumbs($id)
 
 }
 
-function PAYPAL_realId ($ids)
+function PAYPAL_parseItemIdentifier($item)
 {
-    $realids = '';
+    $item = (string) $item;
+    $parts = explode('|', $item, 2);
 
-	if (is_array($ids)) {
-	    $realids = array();
-	    foreach ($ids as $id) {
-		    $realid = COM_sanitizeID(explode("|", $id));
-			if($realid[0] != 0) {
-				$realids[] = $realid[0];
-				if ( DEBUG ) COM_errorLog('PAYPAL: Real id for item is: ' . $realid[0]);
-			} else {
-				$realids[] = $id;
-				if ( DEBUG ) COM_errorLog('PAYPAL: Real id for item is: ' . $ids);
-			}
-		}
-	} else if ($ids != '') {
-	    $realid = COM_sanitizeID(explode("|", $ids));
-		if($realid[0] != 0) {
-		    $realids = $realid[0];
-			if ( DEBUG ) COM_errorLog('PAYPAL: Real id for item is: ' . $realid[0]);
-		} else {
-		    $realids = $ids;
-			if ( DEBUG ) COM_errorLog('PAYPAL: Real id for item is: ' . $id);
-		}
-	}
-	return $realids;
+    $productId = isset($parts[0]) && ctype_digit((string) $parts[0])
+        ? (int) $parts[0]
+        : 0;
+
+    $attributes = array();
+    if (isset($parts[1]) && $parts[1] !== '') {
+        foreach (explode(',', $parts[1]) as $attributeId) {
+            if (ctype_digit((string) $attributeId) && (int) $attributeId > 0) {
+                $attributes[] = (int) $attributeId;
+            }
+        }
+    }
+
+    return array(
+        'product_id' => $productId,
+        'attributes' => array_values(array_unique($attributes)),
+    );
+}
+
+function PAYPAL_realId($ids)
+{
+    if (is_array($ids)) {
+        $realIds = array();
+        foreach ($ids as $id) {
+            $parsed = PAYPAL_parseItemIdentifier($id);
+            if ($parsed['product_id'] > 0) {
+                $realIds[] = $parsed['product_id'];
+            }
+        }
+        return $realIds;
+    }
+
+    $parsed = PAYPAL_parseItemIdentifier($ids);
+    return $parsed['product_id'];
 }
 
 function PAYPAL_productPrice ($product)
@@ -2473,10 +2485,10 @@ function PAYPAL_getStockId($item_number)
 			$stock_id[] = $item_id . $attributes;
 		}
 	} else {
-	    $realid = explode("|", $item_number);
-		$prod_id = $realid[0];
-		$item_id = DB_getItem($_TABLES['paypal_products'], 'item_id', "id='{$prod_id}'");
-		$atts = explode(",", $realid[1]);
+        $parsed = PAYPAL_parseItemIdentifier($item_number);
+        $prod_id = $parsed['product_id'];
+        $item_id = DB_getItem($_TABLES['paypal_products'], 'item_id', "id=" . (int) $prod_id);
+        $atts = $parsed['attributes'];
 
 		foreach ($atts as $att) {
 		    if ($att == '') {
