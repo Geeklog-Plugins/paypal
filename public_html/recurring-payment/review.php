@@ -67,7 +67,7 @@ if (isset($_REQUEST['token']))
 if ( $token != "" )
 {
 
-	require_once ($_CONF['path'] . 'plugins/paypal/proversion/paypalfunctions.php');
+	require_once ($_CONF['path'] . 'plugins/paypal/lib/paypal_nvp.php');
 
 	/*
 	'------------------------------------
