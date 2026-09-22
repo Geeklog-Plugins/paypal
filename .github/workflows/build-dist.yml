@@ -116,4 +116,11 @@ jobs:
           fi
 
           git commit -m 'Build PayPal 1.7.0 archive [skip ci]'
+
+          # Another commit may have reached the branch while this workflow was
+          # building the archive. Rebase the bot commit before pushing so a
+          # harmless race does not fail the workflow with a non-fast-forward.
+          git fetch origin "${GITHUB_REF_NAME}"
+          git rebase "origin/${GITHUB_REF_NAME}"
+
           git push origin HEAD:${GITHUB_REF_NAME}
