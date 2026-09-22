@@ -59,7 +59,7 @@ if ( $_PAY_CONF['view_membership'] != '1' && !SEC_hasRights('paypal.admin') ) {
 //Main
 
 $display = COM_siteHeader();
-if (SEC_hasRights('paypal.user', 'paypal.admin')) {
+if (SEC_hasRights('paypal.user,paypal.admin', 'OR')) {
     $display .= paypal_user_menu();
 } else {
     $display .= paypal_viewer_menu();
