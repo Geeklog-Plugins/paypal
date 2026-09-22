@@ -97,10 +97,7 @@ require_once ($_CONF['path'] . 'plugins/paypal/storage.php');
  /**
 *Include plugin files
 */
-$pluginfile = $_CONF['path_data'] . 'paypal_data/proversion/proversion.php';
-if (file_exists($pluginfile)) {
-    require_once $pluginfile;
-}
+require_once $_CONF['path'] . 'plugins/paypal/proversion/proversion.php';
 
 // +---------------------------------------------------------------------------+
 // | Geeklog Plugin API Implementation                                         |
@@ -1981,7 +1978,7 @@ function plugin_runScheduledTask_paypal ()
         $res = DB_query($sql);
         if ($res) {
             while ($A = DB_fetchArray($res, false)) {
-                // Send and change subscription notification Proversion
+                // Send and update subscription expiration notification
 				$level = $A['notification']+1;
 	            if ($level > 3) $level = 3;
 				if (function_exists('PAYPALPRO_notifyExpiration')) PAYPALPRO_notifyExpiration($A);
@@ -1995,8 +1992,8 @@ function plugin_runScheduledTask_paypal ()
     }
 	
 	//check paypal profile recurring payments
-	if(file_exists($_CONF['path_data'] . 'paypal_data/proversion/paypalfunctions.php')) {
-	    require_once ($_CONF['path_data'] . 'paypal_data/proversion/paypalfunctions.php');
+    if (file_exists($_CONF['path'] . 'plugins/paypal/proversion/paypalfunctions.php')) {
+        require_once $_CONF['path'] . 'plugins/paypal/proversion/paypalfunctions.php';
 		
 		//List of profile
 		$res = DB_query("SELECT * FROM {$_TABLES['paypal_recurrent']} WHERE status ='Active' OR status ='ActiveProfile' ");
