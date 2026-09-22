@@ -2776,10 +2776,17 @@ function PAYPAL_handlePurchase( $products, $quantity, $data, $names, $prices, $r
 			
 			($date == '') ? $date_sql = 'NOW()' : $date_sql = '\'' . $date . '\'';
 			
-			$sql = "INSERT INTO {$_TABLES['paypal_purchases']} SET product_id = {$realid[0]}, "
-				 . "quantity = {$quantity[$i]}, user_id = {$user_id}, "
-				 . "txn_id = '{$ipn['txn_id']}', "
-				 . 'purchase_date = ' . $date_sql . ', status = \'' . $status .'\'';
+            $safeTxnId = DB_escapeString($ipn['txn_id']);
+            $safeStatus = DB_escapeString($status);
+            $purchaseQuantity = isset($quantity[$i]) ? (int) $quantity[$i] : 1;
+            if ($purchaseQuantity < 1) {
+                $purchaseQuantity = 1;
+            }
+
+			$sql = "INSERT INTO {$_TABLES['paypal_purchases']} SET product_id = {$productId}, "
+				 . "quantity = {$purchaseQuantity}, user_id = " . (int) $user_id . ", "
+				 . "txn_id = '{$safeTxnId}', "
+				 . 'purchase_date = ' . $date_sql . ", status = '{$safeStatus}'";
 
 			DB_query($sql);
 			if (DB_error()) {
