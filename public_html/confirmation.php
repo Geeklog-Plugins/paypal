@@ -91,6 +91,7 @@ $data = array();
 
 // EMPTY THE CART
 $cart->empty_cart();
+PAYPAL_saveCart($cart);
 
 $display .= paypal_user_menu();
 
