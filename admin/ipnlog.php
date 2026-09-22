@@ -526,8 +526,7 @@ function repairSerializedArray_R(&$broken)
 
 //Main
 
-$display = COM_siteHeader('none');
-$display .= paypal_admin_menu();
+$display = paypal_admin_menu();
 
 // base output on selected opeation (op)
 switch ($_REQUEST['op']) {
@@ -543,7 +542,6 @@ switch ($_REQUEST['op']) {
         break;
 }
 
-$display .= COM_siteFooter();
-echo $display;
+echo PAYPAL_createHTMLDocument($display, $LANG_PAYPAL_1['IPN_logs']);
 
 ?>
