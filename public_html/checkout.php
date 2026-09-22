@@ -46,7 +46,7 @@ paypal_access_check('paypal.viewer');
 $display = PAYPAL_siteHeader($_PAY_CONF['seo_shop_title']);
 
 
-if (SEC_hasRights('paypal.user', 'paypal.admin')) {
+if (SEC_hasRights('paypal.user,paypal.admin', 'OR')) {
     $display .= paypal_user_menu();
 } else {
     $display .= paypal_viewer_menu();
