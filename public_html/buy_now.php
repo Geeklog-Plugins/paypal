@@ -52,7 +52,9 @@ $paypalURL = 'https://' . $_PAY_CONF['paypalURL'] . '/cgi-bin/webscr?cmd=_xclick
 $display .= PAYPAL_siteHeader();
 $display .= paypal_user_menu();
 
-session_start();
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
 $_SESSION["user_id"] = $_USER['uid'];
 $_SESSION["item_id"] = $_POST['item_number'];
 
