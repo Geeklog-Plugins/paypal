@@ -15,9 +15,19 @@ $USE_PROXY = false;
 $PROXY_HOST = '127.0.0.1';
 $PROXY_PORT = '808';
 
-$API_UserName = isset($_PAY_CONF['API_UserName']) ? $_PAY_CONF['API_UserName'] : '';
-$API_Password = isset($_PAY_CONF['API_Password']) ? $_PAY_CONF['API_Password'] : '';
-$API_Signature = isset($_PAY_CONF['API_Signature']) ? $_PAY_CONF['API_Signature'] : '';
+$API_UserName = getenv('PAYPAL_API_USERNAME');
+$API_Password = getenv('PAYPAL_API_PASSWORD');
+$API_Signature = getenv('PAYPAL_API_SIGNATURE');
+
+if ($API_UserName === false || $API_UserName === '') {
+    $API_UserName = isset($_PAY_CONF['API_UserName']) ? $_PAY_CONF['API_UserName'] : '';
+}
+if ($API_Password === false || $API_Password === '') {
+    $API_Password = isset($_PAY_CONF['API_Password']) ? $_PAY_CONF['API_Password'] : '';
+}
+if ($API_Signature === false || $API_Signature === '') {
+    $API_Signature = isset($_PAY_CONF['API_Signature']) ? $_PAY_CONF['API_Signature'] : '';
+}
 $version = '204';
 
 $sandbox = isset($_PAY_CONF['paypalURL'])
@@ -175,43 +185,6 @@ function CreateRecurringPaymentsProfile()
 function GetRecurringPaymentsProfileDetails($profileId)
 {
     return hash_call('GetRecurringPaymentsProfileDetails', '&PROFILEID=' . urlencode($profileId));
-}
-
-function DirectPayment(
-    $paymentType,
-    $paymentAmount,
-    $creditCardType,
-    $creditCardNumber,
-    $expDate,
-    $cvv2,
-    $firstName,
-    $lastName,
-    $street,
-    $city,
-    $state,
-    $zip,
-    $countryCode,
-    $currencyCode
-) {
-    $remoteAddress = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '';
-
-    $nvp = '&AMT=' . urlencode($paymentAmount)
-        . '&CURRENCYCODE=' . urlencode($currencyCode)
-        . '&PAYMENTACTION=' . urlencode($paymentType)
-        . '&CREDITCARDTYPE=' . urlencode($creditCardType)
-        . '&ACCT=' . urlencode($creditCardNumber)
-        . '&EXPDATE=' . urlencode($expDate)
-        . '&CVV2=' . urlencode($cvv2)
-        . '&FIRSTNAME=' . urlencode($firstName)
-        . '&LASTNAME=' . urlencode($lastName)
-        . '&STREET=' . urlencode($street)
-        . '&CITY=' . urlencode($city)
-        . '&STATE=' . urlencode($state)
-        . '&ZIP=' . urlencode($zip)
-        . '&COUNTRYCODE=' . urlencode($countryCode)
-        . '&IPADDRESS=' . urlencode($remoteAddress);
-
-    return hash_call('DoDirectPayment', $nvp);
 }
 
 function hash_call($methodName, $nvpStr)
