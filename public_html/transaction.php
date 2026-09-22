@@ -91,7 +91,7 @@ if ($_REQUEST['mode'] == 'print') {
 }
 
 // Allow all serialized data to be available to the template
-$ipn ='';
+$ipn = array();
 if ($A['ipn_data'] != '') {
     $out = preg_replace_callback(
         '!s:(\\d+):"(.*?)";!s',
@@ -108,6 +108,15 @@ if ($A['ipn_data'] != '') {
 		$transaction->set_var($name, $value);
 	}
 }
+
+$ipn += array(
+    'address_name' => '',
+    'address_street' => '',
+    'address_zip' => '',
+    'address_city' => '',
+    'address_country' => '',
+    'custom' => isset($A['user_id']) ? (int) $A['user_id'] : 0,
+);
 
 if ( $A['user_id'] != '' && ($_USER['uid'] != $A['user_id']) && SEC_hasRights('paypal.admin') == false) {
     COM_errorLog('Error on Paypal transaction page: User is not allowed to see transaction. Type=' . $type .  ' ID=' . $pid . ' User='. $_USER['uid'] . ' User of the transaction='. $A['user_id']);
@@ -182,13 +191,17 @@ if ($ipn['address_name'] == '' || $ipn['address_street'] == '' || $ipn['address_
 	$sql = "SELECT * FROM {$_TABLES['paypal_users']} WHERE user_id = {$ipn['custom']}";
             $res = DB_query($sql);
             $details = DB_fetchArray($res);
-    //values
-	$ipn['address_name'] = $details['user_name'];
-	$ipn['address_street'] = $details['user_street1'];
-	if ($details['user_street2'] != '') $ipn['address_street'] .= '<br/>'. $details['user_street2'];
-	$ipn['address_zip'] = $details['user_postal'];
-	$ipn['address_city'] = $details['user_city'];
-	$ipn['address_country'] = $details['user_country'];
+    if (is_array($details)) {
+        // values
+	    $ipn['address_name'] = isset($details['user_name']) ? $details['user_name'] : '';
+	    $ipn['address_street'] = isset($details['user_street1']) ? $details['user_street1'] : '';
+	    if (!empty($details['user_street2'])) {
+            $ipn['address_street'] .= '<br/>'. $details['user_street2'];
+        }
+	    $ipn['address_zip'] = isset($details['user_postal']) ? $details['user_postal'] : '';
+	    $ipn['address_city'] = isset($details['user_city']) ? $details['user_city'] : '';
+	    $ipn['address_country'] = isset($details['user_country']) ? $details['user_country'] : '';
+    }
 }
 
 $transaction->set_var('user_name', $ipn['address_name'] );
