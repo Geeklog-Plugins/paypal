@@ -185,9 +185,6 @@ switch ($_REQUEST['mode']) {
         }
 	}
 
-$display = COM_siteHeader() . $display . COM_siteFooter();
-
-
-COM_output($display);
+COM_output(PAYPAL_createHTMLDocument($display));
 
 ?>
