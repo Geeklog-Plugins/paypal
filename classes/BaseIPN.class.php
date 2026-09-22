@@ -434,11 +434,39 @@ class BaseIPN {
      * @param array $in POST variables of transaction
      * @return boolean true if processing valid and completed, false otherwise
      */
-    function Process($in) {
-	
-	    global $_PAY_CONF;
-		
-	    if(DEBUG) COM_errorLog('PAYPAL-IPN: IPN received');
+    function Process($in)
+    {
+        global $_PAY_CONF;
+
+        if (DEBUG) COM_errorLog('PAYPAL-IPN: IPN received');
+
+        if (!is_array($in)) {
+            return false;
+        }
+
+        $required = array('txn_id', 'payment_status', 'txn_type');
+        foreach ($required as $field) {
+            if (!isset($in[$field]) || trim((string) $in[$field]) === '') {
+                if (DEBUG) COM_errorLog('PAYPAL-IPN: missing required field ' . $field);
+                return false;
+            }
+        }
+
+        if (empty($in['receiver_email']) && empty($in['business'])) {
+            if (DEBUG) COM_errorLog('PAYPAL-IPN: missing receiver identity');
+            return false;
+        }
+
+        $in += array(
+            'receiver_email' => '',
+            'business' => '',
+            'mc_gross' => 0,
+            'mc_currency' => '',
+            'quantity' => 1,
+            'item_number' => '',
+            'item_name' => '',
+            'custom' => 0,
+        );
 		
         if (!$this->Verify($in)) {
             $logId = $this->Log($in, false);
@@ -464,7 +492,7 @@ class BaseIPN {
             return false;
         }
 
-        if(DEBUG) COM_errorLog('PAYPAL-IPN: Transaction type ' . $in['txn_type']);
+        if (DEBUG) COM_errorLog('PAYPAL-IPN: Transaction type ' . $in['txn_type']);
 		
 		switch ($in['txn_type']) {
             // buy now, donate, smart logos
