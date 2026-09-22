@@ -188,6 +188,36 @@ else
 			   echo COM_refresh($_PAY_CONF['site_url'] . '/informations.php?shipping=' . $shipping . '&pay_by=check');
 			   exit();
 			} else {
+                $merchantIdentity = isset($_PAY_CONF['receiverEmailAddr'])
+                    ? trim((string) $_PAY_CONF['receiverEmailAddr'])
+                    : '';
+
+                if ($merchantIdentity === '') {
+                    COM_errorLog('PayPal checkout blocked: merchant identity is not configured.');
+
+                    $message = isset($LANG_PAYPAL_CART['merchant_not_configured'])
+                        ? $LANG_PAYPAL_CART['merchant_not_configured']
+                        : 'The PayPal merchant account is not configured.';
+
+                    if (SEC_hasRights('paypal.admin')) {
+                        $message .= ' <form method="post" action="'
+                            . htmlspecialchars($_CONF['site_admin_url'] . '/configuration.php', ENT_QUOTES, 'UTF-8')
+                            . '" style="display:inline">'
+                            . '<input type="hidden" name="conf_group" value="paypal">'
+                            . '<button type="submit">'
+                            . htmlspecialchars(
+                                isset($LANG_PAYPAL_1['configuration']) ? $LANG_PAYPAL_1['configuration'] : 'Configuration',
+                                ENT_QUOTES,
+                                'UTF-8'
+                            )
+                            . '</button></form>';
+                    }
+
+                    COM_output(PAYPAL_createHTMLDocument(
+                        COM_showMessageText($message, $LANG_PAYPAL_1['error'])
+                    ));
+                    exit;
+                }
 				// PAYPAL COUNT STARTS AT ONE INSTEAD OF ZERO
 				$paypal_count = 1;
 				$items_query_string = '';
@@ -234,7 +264,7 @@ else
 				header(
                     'Location: https://' . $_PAY_CONF['paypalURL']
                     . '/cgi-bin/webscr?cmd=_cart&upload=1&business='
-                    . rawurlencode($_PAY_CONF['receiverEmailAddr'])
+                    . rawurlencode($merchantIdentity)
                     . $items_query_string
                 );
                 exit;
