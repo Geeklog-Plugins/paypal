@@ -1100,21 +1100,25 @@ if ( !file_exists($_PAY_CONF['path_images']) || !is_writable($_PAY_CONF['path_im
 							$display .= PAYPAL_getCategoryForm($_REQUEST);
 							break;
 						}
-						// prepare strings for insertion
-						$_REQUEST['category'] = addslashes($_REQUEST['category']);
-						$_REQUEST['description'] = addslashes($_REQUEST['description']);
-						$admin_group = DB_getItem($_TABLES['groups'], 'grp_id', "grp_name = 'Paypal Admin'");
+                        $categoryName = DB_escapeString($_REQUEST['category']);
+                        $description = DB_escapeString($_REQUEST['description']);
+                        $enabled = (int) $_REQUEST['enabled'];
+                        $parentId = (int) $_REQUEST['parent_id'];
+                        $groupId = (int) $_REQUEST['group_id'];
+                        $permOwner = (int) $_REQUEST['perm_owner'];
+                        $permGroup = (int) $_REQUEST['perm_group'];
+                        $permMembers = (int) $_REQUEST['perm_members'];
+                        $permAnon = (int) $_REQUEST['perm_anon'];
 
-						$sql = "cat_name = '{$_REQUEST['category']}', "
-						 . "description = '{$_REQUEST['description']}', "
-						 . "enabled = '{$_REQUEST['enabled']}', "
-						 . "parent_id = '{$_REQUEST['parent_id']}', "
-						 . "group_id = '{$_REQUEST['group_id']}', "
-						 . "perm_owner = '{$_REQUEST['perm_owner']}', "
-						 . "perm_group = '{$_REQUEST['perm_group']}', "
-						 . "perm_members = '{$_REQUEST['perm_members']}', "
-						 . "perm_anon = '{$_REQUEST['perm_anon']}'						
-						";
+						$sql = "cat_name = '{$categoryName}', "
+						 . "description = '{$description}', "
+						 . "enabled = {$enabled}, "
+						 . "parent_id = {$parentId}, "
+						 . "group_id = {$groupId}, "
+						 . "perm_owner = {$permOwner}, "
+						 . "perm_group = {$permGroup}, "
+						 . "perm_members = {$permMembers}, "
+						 . "perm_anon = {$permAnon}";
 						
 						if ( $cat_id != 0) {
 							//Edit mode 
@@ -1122,7 +1126,7 @@ if ( !file_exists($_PAY_CONF['path_images']) || !is_writable($_PAY_CONF['path_im
 								 . "WHERE cat_id = {$cat_id}";
 						} else {
 							//Create mode
-							$sql .= ", owner_id = '{$_USER['uid']}' ";
+							$sql .= ", owner_id = " . (int) $_USER['uid'];
 							$sql = "INSERT INTO {$_TABLES['paypal_categories']} SET $sql ";
 						}
 						DB_query($sql);
@@ -1197,15 +1201,15 @@ if ( !file_exists($_PAY_CONF['path_images']) || !is_writable($_PAY_CONF['path_im
 						$display .= PAYPAL_getShipperForm($_REQUEST);
 						break;
 					}
-					$shipper_service_name = addslashes($_REQUEST['shipper_service_name']);
-					$shipper_service_service = addslashes($_REQUEST['shipper_service_service']);
-					$shipper_service_description = addslashes($_REQUEST['shipper_service_description']);
-					
+                    $shipper_service_name = DB_escapeString($_REQUEST['shipper_service_name']);
+                    $shipper_service_service = DB_escapeString($_REQUEST['shipper_service_service']);
+                    $shipper_service_description = DB_escapeString($_REQUEST['shipper_service_description']);
+                    $excludeCategory = (int) $_REQUEST['shipper_service_exclude_cat'];
+
 					$sql = "shipper_service_name = '{$shipper_service_name}', "
 					 . "shipper_service_service = '{$shipper_service_service}', "
 					 . "shipper_service_description = '{$shipper_service_description}', "
-                     . "shipper_service_exclude_cat = '{$_REQUEST['shipper_service_exclude_cat']}'
-					";
+                     . "shipper_service_exclude_cat = {$excludeCategory}";
 					
 					if ( $shipper_id != 0) {
 						//Edit mode 
@@ -1260,10 +1264,12 @@ if ( !file_exists($_PAY_CONF['path_images']) || !is_writable($_PAY_CONF['path_im
 						$display .= PAYPAL_getShippingToForm($_REQUEST);
 						break;
 					}
-					if ($_REQUEST['shipping_to_order'] == '') $_REQUEST['shipping_to_order'] = 0;
-					$shipping_to_name = addslashes($_REQUEST['shipping_to_name']);
-					$sql = "shipping_to_name = '{$shipping_to_name}',
-					        shipping_to_order = {$_REQUEST['shipping_to_order']}";
+                    $shippingToOrder = $_REQUEST['shipping_to_order'] === ''
+                        ? 0
+                        : (int) $_REQUEST['shipping_to_order'];
+                    $shipping_to_name = DB_escapeString($_REQUEST['shipping_to_name']);
+					$sql = "shipping_to_name = '{$shipping_to_name}', "
+                        . "shipping_to_order = {$shippingToOrder}";
 					
 					if ( $shipping_to_id != 0) {
 						//Edit mode 
@@ -1329,11 +1335,17 @@ if ( !file_exists($_PAY_CONF['path_images']) || !is_writable($_PAY_CONF['path_im
 						break;
 					}
 
-					$sql = "shipping_shipper_id = '{$_REQUEST['shipping_shipper_id']}', "
-					    . "shipping_min = '{$shipping_min}', "
-						. "shipping_max = '{$shipping_max}', "
-						. "shipping_destination_id = '{$_REQUEST['shipping_destination_id']}', "
-						. "shipping_amt = '{$shipping_amt}'";
+                    $shippingShipperId = (int) $_REQUEST['shipping_shipper_id'];
+                    $shippingDestinationId = (int) $_REQUEST['shipping_destination_id'];
+                    $shippingMinSql = number_format((float) $shipping_min, 3, '.', '');
+                    $shippingMaxSql = number_format((float) $shipping_max, 3, '.', '');
+                    $shippingAmtSql = number_format((float) $shipping_amt, 2, '.', '');
+
+					$sql = "shipping_shipper_id = {$shippingShipperId}, "
+					    . "shipping_min = '{$shippingMinSql}', "
+						. "shipping_max = '{$shippingMaxSql}', "
+						. "shipping_destination_id = {$shippingDestinationId}, "
+						. "shipping_amt = '{$shippingAmtSql}'";
 					
 					if ( $shipping_id != 0) {
 						//Edit mode 
