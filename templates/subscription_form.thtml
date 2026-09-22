@@ -61,7 +61,7 @@
 
   <div class="paypal-form-actions">
     <button type="submit" name="mode" value="save">{save_button}</button>
-    <button type="submit" name="mode" value="delete" class="paypal-danger" data-paypal-delete="{delete_available}">{delete_button}</button>
+    {delete_button_html}
   </div>
 </form>
 {# end {templatelocation} #}
