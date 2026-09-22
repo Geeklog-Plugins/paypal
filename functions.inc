@@ -768,7 +768,7 @@ function PAYPAL_displayCart ($block = 0)
     }
 	
     // Initialize jcart after session start
-    if (!isset($_SESSION['jcart']) || !is_object($_SESSION['jcart'])) {
+    if (!isset($_SESSION['jcart']) || !($_SESSION['jcart'] instanceof jcart)) {
         $_SESSION['jcart'] = new jcart();
     }
     $cart =& $_SESSION['jcart'];
@@ -801,11 +801,11 @@ function phpblock_paypal_cart()
 {
     global $_SESSION;
 
-    if (!isset($_SESSION['jcart']) || !is_object($_SESSION['jcart'])) {
+    if (!isset($_SESSION['jcart']) || !($_SESSION['jcart'] instanceof jcart)) {
         return '';
     }
 
-    if (method_exists($_SESSION['jcart'], 'is_empty') && $_SESSION['jcart']->is_empty()) {
+    if ($_SESSION['jcart']->is_empty()) {
         return '';
     }
 
