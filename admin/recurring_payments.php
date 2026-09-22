@@ -48,9 +48,7 @@ paypal_filterVars($vars, $_REQUEST);
 
 function PAYPAL_listRecurringPayments()
 {
-    global $_CONF, $_TABLES, $LANG_PAYPAL_ADMIN, $LANG_ADMIN, $LANG_PAYPAL_1, $LANG_PAYPAL_PRO;
-
-	if(!file_exists($_CONF['path_data'] . '/paypal_data/proversion/proversion.php')) return $LANG_PAYPAL_PRO['pro_feature'];
+    global $_CONF, $_TABLES, $LANG_PAYPAL_ADMIN, $LANG_ADMIN, $LANG_PAYPAL_1;
 	
     require_once $_CONF['path_system'] . 'lib-admin.php';
 
