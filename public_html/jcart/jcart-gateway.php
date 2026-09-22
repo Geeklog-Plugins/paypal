@@ -45,7 +45,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 }
 
 // INITIALIZE JCART AFTER SESSION START
-if (!isset($_SESSION['jcart']) || !is_object($_SESSION['jcart'])) {
+if (!isset($_SESSION['jcart']) || !($_SESSION['jcart'] instanceof jcart)) {
     $_SESSION['jcart'] = new jcart();
 }
 $cart =& $_SESSION['jcart'];
