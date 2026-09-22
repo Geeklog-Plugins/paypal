@@ -27,7 +27,7 @@
 // |                                                                           |
 // +---------------------------------------------------------------------------+
 
-if (strpos(strtolower($_SERVER['PHP_SELF']), 'upgrade.php') !== false) {
+if (isset($_SERVER['PHP_SELF']) && strpos(strtolower($_SERVER['PHP_SELF']), 'upgrade.php') !== false) {
     die('This file can not be used on its own!');
 }
 
@@ -665,27 +665,15 @@ function paypal_upgrade()
             DB_query("UPDATE {$_TABLES['plugins']} SET pi_version = '$code_version', pi_gl_version = '$pi_gl_version' WHERE pi_name = 'paypal'");
 	        COM_errorLog( "Updated paypal plugin from v$currentVersion to v$code_version", 1 );
             
-            //move public_html/paypal to custom folder if needed
-            if ($_PAY_CONF['paypal_folder'] != 'paypal' && $_PAY_CONF['paypal_folder'] != '') {
-                if ( rename($_CONF['path_html'] . $_PAY_CONF['paypal_folder'],$_CONF['path_html'] . $_PAY_CONF['paypal_folder'].'_old') ) {
-                   COM_errorLog("PAYPAL - Renamed {$_PAY_CONF['paypal_folder']} folder." );
-                } else {
-                  COM_errorLog("PAYPAL - Can't rename {$_PAY_CONF['paypal_folder']} folder." );
-                }
-                sleep (5);
-                if( rename($_CONF['path_html'] . 'paypal',$_CONF['path_html'] . $_PAY_CONF['paypal_folder']) ) {
-                   COM_errorLog("PAYPAL - Moved paypal files to {$_PAY_CONF['paypal_folder']} folder." );
-                } else {
-                  COM_errorLog("PAYPAL - Can't move paypal files to {$_PAY_CONF['paypal_folder']} folder." );
-                }
-                PAYPAL_delTree($_CONF['path_html'] . $_PAY_CONF['paypal_folder'].'_old');
-            }
-            
-            /* This code is for statistics ONLY */
-            $message =  'Completed paypal plugin upgrade: ' . date('m d Y',time()) . "   AT " . date('H:i', time()) . "\n";
-            $message .= 'Site: ' . $_CONF['site_url'] . ' and Sitename: ' . $_CONF['site_name'] . "\n";
-			if (function_exists('PAYPALPRO_notifyExpiration')) $message .= 'Proversion' . "\n";
-            COM_mail("ben@geeklog.fr","Updated paypal plugin from v$currentVersion to v$code_version",$message);
+            // PayPal 1.7.0 deliberately performs no public-directory rename here.
+            // Shared plugin files may serve several Geeklog sites whose persisted
+            // plugin versions are upgraded independently.
+            COM_errorLog(
+                "PayPal upgrade completed for this site from v$currentVersion to v$code_version. "
+                . "No shared public files were renamed or deleted.",
+                1
+            );
+
     }
 	
     return true;
