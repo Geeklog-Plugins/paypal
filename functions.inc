@@ -1994,28 +1994,32 @@ function plugin_runScheduledTask_paypal ()
 	//check paypal profile recurring payments
     require_once $_CONF['path'] . 'plugins/paypal/proversion/paypalfunctions.php';
 
-    {
-		
-		//List of profile
-		$res = DB_query("SELECT * FROM {$_TABLES['paypal_recurrent']} WHERE status ='Active' OR status ='ActiveProfile' ");
-		while ( $A = DB_fetchArray($res) ) {
-			COM_errorLog("PAYPAL - RECURRING PAYMENT {$A['profileid']} Status: '{$A['status']}' - '{$profileDetails['STATUS']}' for user ID:  {$A['user_id']} - group: {$A['group_id']}" );
-			$profileid = $A['profileid'];
-			
-			$profileDetails = GetRecurringPaymentsProfileDetails ( $profileid );
-			
-			if ( ($profileDetails['STATUS'] != $A['status']) && ($profileDetails['STATUS'] != '') ) {
-			    DB_query("UPDATE {$_TABLES['paypal_recurrent']} SET status ='{$profileDetails['STATUS']}' WHERE profileid='{$profileid}' ");
-				COM_errorLog("PAYPAL - RECURRING PAYMENT {$A['profileid']} Status change from '{$A['status']}' to '{$profileDetails['STATUS']}' for user ID:  {$A['user_id']} remove from group: {$A['group_id']}" );
-				if ($profileDetails['STATUS'] != 'Active') {
-                    //remove user from group
-					PAYPAL_removeFromGroup ($A['group_id'], $A['user_id'], 'PAYPAL - RECURRING PAYMENT');
-				}
-			} else {
-			    COM_errorLog("PAYPAL - RECURRING PAYMENT {$A['profileid']} Status '{$A['status']}' checked for user ID:  {$A['user_id']}");
-			}
-		}
-	}
+    // List and refresh recurring payment profiles.
+    $res = DB_query("SELECT * FROM {$_TABLES['paypal_recurrent']} WHERE status ='Active' OR status ='ActiveProfile'");
+    while ($A = DB_fetchArray($res)) {
+        $profileid = isset($A['profileid']) ? $A['profileid'] : '';
+        $profileDetails = GetRecurringPaymentsProfileDetails($profileid);
+        $remoteStatus = isset($profileDetails['STATUS']) ? $profileDetails['STATUS'] : '';
+
+        if ($remoteStatus !== '' && $remoteStatus != $A['status']) {
+            $safeStatus = DB_escapeString($remoteStatus);
+            DB_query("UPDATE {$_TABLES['paypal_recurrent']} SET status ='{$safeStatus}' WHERE profileid='" . DB_escapeString($profileid) . "'");
+
+            COM_errorLog(
+                "PAYPAL - RECURRING PAYMENT {$profileid} Status change from '{$A['status']}' "
+                . "to '{$remoteStatus}' for user ID: {$A['user_id']} group: {$A['group_id']}"
+            );
+
+            if ($remoteStatus !== 'Active' && $remoteStatus !== 'ActiveProfile') {
+                PAYPAL_removeFromGroup($A['group_id'], $A['user_id'], 'PAYPAL - RECURRING PAYMENT');
+            }
+        } else {
+            COM_errorLog(
+                "PAYPAL - RECURRING PAYMENT {$profileid} Status '{$A['status']}' checked "
+                . "for user ID: {$A['user_id']}"
+            );
+        }
+    }
 }
 
 function PAYPAL_addsubscription ($membership, $data) 
