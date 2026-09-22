@@ -484,6 +484,11 @@ class BaseIPN {
             'custom' => 0,
             'mc_shipping' => 0,
             'mc_handling' => 0,
+            'num_cart_items' => 0,
+            'exchange_rate' => 0,
+            'settle_currency' => '',
+            'settle_amount' => '',
+            'payment_gross' => isset($in['mc_gross']) ? $in['mc_gross'] : 0,
         );
 		
         if (!$this->Verify($in)) {
@@ -523,9 +528,12 @@ class BaseIPN {
                     $ids = array($in['item_number']);
                     $quantity = array($in['quantity']);
 					$name = array($in['item_name']);
-                    if (isset($in['settle_amount'])) {
-                        $payment_gross = $in['mc_gross'] * $in['exchange_rate'];
-                        $currency      = $in['settle_currency'];
+                    if ($in['settle_amount'] !== ''
+                        && (float) $in['exchange_rate'] > 0
+                        && $in['settle_currency'] !== ''
+                    ) {
+                        $payment_gross = (float) $in['mc_gross'] * (float) $in['exchange_rate'];
+                        $currency = $in['settle_currency'];
                     } else {
                         $payment_gross = $in['mc_gross'];
                         $currency      = $in['mc_currency'];
@@ -554,23 +562,57 @@ class BaseIPN {
                 $quantity = array();
                 $names = array();
                 
-				if ( $in['num_cart_items'] > 0 ) {
-					for ($i = 1; $i <= $in['num_cart_items']; $i++) {
-						if(DEBUG) COM_errorLog('PAYPAL-IPN: Cart case item: ' . $in["item_number$i"]);
-						$ids[] = $in["item_number$i"];
-						$quantity[] = $in["quantity$i"];
-						$names[] = $in["item_name$i"];
-					}
-				} else {
-				    if(DEBUG) COM_errorLog('PAYPAL-IPN: Cart case item: ' . $in['item_number1']);
-					$ids[] = $in['item_number1'];
-                    $quantity[] = $in['quantity1'];
-					$name[] = $in['item_name1'];
-				}
+                $cartItemCount = (int) $in['num_cart_items'];
+                if ($cartItemCount > 0) {
+                    for ($i = 1; $i <= $cartItemCount; $i++) {
+                        $itemNumber = isset($in["item_number{$i}"]) ? $in["item_number{$i}"] : '';
+                        $itemQuantity = isset($in["quantity{$i}"]) ? (int) $in["quantity{$i}"] : 0;
+                        $itemName = isset($in["item_name{$i}"]) ? $in["item_name{$i}"] : '';
+
+                        if ($itemNumber === '' || $itemQuantity <= 0) {
+                            $this->handleFailure(
+                                PAYPAL_FAILURE_UNKNOWN,
+                                "($logId) Incomplete cart item {$i}"
+                            );
+                            return false;
+                        }
+
+                        if (DEBUG) {
+                            COM_errorLog('PAYPAL-IPN: Cart case item: ' . $itemNumber);
+                        }
+
+                        $ids[] = $itemNumber;
+                        $quantity[] = $itemQuantity;
+                        $names[] = $itemName;
+                    }
+                } else {
+                    $itemNumber = isset($in['item_number1']) ? $in['item_number1'] : '';
+                    $itemQuantity = isset($in['quantity1']) ? (int) $in['quantity1'] : 0;
+                    $itemName = isset($in['item_name1']) ? $in['item_name1'] : '';
+
+                    if ($itemNumber === '' || $itemQuantity <= 0) {
+                        $this->handleFailure(
+                            PAYPAL_FAILURE_UNKNOWN,
+                            "($logId) Cart IPN contains no valid items"
+                        );
+                        return false;
+                    }
+
+                    if (DEBUG) {
+                        COM_errorLog('PAYPAL-IPN: Cart case item: ' . $itemNumber);
+                    }
+
+                    $ids[] = $itemNumber;
+                    $quantity[] = $itemQuantity;
+                    $names[] = $itemName;
+                }
 				
-                if (isset($in['settle_amount'])) {
-                    $payment_gross = $in['mc_gross'] * $in['exchange_rate'];
-                    $currency      = $in['settle_currency'];
+                if ($in['settle_amount'] !== ''
+                    && (float) $in['exchange_rate'] > 0
+                    && $in['settle_currency'] !== ''
+                ) {
+                    $payment_gross = (float) $in['mc_gross'] * (float) $in['exchange_rate'];
+                    $currency = $in['settle_currency'];
                 } else {
                     $payment_gross = $in['mc_gross'];
                     $currency      = $in['mc_currency'];
