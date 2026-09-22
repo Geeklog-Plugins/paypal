@@ -358,6 +358,28 @@ function plugin_pluginstatechange_paypal($type, $status)
 }
 
 /**
+ * Render a complete Geeklog document.
+ *
+ * COM_createHTMLDocument() is available in the supported Geeklog range and is
+ * the required rendering path in Geeklog 2.2.x where COM_siteHeader() and
+ * COM_siteFooter() no longer exist.
+ *
+ * @param string $content
+ * @param string $pagetitle
+ * @return string
+ */
+function PAYPAL_createHTMLDocument($content, $pagetitle = '')
+{
+    $options = array();
+
+    if ($pagetitle !== '') {
+        $options['pagetitle'] = $pagetitle;
+    }
+
+    return COM_createHTMLDocument($content, $options);
+}
+
+/**
  * Checks to see if the user has sufficient rights to view the page
  *
  * Check if the current user has rights (at least one of) specified by $rights.  If not log the
@@ -373,23 +395,22 @@ function paypal_access_check ($rights = 'paypal.viewer')
 
     // Confirm that the user has sufficient rights to access this page
     if ($_USER['uid'] < 2 && $_PAY_CONF['paypal_login_required'] == 1) {
-        $display = COM_siteHeader();
-		if (SEC_hasRights('paypal.user', 'paypal.admin')) {
+        $display = '';
+        if (SEC_hasRights('paypal.user,paypal.admin', 'OR')) {
             $display .= paypal_user_menu();
         } else {
             $display .= paypal_viewer_menu();
         }
         $display .= SEC_loginRequiredForm();
-        $display .= COM_siteFooter(1);
-        COM_output($display);
+        COM_output(PAYPAL_createHTMLDocument($display));
         exit;
     }
 	
 	// Confirm that the user has sufficient rights to access this page
 	$features = explode(",",(SEC_getUserPermissions()));
     if ( !in_array($rights, $features) ) {
-        $display = COM_siteHeader();
-			if (SEC_hasRights('paypal.user', 'paypal.admin')) {
+        $display = '';
+        if (SEC_hasRights('paypal.user,paypal.admin', 'OR')) {
             $display .= paypal_user_menu();
         } else {
             $display .= paypal_viewer_menu();
@@ -397,10 +418,9 @@ function paypal_access_check ($rights = 'paypal.viewer')
         $display .= COM_startBlock($LANG_PAYPAL_1['access_denied']);
         $display .= $LANG_PAYPAL_1['access_denied_message'];
         $display .= COM_endBlock();
-        $display .= COM_siteFooter(1);
         COM_accessLog("Unauthorized user {$_USER['username']} from IP {$_SERVER['REMOTE_ADDR']} "
                     . 'attempted to access the paypal plugin at ' . $_SERVER['REQUEST_URI']);
-        COM_output($display);
+        COM_output(PAYPAL_createHTMLDocument($display, $LANG_PAYPAL_1['access_denied']));
         exit;
     }
 }
