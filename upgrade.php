@@ -118,14 +118,14 @@ function paypal_upgrade()
             product_id int NOT NULL,
             file varchar(255),
             PRIMARY KEY (id)
-	        ) ENGINE=MyISAM
+	        ) ENGINE=InnoDB
 	        ",1);
 			DB_query("CREATE TABLE {$_TABLES['paypal_images']} (
             pi_pid varchar(40) NOT NULL,
             pi_img_num tinyint(2) unsigned NOT NULL,
             pi_filename varchar(128) NOT NULL,
             PRIMARY KEY (pi_pid,pi_img_num)
-	        ) ENGINE=MyISAM
+	        ) ENGINE=InnoDB
 	        ",1);
 			DB_query("ALTER TABLE {$_TABLES['paypal_products']}
             DROP small_pic, 
@@ -172,7 +172,7 @@ function paypal_upgrade()
             add_to_group int(5) default NULL,
             notification tinyint(1) unsigned NOT NULL default '0',
             PRIMARY KEY  (id)
-	        ) ENGINE=MyISAM
+	        ) ENGINE=InnoDB
 	        ");
 			DB_query("ALTER TABLE {$_TABLES['paypal_products']}
 		    ADD type varchar(15) default 'product' AFTER id,
@@ -212,7 +212,7 @@ function paypal_upgrade()
 	        user_fax varchar(20) default NULL,
             status tinyint(1) DEFAULT '0',
             PRIMARY KEY (user_id)
-            ) ENGINE=MyISAM
+            ) ENGINE=InnoDB
             ");
 		
 			$c->add('fs_checkoutpage', NULL, 'fieldset', 1, 10, NULL, 0, true, 'paypal');
@@ -312,7 +312,7 @@ function paypal_upgrade()
 			perm_members tinyint(1) unsigned NOT NULL default '2',
 			perm_anon tinyint(1) unsigned NOT NULL default '2',
 			PRIMARY KEY  (cat_id)
-			) ENGINE=MyISAM
+			) ENGINE=InnoDB
 			");
 			
 			DB_query("ALTER TABLE {$_TABLES['paypal_products']} 
@@ -327,10 +327,10 @@ function paypal_upgrade()
 				COM_errorLog("Could not retrieve old categories");
 				return 1;
 			}
-			$admin_group = addslashes(DB_getItem($_TABLES['groups'], 'grp_id', "grp_name = 'Paypal Admin'"));
+			$admin_group = (int) DB_getItem($_TABLES['groups'], 'grp_id', "grp_name = 'Paypal Admin'");
 			if (DB_numRows($res) > 0) {
 				while ($A = DB_fetchArray($res, false)) {
-				    $category = addslashes($A['category']);
+				    $category = DB_escapeString($A['category']);
 					DB_query("INSERT INTO {$_TABLES['paypal_categories']}
 							(cat_name, group_id, owner_id)
 						VALUES ('{$category}','{$admin_group}',{$_USER['uid']})");
@@ -403,7 +403,7 @@ function paypal_upgrade()
 			at_price decimal(12,2) default '0',
 			at_image varchar(255) default NULL,
 			PRIMARY KEY (at_id)
-			) ENGINE=MyISAM
+			) ENGINE=InnoDB
 			");
 			
 			DB_query("CREATE TABLE {$_TABLES['paypal_attribute_type']} (
@@ -411,7 +411,7 @@ function paypal_upgrade()
 			at_tname varchar(255),
 			at_torder tinyint(3) default NULL,
 			PRIMARY KEY (at_tid)
-			) ENGINE=MyISAM
+			) ENGINE=InnoDB
 			");
 			
 			DB_query("CREATE TABLE {$_TABLES['paypal_product_attribute']} (
@@ -419,7 +419,7 @@ function paypal_upgrade()
 			pa_pid int(11),
 			pa_aid int(11),
 			PRIMARY KEY (pa_id)
-			) ENGINE=MyISAM
+			) ENGINE=InnoDB
 			");
 			
 			DB_query("CREATE TABLE {$_TABLES['paypal_stock']} (
@@ -429,7 +429,7 @@ function paypal_upgrade()
 			qmax int(6) default NULL,
 			qmin int(6) default NULL,
 			PRIMARY KEY (st_id)
-			) ENGINE=MyISAM
+			) ENGINE=InnoDB
 			");
 			
 			DB_query("CREATE TABLE {$_TABLES['paypal_delivery']} (
@@ -438,7 +438,7 @@ function paypal_upgrade()
 			user_id mediumint(8),
 			provider_id mediumint(8),
 			PRIMARY KEY  (did)
-			) ENGINE=MyISAM
+			) ENGINE=InnoDB
 			");
 			
 			DB_query("CREATE TABLE {$_TABLES['paypal_stock_movements']} (
@@ -447,14 +447,14 @@ function paypal_upgrade()
 			stock_id varchar(255) NOT NULL,
 			deli_id mediumint(8) NOT NULL,
 			PRIMARY KEY (mid)
-			) ENGINE=MyISAM
+			) ENGINE=InnoDB
 			");
 			
 			DB_query("CREATE TABLE {$_TABLES['paypal_providers']} (
 			prov_id mediumint(8) NOT NULL auto_increment,
 			prov_name VARCHAR(80)  NOT NULL,
 			PRIMARY KEY (prov_id)
-			) ENGINE=MyISAM
+			) ENGINE=InnoDB
 			");
 			
 		case '1.3.4' :
@@ -572,14 +572,14 @@ function paypal_upgrade()
 				shipper_service_service varchar(255) NOT NULL,
 				shipper_service_description text,
 				PRIMARY KEY  (shipper_service_id) 
-			) ENGINE=MyISAM
+			) ENGINE=InnoDB
 			");
 
 			DB_query("CREATE TABLE {$_TABLES['paypal_shipping_to']} (
 				shipping_to_id int(11) NOT NULL auto_increment,
 				shipping_to_name varchar(255) NOT NULL,
 				PRIMARY KEY  (shipping_to_id) 
-			) ENGINE=MyISAM
+			) ENGINE=InnoDB
 			");
 
 			DB_query("CREATE TABLE {$_TABLES['paypal_shipping_cost']} (
@@ -590,7 +590,7 @@ function paypal_upgrade()
 				shipping_destination_id int(11) NOT NULL,
 				shipping_amt FLOAT (6,2) NOT NULL DEFAULT '0.00',
 				PRIMARY KEY  (shipping_id) 
-			) ENGINE=MyISAM
+			) ENGINE=InnoDB
 			");
 		case '1.3.16' :
             $c = config::get_instance();		    
@@ -640,7 +640,7 @@ function paypal_upgrade()
                 recdate datetime NOT NULL,
                 status varchar(20),
                 PRIMARY KEY (rid) 
-            ) ENGINE=MyISAM
+            ) ENGINE=InnoDB
             ");
 		case '1.5.2' :
 		    DB_query("ALTER TABLE {$_TABLES['paypal_recurrent']}
