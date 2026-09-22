@@ -455,3 +455,90 @@
     padding: .5rem;
   }
 }
+
+
+/* Product detail */
+.paypal-product-detail {
+  margin: 1.25rem 0;
+}
+
+.paypal-product-detail__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.paypal-product-detail__header h1 {
+  margin: 0;
+}
+
+.paypal-product-detail__layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 360px) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.paypal-product-detail__media img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border-radius: .7rem;
+}
+
+.paypal-product-detail__content {
+  display: flex;
+  flex-direction: column;
+  gap: .9rem;
+}
+
+.paypal-product-detail__intro {
+  font-size: 1.02rem;
+  line-height: 1.55;
+}
+
+.paypal-product-detail__price {
+  font-size: 1.15rem;
+}
+
+.paypal-product-detail__price strong {
+  font-size: 1.35rem;
+}
+
+.paypal-product-detail__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .55rem;
+  align-items: center;
+}
+
+.paypal-product-detail__description {
+  line-height: 1.65;
+}
+
+.paypal-product-detail__options {
+  display: grid;
+  gap: .75rem;
+}
+
+.paypal-product-detail__rating,
+.paypal-product-detail__reviews {
+  margin-top: .5rem;
+}
+
+@media (max-width: 760px) {
+  .paypal-product-detail__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .paypal-product-detail__header {
+    display: block;
+  }
+
+  .paypal-product-detail__edit {
+    margin-top: .5rem;
+  }
+}
