@@ -1,6 +1,6 @@
 # Changelog
 
-- Integrated the former Pro-version feature set into the standard plugin: product attributes, attribute types, manual subscriptions, expiration notifications, recurring-payment NVP helpers, and sales statistics.
+- Integrated the extended feature set directly into the standard plugin: product attributes, attribute types, manual subscriptions, expiration notifications, recurring-payment NVP helpers, and sales statistics.
 
 ## 1.7.0 — in development
 
