@@ -147,6 +147,8 @@ function plugin_compatible_with_this_version_paypal($pi_name)
     return true;
 }
 
+require_once __DIR__ . '/storage.php';
+
 function plugin_postinstall_paypal($pi_name)
 {
     global $_TABLES, $_CONF, $_USER;
@@ -180,6 +182,12 @@ function plugin_postinstall_paypal($pi_name)
         }
     }
 	
+    // Create persistent image/download storage used by the plugin.
+    $storageFailures = PAYPAL_ensureStorageDirectories(true);
+    if (!empty($storageFailures)) {
+        COM_errorLog('PayPal: installation completed but some storage directories could not be prepared.');
+    }
+
     // Create the plugin download log without making installation fatal.
     $paypalLog = rtrim($_CONF['path_log'], "/\\") . DIRECTORY_SEPARATOR . 'paypal_downloads.log';
     if (!file_exists($paypalLog)) {
