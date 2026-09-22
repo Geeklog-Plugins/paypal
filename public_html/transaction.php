@@ -43,7 +43,7 @@ $type = $_REQUEST['type']; //purchase or subscription
 // Ensure sufficient privs to read this page
 //if (($_USER['uid'] < 2) && ($_PAY_CONF['anonymous_buy'] == 0)) {
 if ($_USER['uid'] < 2 ) {
-    $display .= COM_siteHeader();
+    $display = '';
 	if (SEC_hasRights('paypal.user,paypal.admin', 'OR')) {
         $display .= paypal_user_menu();
     } else {
@@ -52,8 +52,7 @@ if ($_USER['uid'] < 2 ) {
     $display .= COM_startBlock($LANG_PAYPAL_1['access_reserved']);
     $display .= $LANG_PAYPAL_1['you_must_log_in'];
     $display .= COM_endBlock();
-    $display .= COM_siteFooter();
-    COM_output($display);
+    COM_output(PAYPAL_createHTMLDocument($display, $LANG_PAYPAL_1['access_reserved']));
     exit;
 }
 
@@ -84,7 +83,7 @@ $A = DB_fetchArray($res, false);
 
 $purchase_status = $A['status'];
 
-$transaction = new Template($_CONF['path'] . 'plugins/paypal/templates/transaction');
+$transaction = COM_newTemplate($_CONF['path'] . 'plugins/paypal/templates/transaction');
 if ($_REQUEST['mode'] == 'print') {
     $transaction->set_file(array('transaction' => 'print_' . $type . '.thtml'));
 } else {
@@ -94,8 +93,14 @@ if ($_REQUEST['mode'] == 'print') {
 // Allow all serialized data to be available to the template
 $ipn ='';
 if ($A['ipn_data'] != '') {
-	$out = preg_replace('!s:(\d+):"(.*?)";!se', "'s:'.strlen('$2').':\"$2\";'", $A['ipn_data'] ); 
-	$ipn = unserialize($out);
+    $out = preg_replace_callback(
+        '!s:(\\d+):"(.*?)";!s',
+        function ($matches) {
+            return 's:' . strlen($matches[2]) . ':"' . $matches[2] . '";';
+        },
+        $A['ipn_data']
+    );
+    $ipn = @unserialize($out);
 	if (!is_array($ipn)) {
 		$ipn = array();
 	}
@@ -112,7 +117,7 @@ if ( $A['user_id'] != '' && ($_USER['uid'] != $A['user_id']) && SEC_hasRights('p
 
 //Log-In to access
 if (($_USER['uid'] < 2) && ($A['logged'] == 1)) {
-    $display .= COM_siteHeader();
+    $display = '';
 	if (SEC_hasRights('paypal.user,paypal.admin', 'OR')) {
         $display .= paypal_user_menu();
     } else {
@@ -121,8 +126,7 @@ if (($_USER['uid'] < 2) && ($A['logged'] == 1)) {
     $display .= COM_startBlock($LANG_PAYPAL_1['access_reserved']);
     $display .= $LANG_PAYPAL_1['you_must_log_in'];
     $display .= COM_endBlock();
-    $display .= COM_siteFooter();
-    COM_output($display);
+    COM_output(PAYPAL_createHTMLDocument($display, $LANG_PAYPAL_1['access_reserved']));
     exit;
 }
 
@@ -348,7 +352,7 @@ $content = $transaction->finish($transaction->get_var('output'));
 if ($_REQUEST['mode'] == 'print') {
     $display = $content;
 } else {
-    $display = COM_siteHeader();
+    $display = '';
     if (SEC_hasRights('paypal.user,paypal.admin', 'OR')) {
         $display .= paypal_user_menu();
     } else {
@@ -357,7 +361,7 @@ if ($_REQUEST['mode'] == 'print') {
     $display .= COM_startBlock();
     $display .= $content;
     $display .= COM_endBlock();
-    $display .= COM_siteFooter();
+    $display = PAYPAL_createHTMLDocument($display);
 }
 
 COM_output($display);
