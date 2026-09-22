@@ -48,6 +48,9 @@ require_once '../lib-common.php';
 /* Ensure sufficient privs to read this page */
 paypal_access_check();
 
+$vars = array('msg' => 'text');
+paypal_filterVars($vars, $_REQUEST);
+
 /* Purchase history for anonymous users/paypal viewers doesn't make sense */
 if (!SEC_hasRights('paypal.user,paypal.admin', 'OR') || COM_isAnonUser() ) {
     $display = paypal_viewer_menu();
