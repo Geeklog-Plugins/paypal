@@ -600,12 +600,31 @@ class BaseIPN {
 			$qty = $quantity[$i];
 			PAYPAL_stockMovement ($stock_id, $oldids[$i], -$qty);
         }
+
+        $paypal_data += array(
+            'address_name' => '',
+            'first_name' => '',
+            'last_name' => '',
+            'address_street' => '',
+            'address_zip' => '',
+            'address_city' => '',
+            'address_country' => '',
+            'payer_email' => '',
+            'payment_gross' => '',
+            'tax' => '',
+            'mc_shipping' => '',
+            'mc_handling' => '',
+            'payment_date' => '',
+        );
 		
 		// Update user details if empty user_id, user_name, user_contact, user_proid, user_street1, user_street2, user_postal, user_city, user_country, user_phone1, user_phone2, user_fax, status
 		$fields = array('user_name' => $paypal_data['address_name'], 'user_contact' => $paypal_data['first_name'] . ' ' . $paypal_data['last_name'], 'user_street1' => $paypal_data['address_street'], 'user_postal' => $paypal_data['address_zip'], 'user_city' => $paypal_data['address_city'], 'user_country' => $paypal_data['address_country']);
 		
 		if ( is_numeric((int)$paypal_data['custom']) && (int)$paypal_data['custom'] != 1 ) PAYPAL_updateUserDetails ((int)$paypal_data['custom'], $fields, true);
 		
+        $subject = '';
+        $text = '';
+
 		// Send the purchaser a confirmation email (if set to do so in config)
         if ( ( is_numeric((int)$paypal_data['custom']) && (int)$paypal_data['custom'] != 1 &&
                $_PAY_CONF['purchase_email_user'] ) ||
@@ -668,8 +687,16 @@ class BaseIPN {
             }
 			if(DEBUG) COM_errorLog('PAYPAL-IPN: Email was sent');
         }
-		//Send email to receiver
-        COM_mail($_PAY_CONF['receiverEmailAddr'], $subject, $subject . ' >> ' . $text, $_PAY_CONF['receiverEmailAddr'], true);
+        // Send the merchant copy only when a receipt was built.
+        if ($subject !== '' && $text !== '' && !empty($_PAY_CONF['receiverEmailAddr'])) {
+            COM_mail(
+                $_PAY_CONF['receiverEmailAddr'],
+                $subject,
+                $subject . ' >> ' . $text,
+                $_PAY_CONF['receiverEmailAddr'],
+                true
+            );
+        }
 
 		//Subscription
 		if ($A['type'] == 'subscription') {
