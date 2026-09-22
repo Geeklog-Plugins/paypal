@@ -62,6 +62,7 @@ if (!in_array('paypal', $_PLUGINS)) {
 paypal_access_check('paypal.viewer');
 
 $vars = array('msg'      => 'text',
+              'mode'     => 'alpha',
               'page'     => 'number',
               'category' => 'number',
 			  'type'     => 'text',
@@ -71,6 +72,8 @@ paypal_filterVars($vars, $_REQUEST);
 
 
 //Main
+
+$display = '';
 
 if ($_REQUEST['n'] == '') {
     $display .= PAYPAL_siteHeader($_PAY_CONF['seo_shop_title']);
