@@ -734,8 +734,13 @@ function paypal_admin_menu() {
  * @param array &$arr reference to associative array of variable name => value
  */
 function paypal_filterVars($vars, &$arr) {
-    // cycle through each variable applying the appropriate filter
+    // Normalize optional request variables before filtering. PHP 8 reports
+    // undefined array keys where older PHP versions silently returned NULL.
     foreach ($vars as $var => $type) {
+        if (!isset($arr[$var])) {
+            $arr[$var] = '';
+        }
+
         switch ($type) {
             case 'number':
                 $arr[$var] = COM_applyFilter($arr[$var], true);
