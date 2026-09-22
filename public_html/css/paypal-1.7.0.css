@@ -584,13 +584,26 @@
 }
 
 
-/* Admin quick actions */
-.paypal-admin-quick-links {
+/* Admin navigation */
+.paypal-admin-nav {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 1rem;
+}
+
+.paypal-admin-nav__links {
   display: flex;
   flex-wrap: wrap;
-  gap: .6rem;
+  gap: .3rem;
   align-items: center;
-  margin: 0 0 1rem;
+  min-width: 0;
+}
+
+.paypal-admin-nav__config {
+  flex: 0 0 auto;
+  margin: 0 0 0 auto;
 }
 
 .paypal-admin-button {
@@ -603,6 +616,7 @@
   border-radius: .45rem;
   text-decoration: none;
   font-weight: 600;
+  cursor: pointer;
 }
 
 .paypal-admin-button:hover {
@@ -613,7 +627,13 @@
   font-weight: 700;
 }
 
+@media (max-width: 760px) {
+  .paypal-admin-nav {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 
-.paypal-admin-config-form {
-  margin: 0;
+  .paypal-admin-nav__config {
+    margin-left: 0;
+  }
 }
