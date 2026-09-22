@@ -80,6 +80,12 @@ switch ($_REQUEST['mode']) {
 			}
             $res = DB_query($sql);
             $A = DB_fetchArray($res);
+            if (!is_array($A)) {
+                $A = array();
+            }
+            if (!isset($A['user_id'])) {
+                $A['user_id'] = '';
+            }
 			if ($A['user_id'] == '' && SEC_hasRights('paypal.admin')) {
 			    $A['user_id'] = $_REQUEST['uid'];
 			}
@@ -173,6 +179,12 @@ switch ($_REQUEST['mode']) {
             $sql = "SELECT * FROM {$_TABLES['paypal_users']} WHERE user_id = {$_USER['uid']}";
             $res = DB_query($sql);
             $A = DB_fetchArray($res);
+            if (!is_array($A)) {
+                $A = array();
+            }
+            if (!isset($A['user_id'])) {
+                $A['user_id'] = '';
+            }
 			if ($A['user_id'] == '' && SEC_hasRights('paypal.admin')) {
 			    $A['user_id'] = $_REQUEST['uid'];
 			}
