@@ -101,6 +101,7 @@ if ($_PAY_CONF['paypal_login_required'] == 1) paypal_access_check('paypal.user')
  */
 function PAYPAL_handleView($url, $product)
 {
+    $retval = '';
     global $_CONF, $_TABLES, $_USER, $LANG_ACCESS, $LANG_RATING;
 
     $rt_id = COM_applyFilter ('paypal_' . $product, false);
