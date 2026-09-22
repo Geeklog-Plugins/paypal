@@ -108,3 +108,8 @@ requests:
 - #2 — category/cart listing behavior: specification required before coding.
 - #3 — PHP fatal `break` outside loop/switch: fixed in the 1.7.0 stabilization
   branch.
+
+## Integrated extended features
+
+- Integrated the former Pro-version feature set into the standard plugin: product attributes, attribute types, manual subscriptions, expiration notifications, recurring-payment NVP helpers, and sales statistics.
+The `PAYPALPRO_*` function names are retained only as an internal compatibility contract; no separate Pro package is required.
