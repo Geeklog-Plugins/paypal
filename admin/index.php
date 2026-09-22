@@ -1051,11 +1051,6 @@ PAYPAL_ensureStorageDirectories(true);
 if ( !file_exists($_PAY_CONF['path_images']) || !is_writable($_PAY_CONF['path_images']) ) {
     $display .= COM_showMessageText( '>> '. $_PAY_CONF['path_images'] . '<p>' . $LANG_PAYPAL_1['image_not_writable'] . '</p>');
 } else {
-    // check jquery plugin
-    if (!in_array('jquery', $_PLUGINS)) {
-        $display .= '<p>'. $LANG_PAYPAL_1['install_jquery'] . ' >> <a href="http://geeklog.fr/wiki/plugins:jquery" target="_blank">jQuery plugin</a></p>';
-    }
-
     switch ($_REQUEST['mode']) {
 	    case 'categories':
 			switch ($_REQUEST['op']) {
@@ -1354,17 +1349,7 @@ if ( !file_exists($_PAY_CONF['path_images']) || !is_writable($_PAY_CONF['path_im
 			break;
 			
 		default : 
-			$configuration = " <a href=\"#\" onclick=\"document.paypal_conf_link.submit()\">{$LANG_PAYPAL_1['online']}</a>
-            <form name='paypal_conf_link' action='{$_CONF['site_admin_url']}/configuration.php' method='POST'>
-            <input type='hidden' name='conf_group' value='paypal'></form>";
-            
-            $display .= '<img src="' . $_PAY_CONF['site_url'] . '/images/paypal.gif" alt="" align="left" hspace="10">' 
-			 . $LANG_PAYPAL_1['plugin_doc'] . ' <a href="http://geeklog.fr/downloads/index.php/paypal" target="_blank">'. $LANG_PAYPAL_1['online']
-			 . '</a>. '
-			 . $LANG_PAYPAL_1['plugin_conf'] . $configuration;
-             
-			 
-			$display .= '<div style="clear:both;">&nbsp;</div>' . COM_startBlock($LANG_PAYPAL_1['products_list']);
+            $display .= '<div style="clear:both;">&nbsp;</div>' . COM_startBlock($LANG_PAYPAL_1['products_list']);
 			
             $attributesmenu = PAYPALPRO_attributesMenu();
             $attributetypesmenu = PAYPALPRO_attributeTypesMenu();
