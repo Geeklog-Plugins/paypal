@@ -30,7 +30,15 @@
 
 - Added Geeklog CSRF tokens to product save/delete operations.
 - Replaced manual pending-order validation by a CSRF-protected POST operation.
-- Escaped the transaction identifier used by the touched manual validation SQL.
+- Added CSRF enforcement to active PayPal admin AJAX mutations and IPN
+  repair/reprocess actions.
+- Escaped transaction identifiers used by manual validation and IPN admin paths.
+- Replaced the remaining admin `preg_replace /e` serialized-IPN repair path
+  with PHP 7/8-compatible callback handling.
+- Hardened IPN cart parsing so incomplete item sets are rejected without PHP
+  warnings.
+- Kept server-side validation of receiver identity, currency, current prices,
+  enabled attributes and allowed shipping amounts before fulfillment.
 
 ### Interoperability
 
@@ -44,6 +52,19 @@
 - Added the bounded, read-only `dashboard_summary` service for Eclipse.
 - Kept purchases, IPN payloads, customer details and credentials outside the
   generic Agent/Hub content surface.
+
+### Configuration and storefront
+
+- Audited configured settings and wired previously ineffective menu label,
+  menu visibility and block-layout options.
+- Corrected anonymous vs authenticated purchase-email behavior and attachment
+  handling.
+- Added persisted `enable_buy_now` configuration.
+- Migrated the misspelled `enable_pay_by_ckeck` key to
+  `enable_pay_by_check` while preserving existing values.
+- Removed the duplicated inline cart from the product catalog and made
+  add-to-cart resilient with and without JavaScript.
+- Simplified and normalized the PayPal templates and form heading hierarchy.
 
 ### Documentation
 
