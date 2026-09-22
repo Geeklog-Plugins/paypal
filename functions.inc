@@ -2465,6 +2465,116 @@ function PAYPAL_productPrice ($product)
 	return number_format($price, 2, '.', '');
 }
 
+function PAYPAL_getCartShippingContext($items)
+{
+    global $_TABLES;
+
+    $weight = 0.0;
+    $categories = array();
+
+    if (!is_array($items)) {
+        return array('weight' => 0.0, 'categories' => array());
+    }
+
+    foreach ($items as $item) {
+        if (!is_array($item) || empty($item['id'])) {
+            continue;
+        }
+
+        $parsed = PAYPAL_parseItemIdentifier($item['id']);
+        $productId = (int) $parsed['product_id'];
+        $quantity = isset($item['qty']) ? max(1, (int) $item['qty']) : 1;
+
+        if ($productId <= 0) {
+            continue;
+        }
+
+        $res = DB_query(
+            "SELECT cat_id, shipping_type, weight "
+            . "FROM {$_TABLES['paypal_products']} "
+            . "WHERE id = {$productId} LIMIT 1"
+        );
+        $product = DB_fetchArray($res);
+
+        if (!is_array($product)) {
+            continue;
+        }
+
+        if (!empty($product['cat_id'])) {
+            $categories[] = (int) $product['cat_id'];
+        }
+
+        if ((int) $product['shipping_type'] !== 0) {
+            $weight += ((float) $product['weight']) * $quantity;
+        }
+    }
+
+    return array(
+        'weight' => round($weight, 3),
+        'categories' => array_values(array_unique($categories)),
+    );
+}
+
+function PAYPAL_getAllowedShippingRates($weight, $categories = array())
+{
+    global $_TABLES;
+
+    $weight = max(0, (float) $weight);
+    $categories = array_map('intval', is_array($categories) ? $categories : array());
+
+    if ($weight <= 0) {
+        return array();
+    }
+
+    $weightSql = number_format($weight, 3, '.', '');
+
+    $sql = "SELECT sc.*, ss.shipper_service_name, ss.shipper_service_service, "
+        . "ss.shipper_service_exclude_cat, st.shipping_to_name, st.shipping_to_order "
+        . "FROM {$_TABLES['paypal_shipping_cost']} AS sc "
+        . "LEFT JOIN {$_TABLES['paypal_shipper_service']} AS ss "
+        . "ON sc.shipping_shipper_id = ss.shipper_service_id "
+        . "LEFT JOIN {$_TABLES['paypal_shipping_to']} AS st "
+        . "ON sc.shipping_destination_id = st.shipping_to_id "
+        . "WHERE {$weightSql} >= sc.shipping_min "
+        . "AND {$weightSql} <= sc.shipping_max "
+        . "ORDER BY st.shipping_to_order, sc.shipping_amt ASC";
+
+    $res = DB_query($sql);
+    $rates = array();
+
+    while ($rate = DB_fetchArray($res)) {
+        $excludedCategory = isset($rate['shipper_service_exclude_cat'])
+            ? (int) $rate['shipper_service_exclude_cat']
+            : 0;
+
+        if ($excludedCategory > 0 && in_array($excludedCategory, $categories, true)) {
+            continue;
+        }
+
+        $rates[] = $rate;
+    }
+
+    return $rates;
+}
+
+function PAYPAL_isAllowedShippingAmount($amount, $weight, $categories = array())
+{
+    $amount = round((float) $amount, 2);
+    $rates = PAYPAL_getAllowedShippingRates($weight, $categories);
+
+    if (empty($rates)) {
+        return abs($amount) < 0.005;
+    }
+
+    foreach ($rates as $rate) {
+        if (abs($amount - round((float) $rate['shipping_amt'], 2)) < 0.005) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 function PAYPAL_getStockId($item_number)
 {
     global $_TABLES;
