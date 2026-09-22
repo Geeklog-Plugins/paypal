@@ -846,7 +846,7 @@ if (( $A['price'] > 0 && ($_USER['uid'] < 2 && $_PAY_CONF['anonymous_buy'] == 0)
                                . "?id={$A['id']}\">" . $LANG_PAYPAL_1['Download'] . "</a>");
 } else if ($A['customisable'] == 1) {
     /*Customisable product*/
-	$product->set_var('attributes', PAYPALPRO_displayCustomAttributes($A['id']));
+	$product->set_var('attributes', PAYPAL_displayCustomAttributes($A['id']));
     $product->set_var('customisable', $product->parse('output', 'custom'));
 }  else if ($A['type'] == 'recurrent') {
 	//Recurrent
