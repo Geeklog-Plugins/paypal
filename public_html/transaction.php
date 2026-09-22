@@ -116,6 +116,15 @@ $ipn += array(
     'address_city' => '',
     'address_country' => '',
     'custom' => isset($A['user_id']) ? (int) $A['user_id'] : 0,
+    'txn_id' => isset($A['txn_id']) ? (string) $A['txn_id'] : '',
+    'payment_type' => '',
+    'mc_gross' => isset($A['price']) ? $A['price'] : 0,
+    'mc_handling' => 0,
+    'mc_shipping' => 0,
+    'quantity' => isset($A['quantity']) ? $A['quantity'] : 1,
+    'quantity0' => '',
+    'quantity1' => '',
+    'item_name1' => isset($A['name']) ? $A['name'] : '',
 );
 
 if ( $A['user_id'] != '' && ($_USER['uid'] != $A['user_id']) && SEC_hasRights('paypal.admin') == false) {
@@ -246,8 +255,11 @@ if ($purchase_status == 'complete' || $purchase_status == '') {
 $transaction->set_var('receipt', $LANG_PAYPAL_1['transaction'] . ': ' . $ipn['txn_id']);
 
 //Todo implement payment_type on purchase
-if ($ipn['payment_type'] != '') {
-    $transaction->set_var('payment_type', $LANG_PAYPAL_1['by'] . ' ' . $LANG_PAYPAL_PAYMENT[$ipn['payment_type']]);
+if ($ipn['payment_type'] !== '') {
+    $paymentTypeLabel = isset($LANG_PAYPAL_PAYMENT[$ipn['payment_type']])
+        ? $LANG_PAYPAL_PAYMENT[$ipn['payment_type']]
+        : $ipn['payment_type'];
+    $transaction->set_var('payment_type', $LANG_PAYPAL_1['by'] . ' ' . $paymentTypeLabel);
 } else {
     $transaction->set_var('payment_type', '');
 }
