@@ -217,7 +217,9 @@ if ($purchase_status == 'complete' || $purchase_status == '') {
         $transaction->set_var(
             'edit',
             '<form method="post" action="' . $_CONF['site_admin_url'] . '/plugins/paypal/purchase_history.php" '
-            . 'onsubmit="return confirm(\'' . addslashes($LANG_PAYPAL_1['confirm_edit_status']) . '\');">'
+            . 'onsubmit="return confirm('
+            . htmlspecialchars(json_encode($LANG_PAYPAL_1['confirm_edit_status']), ENT_QUOTES, 'UTF-8')
+            . ');">'
             . '<input type="hidden" name="mode" value="edit"' . XHTML . '>'
             . '<input type="hidden" name="txn_id" value="' . $safeTxnId . '"' . XHTML . '>'
             . '<input type="hidden" name="' . CSRF_TOKEN . '" value="' . SEC_createToken() . '"' . XHTML . '>'
