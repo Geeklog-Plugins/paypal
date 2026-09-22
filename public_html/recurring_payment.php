@@ -55,7 +55,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-require_once $_CONF['path'] . 'plugins/paypal/proversion/paypalfunctions.php';
+require_once $_CONF['path'] . 'plugins/paypal/lib/paypal_nvp.php';
 
 // ==================================
 // PayPal Express Checkout Module
