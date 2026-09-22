@@ -533,13 +533,21 @@ class BaseIPN {
         for ($i = 0; $i < count($products); $i++) {
 		    if(DEBUG) COM_errorLog('PAYPAL-IPN: Product id:' . $products[$i]);
             // grab relevant product data from product table to insert into purchase table.
-            $sql = "SELECT * FROM {$_TABLES['paypal_products']} "
-                 . "WHERE id = '{$products[$i]}'";
+            $productId = isset($products[$i]) ? (int) $products[$i] : 0;
+            if ($productId <= 0) {
+                continue;
+            }
+
+            $sql = "SELECT * FROM {$_TABLES['paypal_products']} WHERE id = {$productId}";
             $res = DB_query($sql);
             $A = DB_fetchArray($res);
-			if(DEBUG) COM_errorLog('PAYPAL-IPN: Type: ' . $A['type']);
-            if ($A['download'] > 0) {
-                $files[] = $_PAY_CONF['download_path'] . $A['file'];
+
+            if (!is_array($A) || empty($A['id'])) {
+                continue;
+            }
+
+            if ((int) $A['product_type'] === 1 && !empty($A['file'])) {
+                $files[] = $_PAY_CONF['download_path'] . basename($A['file']);
             }
 			
 			//TODO + attribute name
