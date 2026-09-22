@@ -337,62 +337,85 @@ class BaseIPN {
      * @param string $currency Currency of funds in payment_gross
      * @return boolean true if funds are sufficient, false otherwise
      */
-    function isSufficientFunds($ids, $quantity, $payment_gross, $currency) {
-        global $_CONF, $_PAY_CONF, $_TABLES;
-		
-		$real_ids = PAYPAL_realId($ids);
-		
-		if ( empty($ids) || empty($real_ids) ) {
-		    if(DEBUG)COM_errorLog('PAYPAL-IPN: ids of the items is empty: ' . $ids . ' | ' . $real_ids);
-			return false;
-		}
-		
+    function isSufficientFunds($ids, $quantity, $payment_gross, $currency)
+    {
+        global $_PAY_CONF, $_TABLES;
 
-        // Check currency
-        if (!(isset($_PAY_CONF['currency']) && strcasecmp($_PAY_CONF['currency'], $currency) == 0)) {
-		    if(DEBUG) COM_errorLog('PAYPAL-IPN: Currency is not ok');
+        if (!is_array($ids) || empty($ids) || !is_array($quantity)) {
             return false;
         }
 
-        // Create a list of ids from $real_ids
-        (is_array($real_ids)) ? $idlist = "'" . implode("','", $real_ids) . "'" : $idlist = "'" . $real_ids . "'";
-
-        // Create/execute query string
-		if ($idlist == '') {
-		   if(DEBUG) COM_errorLog('PAYPAL-IPN: List of ids items is empty');
-		    return false;
-		}
-        $sql = "SELECT * FROM {$_TABLES['paypal_products']} WHERE id in ($idlist)";
-        $res = DB_query($sql);
-
-        // Create a price lookup table
-		//TODO add attribute price
-        while ($A = DB_fetchArray($res)) {
-		    $price = $A['price'];
-			if ($A['discount_a'] != '' && $A['discount_a'] != 0) {
-				$price = number_format($A['price'] - $A['discount_a'], 2, '.', '');
-			}
-			if ($A['discount_p'] != '' && $A['discount_p'] != 0) {
-				$price = number_format($A['price'] - ($A['price'] * ($A['discount_p']/100)), 2, '.', '');
-			}
-            $cost[$A['id']] = $price;
-        }
-
-        // calculate the total purchase price
-        $total = 0;
-        for ($i = 0; $i < count($ids); $i++) {
-            $total += $cost[$ids[$i]] * $quantity[$i];
-        }
-
-        // Compare total price to gross payment
-        if ($total <= $payment_gross) {
-		    if(DEBUG) COM_errorLog('PAYPAL-IPN: Funds are sufficient');
-            return true;
-        } else {
-		    if(DEBUG) COM_errorLog('PAYPAL-IPN: Funds are not sufficient');
-            //Todo send a mail to admin
+        if (!isset($_PAY_CONF['currency'])
+            || strcasecmp((string) $_PAY_CONF['currency'], (string) $currency) !== 0) {
+            if (DEBUG) COM_errorLog('PAYPAL-IPN: Currency mismatch');
             return false;
         }
+
+        $expected = 0.0;
+
+        foreach ($ids as $index => $rawId) {
+            $parsed = PAYPAL_parseItemIdentifier($rawId);
+            $productId = $parsed['product_id'];
+            $qty = isset($quantity[$index]) ? (int) $quantity[$index] : 0;
+
+            if ($productId <= 0 || $qty <= 0) {
+                return false;
+            }
+
+            $res = DB_query(
+                "SELECT id, price, discount_a, discount_p, active "
+                . "FROM {$_TABLES['paypal_products']} WHERE id = " . (int) $productId
+            );
+            $product = DB_fetchArray($res);
+
+            if (!is_array($product) || empty($product['id']) || (int) $product['active'] !== 1) {
+                return false;
+            }
+
+            $unitPrice = (float) PAYPAL_productPrice($product);
+
+            if (!empty($parsed['attributes'])) {
+                $attributeIds = array_map('intval', $parsed['attributes']);
+                $idList = implode(',', $attributeIds);
+
+                $attributeResult = DB_query(
+                    "SELECT at.at_id, at.at_price "
+                    . "FROM {$_TABLES['paypal_product_attribute']} pa "
+                    . "INNER JOIN {$_TABLES['paypal_attributes']} at ON at.at_id = pa.pa_aid "
+                    . "WHERE pa.pa_pid = " . (int) $productId
+                    . " AND at.at_enabled = 1 AND at.at_id IN ({$idList})"
+                );
+
+                $validAttributes = 0;
+                while ($attribute = DB_fetchArray($attributeResult)) {
+                    $unitPrice += (float) $attribute['at_price'];
+                    ++$validAttributes;
+                }
+
+                if ($validAttributes !== count($attributeIds)) {
+                    if (DEBUG) COM_errorLog('PAYPAL-IPN: Invalid product attribute selection');
+                    return false;
+                }
+            }
+
+            $expected += $unitPrice * $qty;
+        }
+
+        // Allow only a one-cent rounding tolerance.
+        $paid = round((float) $payment_gross, 2);
+        $expected = round($expected, 2);
+
+        if (($paid + 0.01) < $expected) {
+            if (DEBUG) {
+                COM_errorLog(
+                    'PAYPAL-IPN: Insufficient funds. Expected ' . $expected
+                    . ' ' . $_PAY_CONF['currency'] . ', received ' . $paid
+                );
+            }
+            return false;
+        }
+
+        return true;
     }
 
     /**
