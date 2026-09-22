@@ -1040,9 +1040,7 @@ $shipper_id = $_REQUEST['shipper_service_id'];
 $shipping_to_id = $_REQUEST['shipping_to_id'];
 $shipping_id = $_REQUEST['shipping_id'];
 
-$display = COM_siteHeader('none');
-
-$display .= paypal_admin_menu();
+$display = paypal_admin_menu();
 
 if (!empty($_REQUEST['msg'])) $display .= PAYPAL_message($_REQUEST['msg']);
 
@@ -1394,8 +1392,6 @@ if ( !file_exists($_PAY_CONF['path_images']) || !is_writable($_PAY_CONF['path_im
     } 
 }
 
-$display .= COM_siteFooter();
-
-COM_output($display);
+COM_output(PAYPAL_createHTMLDocument($display, $LANG_PAYPAL_ADMIN['products']));
 
 ?>
