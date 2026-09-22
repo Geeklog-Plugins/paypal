@@ -44,6 +44,12 @@ $_PAY_CONF['images_at_url']  = $_CONF['site_url'] . '/'. substr($_CONF['path_ima
 
 if (!isset($_PAY_CONF['enable_buy_now'])) $_PAY_CONF['enable_buy_now'] = 0;
 
+if (!isset($_PAY_CONF['enable_pay_by_check'])) {
+    $_PAY_CONF['enable_pay_by_check'] = isset($_PAY_CONF['enable_pay_by_ckeck'])
+        ? (int) $_PAY_CONF['enable_pay_by_ckeck']
+        : 0;
+}
+
 
 /**
  * Paypal plugin table(s)
