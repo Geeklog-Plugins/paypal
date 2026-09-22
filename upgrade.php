@@ -712,6 +712,32 @@ function paypal_upgrade()
                 $c->del('enable_pay_by_ckeck', 'paypal');
             }
 
+            // PayPal 1.7.0: add dynamic Geeklog block settings.
+            $dynamicBlockSettings = array(
+                'cart_block_enabled' => array(1, 'select', 3, 60),
+                'cart_block_isleft' => array(0, 'select', 3, 61),
+                'cart_block_order' => array(50, 'text', 0, 62),
+                'random_block_enabled' => array(1, 'select', 3, 65),
+                'random_block_isleft' => array(0, 'select', 3, 66),
+                'random_block_order' => array(60, 'text', 0, 67),
+            );
+            $paypalConfig = $c->get_config('paypal');
+            foreach ($dynamicBlockSettings as $name => $definition) {
+                if (!array_key_exists($name, $paypalConfig)) {
+                    $c->add(
+                        $name,
+                        $definition[0],
+                        $definition[1],
+                        1,
+                        8,
+                        $definition[2],
+                        $definition[3],
+                        true,
+                        'paypal'
+                    );
+                }
+            }
+
             // PayPal 1.7.0: IPN logs must support IPv6 addresses.
             DB_query("ALTER TABLE {$_TABLES['paypal_ipnlog']} MODIFY ip_addr varchar(45) NOT NULL");
 
