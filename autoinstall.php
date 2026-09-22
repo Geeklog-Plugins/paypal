@@ -134,7 +134,13 @@ function plugin_compatible_with_this_version_paypal($pi_name)
         return false;
     }
 
-    // add checks here
+    if (version_compare(VERSION, '2.1.1', '<')) {
+        return false;
+    }
+
+    if (version_compare(PHP_VERSION, '5.6.0', '<')) {
+        return false;
+    }
 
     return true;
 }
@@ -147,9 +153,12 @@ function plugin_postinstall_paypal($pi_name)
     $groups['Paypal User']   = 'Users in this group can purchase products';
     $groups['Paypal Viewer'] = 'Users in this group can view products';	
 
-    // Groups assignment mapping (note: group -> group, not user -> group) 
-    $grp_assign['Paypal User']   = array(13); // 13 is the Logged-in Users group
-    $grp_assign['Paypal Viewer'] = array(2);  // 2 is the All Users group
+    // Resolve Geeklog core groups by name instead of relying on installation-specific IDs.
+    $loggedInGroup = (int) DB_getItem($_TABLES['groups'], 'grp_id', "grp_name = 'Logged-in Users'");
+    $allUsersGroup = (int) DB_getItem($_TABLES['groups'], 'grp_id', "grp_name = 'All Users'");
+
+    $grp_assign['Paypal User'] = $loggedInGroup > 0 ? array($loggedInGroup) : array();
+    $grp_assign['Paypal Viewer'] = $allUsersGroup > 0 ? array($allUsersGroup) : array()
 	
      // Assign created paypal groups to other (logical) groups
     foreach ($grp_assign as $group => $grparray) {
