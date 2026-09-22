@@ -586,16 +586,17 @@
 
 /* Admin navigation */
 .paypal-admin-nav {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  display: flex !important;
+  flex-flow: row nowrap !important;
   gap: 1rem;
-  align-items: center;
+  align-items: center !important;
   width: 100%;
   margin: 0 0 1rem;
 }
 
 .paypal-admin-nav__links {
   display: flex;
+  flex: 1 1 auto;
   flex-wrap: wrap;
   gap: .3rem;
   align-items: center;
@@ -603,12 +604,15 @@
 }
 
 .paypal-admin-nav__config {
-  display: block;
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
   width: auto !important;
+  max-width: none !important;
   min-width: 0;
-  margin: 0 !important;
+  margin: 0 0 0 auto !important;
   padding: 0 !important;
-  justify-self: end;
+  float: none !important;
+  clear: none !important;
   align-self: center;
 }
 
@@ -635,12 +639,16 @@
 
 @media (max-width: 760px) {
   .paypal-admin-nav {
-    grid-template-columns: 1fr;
-    align-items: start;
+    flex-wrap: wrap !important;
+    align-items: flex-start !important;
+  }
+
+  .paypal-admin-nav__links {
+    flex-basis: 100%;
   }
 
   .paypal-admin-nav__config {
-    justify-self: start;
+    margin-left: 0 !important;
   }
 }
 
