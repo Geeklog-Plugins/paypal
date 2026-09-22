@@ -176,6 +176,8 @@ $_PAY_DEFAULT['random_block_order'] = 60;
 * @return   boolean     true: success; false: an error occurred
 *
 */
+require_once __DIR__ . '/lib/configuration.php';
+
 function plugin_initconfig_paypal()
 {
     global $_CONF, $_PAY_DEFAULT, $LANG_PAYPAL_1;
@@ -322,7 +324,7 @@ function plugin_initconfig_paypal()
 		
     }				
 
-    return true;
+    return PAYPAL_applyConfigTabs();
 }
 
 ?>
