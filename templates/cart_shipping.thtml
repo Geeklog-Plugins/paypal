@@ -1,8 +1,10 @@
 {# begin {templatelocation} #}
 
-		<div id="shipping_cart">
-        <p class="paypal-form-row">{choose_shipping}</p>
-        {shipping_radio_buttons}
-		</div>
+<div id="shipping_cart" class="paypal-checkout-section paypal-checkout-shipping">
+  <h2 class="paypal-checkout-section__title">{choose_shipping}</h2>
+  <div class="paypal-shipping-options">
+    {shipping_radio_buttons}
+  </div>
+</div>
 
 {# end {templatelocation} #}
