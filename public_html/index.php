@@ -90,7 +90,9 @@ if (SEC_hasRights('paypal.user,paypal.admin', 'OR')) {
 switch ($_REQUEST['mode']) {
     case 'endTransaction':
 	    // START SESSION
-        session_start();
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
 		// INITIALIZE JCART AFTER SESSION START
 		$cart =& $_SESSION['jcart']; 
 		if(!is_object($cart)) $cart = new jcart();
