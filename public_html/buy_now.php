@@ -63,7 +63,7 @@ $A = DB_fetchArray(DB_query("SELECT * FROM {$_TABLES['paypal_products']} WHERE i
 
 if ($A['type'] == 'recurrent') {
 
-	require_once ($_CONF['path'] . 'plugins/paypal/proversion/paypalfunctions.php');
+	require_once ($_CONF['path'] . 'plugins/paypal/lib/paypal_nvp.php');
 
 	$_SESSION["group_id"] = $A['add_to_group'];
 	$_SESSION["Payment_Amount"] = PAYPAL_productPrice ($A);
