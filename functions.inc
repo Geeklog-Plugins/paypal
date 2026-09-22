@@ -302,41 +302,6 @@ function paypal_access_check ($rights = 'paypal.viewer')
 }
 
 /**
-*   Get the site header, with or without left blocks according to config.
-*
-*   @see    function COM_siteHeader()
-*   @param  string  $title  Optional text for the title bar
-*   @param  string  $meta   Optional additional meta text
-*   @return string          HTML for site header
-*/
-function PAYPAL_siteHeader($pagetitle = '')
-{
-    // Legacy compatibility helper retained for third-party callers.
-    // Modernized PayPal pages render complete documents with
-    // PAYPAL_createHTMLDocument().
-    if (function_exists('COM_siteHeader')) {
-        return call_user_func('COM_siteHeader', 'none', $pagetitle);
-    }
-
-    return '';
-}
-
-/**
-*   Get the site footer, with or without right blocks according to config.
-*
-*   @see    function COM_siteFooter()
-*   @return string      HTML for site footer
-*/
-function PAYPAL_siteFooter()
-{
-    if (function_exists('COM_siteFooter')) {
-        return call_user_func('COM_siteFooter');
-    }
-
-    return '';
-}
-
-/**
  * Returns viewer menu display
  *
  * Generates the viewer menu from the template and returns the result as a string of HTML
@@ -1324,7 +1289,7 @@ function plugin_dopluginsearch_paypal($query, $datestart, $dateend, $topic, $typ
     global $_TABLES, $_PAY_CONF, $LANG_PAYPAL_1;
 
     // Make sure the query is SQL safe
-    $query = trim(addslashes($query));
+    $query = DB_escapeString(trim($query));
 
     $sql = "SELECT id, name as title, price, pi_filename, short_description  as description, UNIX_TIMESTAMP() AS date, owner_id AS uid, hits, ";
     $sql .= "CONCAT('/{$_PAY_CONF['paypal_folder']}/product_detail.php?product=', id) AS url ";
