@@ -51,6 +51,77 @@ function PAYPAL_NVP_responseValue($response, $key, $default = '')
     return is_array($response) && isset($response[$key]) ? $response[$key] : $default;
 }
 
+function PAYPAL_prepareRecurringSession($product, $userId)
+{
+    global $_PAY_CONF;
+
+    if (!is_array($product)
+        || empty($product['id'])
+        || $product['type'] !== 'recurrent'
+        || (int) $product['active'] !== 1) {
+        return false;
+    }
+
+    $period = isset($product['duration_type']) ? $product['duration_type'] : '';
+    $frequency = isset($product['duration']) ? (int) $product['duration'] : 0;
+    $limits = array(
+        'Day' => 365,
+        'Week' => 52,
+        'SemiMonth' => 1,
+        'Month' => 12,
+        'Year' => 1,
+    );
+
+    if (!isset($limits[$period])
+        || $frequency < 1
+        || $frequency > $limits[$period]) {
+        return false;
+    }
+
+    $billingAmount = isset($product['billingamt']) ? (float) $product['billingamt'] : -1;
+    $initialAmount = (float) PAYPAL_productPrice($product);
+
+    if ($billingAmount < 0 || $initialAmount < 0) {
+        return false;
+    }
+
+    $_SESSION['user_id'] = (int) $userId;
+    $_SESSION['item_id'] = (int) $product['id'];
+    $_SESSION['group_id'] = isset($product['add_to_group']) ? (int) $product['add_to_group'] : 0;
+    $_SESSION['Payment_Amount'] = number_format($initialAmount, 2, '.', '');
+    $_SESSION['BILLINGDESCRIPTION'] = isset($product['name']) ? $product['name'] : '';
+    $_SESSION['BILLINGPERIOD'] = $period;
+    $_SESSION['BILLINGFREQUENCY'] = $frequency;
+    $_SESSION['BILLINGAMT'] = number_format($billingAmount, 2, '.', '');
+    $_SESSION['currencyCodeType'] = $_PAY_CONF['currency'];
+    $_SESSION['paymentType'] = 'Sale';
+
+    return true;
+}
+
+function PAYPAL_beginRecurringCheckout($product, $userId)
+{
+    global $_PAY_CONF;
+
+    if (!PAYPAL_prepareRecurringSession($product, $userId)) {
+        return array(
+            'ACK' => 'Failure',
+            'L_LONGMESSAGE0' => 'Invalid recurring product configuration.',
+        );
+    }
+
+    $returnURL = $_PAY_CONF['site_url'] . '/recurring-payment/review.php';
+    $cancelURL = $_PAY_CONF['site_url'] . '/index.php?mode=cancel';
+
+    return CallShortcutExpressCheckout(
+        $_SESSION['Payment_Amount'],
+        $_SESSION['currencyCodeType'],
+        $_SESSION['paymentType'],
+        $returnURL,
+        $cancelURL
+    );
+}
+
 function CallShortcutExpressCheckout($paymentAmount, $currencyCodeType, $paymentType, $returnURL, $cancelURL)
 {
     $nvp = '&AMT=' . urlencode($paymentAmount)
@@ -244,7 +315,6 @@ function hash_call($methodName, $nvpStr)
 
     curl_close($ch);
 
-    $_SESSION['nvpReqArray'] = deformatNVP($request);
     return deformatNVP($response);
 }
 
