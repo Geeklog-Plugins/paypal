@@ -81,11 +81,7 @@ $_PAY_CONF['allowedextensions'] = array (
     'gz'   => 'application/x-gzip-compressed',
     'zip'  => 'application/x-zip-compresseed',
     'tar'  => 'application/x-tar',
-    'php'  => 'text/plain',
-    'phps' => 'text/plain',
     'txt'  => 'text/plain',
-    'html' => 'text/html',
-    'htm'  => 'text/html',
     'bmp'  => 'image/bmp',
     'ico'  => 'image/bmp',
     'gif'  => 'image/gif',
@@ -95,10 +91,8 @@ $_PAY_CONF['allowedextensions'] = array (
     'mp3'  => 'audio/mpeg',
     'wav'  => 'audio/wav',
     'pdf'  => 'application/pdf',
-    'swf'  => 'application/x-shockwave-flash',
     'doc'  => 'application/msword',
-    'xls'  => 'application/vnd.ms-excel',
-    'exe'  => 'application/octet-stream'
+    'xls'  => 'application/vnd.ms-excel'
 );
 
  $_PAY_CONF['download_path'] = $_CONF['path_data'] . 'private/paypal/files/';
