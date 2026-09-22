@@ -22,6 +22,22 @@ legacy payment flow.
   collections, URL resolution and lifecycle events.
 - Generic Eclipse administration integration through
   `dashboard.summary`.
+- Dedicated cart/checkout flow: the catalog no longer embeds a full cart,
+  add-to-cart works with AJAX and has a non-JavaScript fallback to checkout.
+- Configuration audit completed for menu visibility/label, block layout,
+  anonymous/user purchase emails and Buy Now.
+- Historical `enable_pay_by_ckeck` configuration is migrated to
+  `enable_pay_by_check`.
+- IPN administration no longer relies on `preg_replace /e`, includes CSRF
+  protection for repair/reprocess actions, and safely handles incomplete
+  serialized payloads.
+- IPN processing now rejects incomplete cart notifications cleanly and validates
+  configured receiver, currency, current product prices, enabled attributes and
+  allowed shipping before fulfillment.
+- Legacy transaction/history views now guard optional IPN fields to avoid PHP 8
+  warnings.
+- Technical admin lists no longer apply content permission SQL to tables that
+  do not contain Geeklog permission columns.
 
 ## Interoperability contract
 
@@ -45,8 +61,13 @@ intentionally not exposed through the generic content contract.
 
 ## Upgrade behavior
 
-The database plugin version is updated normally, but 1.7.0 no longer renames or
-deletes the plugin's shared public directory during an individual site upgrade.
+The database plugin version is updated normally. Existing
+`enable_pay_by_ckeck` values are migrated to `enable_pay_by_check`, and
+`enable_buy_now` is persisted for existing installations. A runtime-safe
+migration also repairs pre-release installations already marked 1.7.0.
+
+1.7.0 no longer renames or deletes the plugin's shared public directory during
+an individual site upgrade.
 This is important for installations where several Geeklog sites share one plugin
 codebase.
 
