@@ -55,6 +55,12 @@ require_once ($_CONF['path'] . 'plugins/paypal/proversion/paypalfunctions.php');
 	
 $finalPaymentAmount = isset($_SESSION['Payment_Amount']) ? (float) $_SESSION['Payment_Amount'] : 0.0;
 $data = array();
+$itemId = isset($itemId) ? $itemId : '';
+$groupId = isset($_SESSION['group_id']) ? (int) $_SESSION['group_id'] : 0;
+$currencyCode = isset($_SESSION['currencyCodeType']) ? $_SESSION['currencyCodeType'] : '';
+$billingAmount = isset($_SESSION['BILLINGAMT']) ? $_SESSION['BILLINGAMT'] : '';
+$billingFrequency = isset($_SESSION['BILLINGFREQUENCY']) ? $_SESSION['BILLINGFREQUENCY'] : '';
+$billingPeriod = isset($_SESSION['BILLINGPERIOD']) ? $_SESSION['BILLINGPERIOD'] : '';
 
 /*
 '------------------------------------
@@ -68,14 +74,14 @@ if ( $finalPaymentAmount > 0 ) {
 	$ack = strtoupper($resArray1["ACK"]); 
 
 	if( $ack == "SUCCESS" || $ack == "SUCCESSWITHWARNING" ) {
-		$items[1] = (isset($_SESSION['item_id']) ? $_SESSION['item_id'] : '');
+		$items[1] = $itemId;
 		$quantities[1] = 1;
 		$item_price[1] = (isset($_SESSION['Payment_Amount']) ? $_SESSION['Payment_Amount'] : 0);
 		$name[1] = (isset($_SESSION['BILLINGDESCRIPTION']) ? $_SESSION['BILLINGDESCRIPTION'] : '');
 		$display .= PAYPAL_handlePurchase($items, $quantities, $data, $name, $item_price,1,'complete',0,'','',$resArray1["PAYMENTINFO_0_TRANSACTIONTYPE"],$resArray1["PAYMENTINFO_0_PAYMENTTYPE"]);
 		
 		// Add user to group
-		PAYPAL_addToGroup ((isset($_SESSION['group_id']) ? $_SESSION['group_id'] : 0), $_USER['uid']);
+		PAYPAL_addToGroup ($groupId, $_USER['uid']);
 	}
 }
 
@@ -86,11 +92,11 @@ if( $ack == "SUCCESS" || $ack == "SUCCESSWITHWARNING" )
 {
 	//Record profileid : ActiveProfile, PendingProfile, ExpiredProfile, SuspendedProfile, CancelledProfile
 	$recdate = date("Y-m-d H:i:s");
-	DB_query("INSERT INTO {$_TABLES['paypal_recurrent']} SET profileid='{$resArray['PROFILEID']}', recdate='{$recdate}', status ='{$resArray['PROFILESTATUS']}', user_id = '{$_USER['uid']}', product_id = '{$_SESSION['item_id']}', group_id = '{$_SESSION["group_id"]}' ");
+	DB_query("INSERT INTO {$_TABLES['paypal_recurrent']} SET profileid='{$resArray['PROFILEID']}', recdate='{$recdate}', status ='{$resArray['PROFILESTATUS']}', user_id = '{$_USER['uid']}', product_id = '{$itemId}', group_id = '{$groupId}' ");
 	
-	$display .= "<p>{$LANG_PAYPAL_1['recurrent_has_been_set']} {$LANG_PAYPAL_1['will_pay']} <span style=\"border: 1px solid #DDD; background:#EEE; padding:5px;\">{$_SESSION["currencyCodeType"]} {$_SESSION["BILLINGAMT"]}</span> {$LANG_PAYPAL_1['every']} <span style=\"border: 1px solid #DDD; background:#EEE; padding:5px;\">{$_SESSION["BILLINGFREQUENCY"]} {$_SESSION["BILLINGPERIOD"]}</span></p>";
+	$display .= "<p>{$LANG_PAYPAL_1['recurrent_has_been_set']} {$LANG_PAYPAL_1['will_pay']} <span style=\"border: 1px solid #DDD; background:#EEE; padding:5px;\">{$currencyCode} {$billingAmount}</span> {$LANG_PAYPAL_1['every']} <span style=\"border: 1px solid #DDD; background:#EEE; padding:5px;\">{$billingFrequency} {$billingPeriod}</span></p>";
 	
-	if ($finalPaymentAmount == 0)PAYPAL_addToGroup ($_SESSION["group_id"], $_USER['uid']);
+	if ($finalPaymentAmount == 0 && $groupId > 0) PAYPAL_addToGroup($groupId, $_USER['uid']);
 }
 else  
 {
