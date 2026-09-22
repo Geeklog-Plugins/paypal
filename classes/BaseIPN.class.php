@@ -567,10 +567,15 @@ class BaseIPN {
 			//TODO record product name + product_id with attribute
             if ( is_numeric((int)$paypal_data['custom']) && (int)$paypal_data['custom'] > 0 ) {
                 // Add the purchase to the paypal purchase table
-                $sql = "INSERT INTO {$_TABLES['paypal_purchases']} SET product_id = '{$products[$i]}', "
-                     . "quantity = '{$quantity[$i]}', user_id = '{$paypal_data['custom']}', "
-                     . "txn_id = '{$paypal_data['txn_id']}', "
-                     . 'purchase_date = NOW(), status = \'complete\'';
+                $userId = (int) $paypal_data['custom'];
+                $safeTxnId = DB_escapeString(isset($paypal_data['txn_id']) ? $paypal_data['txn_id'] : '');
+                $safeProductName = DB_escapeString($A['name']);
+
+                $sql = "INSERT INTO {$_TABLES['paypal_purchases']} SET product_id = {$productId}, "
+                     . "product_name = '{$safeProductName}', "
+                     . "quantity = {$itemQuantity}, user_id = {$userId}, "
+                     . "txn_id = '{$safeTxnId}', "
+                     . "purchase_date = NOW(), status = 'complete'"
 
                 /**
                  * @todo implemente physical item vs. download, reflected in 'status'
