@@ -79,58 +79,33 @@ if (!is_array($A) || empty($A['id'])) {
 $item_price = (float) PAYPAL_productPrice($A);
 
 if ($A['type'] == 'recurrent') {
+    require_once $_CONF['path'] . 'plugins/paypal/lib/paypal_nvp.php';
 
-	require_once ($_CONF['path'] . 'plugins/paypal/lib/paypal_nvp.php');
+    $resArray = PAYPAL_beginRecurringCheckout($A, $_USER['uid']);
+    $ack = strtoupper(PAYPAL_NVP_responseValue($resArray, 'ACK'));
 
-	$_SESSION["group_id"] = $A['add_to_group'];
-	$_SESSION["Payment_Amount"] = PAYPAL_productPrice ($A);
-	$_SESSION["BILLINGDESCRIPTION"] = $A['name'];
-	$_SESSION["BILLINGPERIOD"] = $A['duration_type']; // Day, Week, SemiMonth, Month, Year. For SemiMonth, billing is done on the 1st and 15th of each month.
-	$_SESSION["BILLINGFREQUENCY"] = $A['duration']; //The combination of billing frequency and billing period must be less than or equal to one year. For example, if the billing cycle is Month, the maximum value for billing frequency is 12. Similarly, if the billing cycle is Week, the maximum value for billing frequency is 52. Note If the billing period is SemiMonth, the billing frequency must be 1.
-	$_SESSION["BILLINGAMT"] = $A['billingamt']; //Billing amount for each billing cycle during this payment period. This amount does not include shipping and tax amounts.
-	//$_SESSION["INITAMT"] = PAYPAL_productPrice($A);
-	$_SESSION["currencyCodeType"] = $_PAY_CONF['currency'];
-	$_SESSION["paymentType"] = "Sale"; //Sale, Authorization, Order;
+    if ($ack === 'SUCCESS' || $ack === 'SUCCESSWITHWARNING') {
+        RedirectToPayPal(PAYPAL_NVP_responseValue($resArray, 'TOKEN'));
+    }
 
-	//'------------------------------------
-	//' The returnURL is the location where buyers return to when a
-	//' payment has been succesfully authorized.
-	//'------------------------------------
-	$returnURL = $_PAY_CONF['site_url'] . '/recurring-payment/review.php';
+    $errorCode = PAYPAL_NVP_responseValue($resArray, 'L_ERRORCODE0');
+    $errorShort = PAYPAL_NVP_responseValue($resArray, 'L_SHORTMESSAGE0');
+    $errorLong = PAYPAL_NVP_responseValue($resArray, 'L_LONGMESSAGE0');
+    $errorSeverity = PAYPAL_NVP_responseValue($resArray, 'L_SEVERITYCODE0');
 
-	//'------------------------------------
-	//' The cancelURL is the location buyers are sent to when they hit the
-	//' cancel button during authorization of payment during the PayPal flow
-	//'------------------------------------
-	$cancelURL = $_PAY_CONF['site_url'] . '/index.php?mode=cancel';
+    if (!empty($_SESSION['curl_error_no'])) {
+        $errorCode = $_SESSION['curl_error_no'];
+    }
+    if (!empty($_SESSION['curl_error_msg'])) {
+        $errorLong = $_SESSION['curl_error_msg'];
+    }
 
-	//'------------------------------------
-	//' Calls the SetExpressCheckout API call
-	//'-------------------------------------------------
-	$resArray = CallShortcutExpressCheckout ($_SESSION["Payment_Amount"], $_SESSION["currencyCodeType"], $_SESSION["paymentType"], $returnURL, $cancelURL);
+    $display .= '<p>SetExpressCheckout API call failed.</p>'
+        . '<p>' . htmlspecialchars((string) $errorLong, ENT_QUOTES, 'UTF-8') . '</p>'
+        . '<p>' . htmlspecialchars((string) $errorShort, ENT_QUOTES, 'UTF-8') . '</p>'
+        . '<p>' . htmlspecialchars((string) $errorCode, ENT_QUOTES, 'UTF-8') . '</p>'
+        . '<p>' . htmlspecialchars((string) $errorSeverity, ENT_QUOTES, 'UTF-8') . '</p>';
 
-	$ack = strtoupper($resArray["ACK"]);
-	if($ack=="SUCCESS" || $ack=="SUCCESSWITHWARNING")
-	{
-		RedirectToPayPal ( $resArray["TOKEN"] );
-	} 
-	else  
-	{
-		//Display a user friendly Error on the page using any of the following error information returned by PayPal
-		$ErrorCode = urldecode($resArray["L_ERRORCODE0"]);
-		$ErrorShortMsg = urldecode($resArray["L_SHORTMESSAGE0"]);
-		$ErrorLongMsg = urldecode($resArray["L_LONGMESSAGE0"]);
-		$ErrorSeverityCode = urldecode($resArray["L_SEVERITYCODE0"]);
-
-		$display .= "<p>SetExpressCheckout API call failed.</p>";
-		if (!empty($_SESSION['curl_error_no'])) $ErrorCode = $_SESSION['curl_error_no']; 
-		if (!empty($_SESSION['curl_error_msg'])) $ErrorLongMsg = $_SESSION['curl_error_msg']; 
-		$display .= "<p>Detailed Error Message: " . $ErrorLongMsg;
-		$display .= "</p><p>Short Error Message: " . $ErrorShortMsg;
-		$display .= "</p><p>Error Code: " . $ErrorCode;
-		$display .= "</p><p>Error Severity Code: " . $ErrorSeverityCode . '</p>';
-	}
-    
 } else {
 
     if (SEC_hasAccess2($A) < 2 || (int) $A['active'] !== 1) {
