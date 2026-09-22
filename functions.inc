@@ -738,7 +738,7 @@ function paypal_genButton($type, $vars) {
     $button->set_var('count', $vars['count']);
     $button->set_var('type', $vars['type']);
 	$button->set_var('return', $vars['return']);
-	$button->set_var('notify_url', $_PAY_CONF['site_url'] . '/inp.php');
+	$button->set_var('notify_url', $_PAY_CONF['site_url'] . '/ipn.php');
 	$button->set_var('image_url', $_PAY_CONF['image_url']);
     $button->set_var('cpp_header_image', $_PAY_CONF['cpp_header_image']);
     $button->set_var('cpp_headerback_color', $_PAY_CONF['cpp_headerback_color']);
