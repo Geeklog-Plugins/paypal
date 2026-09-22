@@ -195,22 +195,31 @@ function PAYPAL_getListField_paypal_transactions($fieldname, $fieldvalue, $A, $i
 
 $paypalMode = isset($_REQUEST['mode']) ? COM_applyFilter($_REQUEST['mode']) : '';
 if ($paypalMode == 'edit') {
-	//update ipn
-	$sql = "SELECT * FROM {$_TABLES['paypal_ipnlog']} WHERE txn_id = '{$_REQUEST['txn_id']}'";
+    // Update a manually pending transaction only.
+    $paypalTxnId = isset($_REQUEST['txn_id']) ? COM_applyFilter($_REQUEST['txn_id']) : '';
+    $paypalTxnSql = DB_escapeString($paypalTxnId);
+	$sql = "SELECT * FROM {$_TABLES['paypal_ipnlog']} WHERE txn_id = '{$paypalTxnSql}'";
 	$res = DB_query($sql);
 	$A = DB_fetchArray($res);
 
 	// Allow all serialized data to be available to the template
 	$ipn ='';
 	if ($A['ipn_data'] != '') {
-		$out = preg_replace('!s:(\d+):"(.*?)";!se', "'s:'.strlen('$2').':\"$2\";'", $A['ipn_data'] ); 
-		$ipn = unserialize($out);
+        $out = preg_replace_callback(
+            '!s:(\\d+):"(.*?)";!s',
+            function ($matches) {
+                return 's:' . strlen($matches[2]) . ':"' . $matches[2] . '";';
+            },
+            $A['ipn_data']
+        );
+		$ipn = @unserialize($out);
 	}
-	if (!is_array($ipn) || !isset($ipn['payment_status']) || $ipn['payment_status'] != 'pending') {
-        return;
-    }
-	
-	if ($ipn['quantity1'] != '') {
+    $paypalPendingTransaction = is_array($ipn)
+        && isset($ipn['payment_status'])
+        && $ipn['payment_status'] == 'pending';
+
+    if ($paypalPendingTransaction) {
+	if (isset($ipn['quantity1']) && $ipn['quantity1'] != '') {
 	    //multi products
 		$i = 1;
 		for (; ; ) {
@@ -285,12 +294,12 @@ if ($paypalMode == 'edit') {
 	$ipn['payment_status'] = 'complete';
 	$ipn['payment_date'] = date('H:i:s M d, Y T'); //13:49:40 Jul 06, 2011 PDT
 	$sql = "UPDATE {$_TABLES['paypal_ipnlog']} SET ipn_data='" . serialize($ipn) . "' "
-					 . "WHERE txn_id = '{$_REQUEST['txn_id']}'";
+					 . "WHERE txn_id = '{$paypalTxnSql}'";
 	DB_query($sql);
 	
 	//update purchase
 	$sql = "UPDATE {$_TABLES['paypal_purchases']} SET status='complete' "
-			. " WHERE txn_id = '{$_REQUEST['txn_id']}'";
+			. " WHERE txn_id = '{$paypalTxnSql}'";
 	DB_query($sql);
 	
 	// Send the purchaser a confirmation email (if set to do so in config.php)
@@ -345,6 +354,7 @@ if ($paypalMode == 'edit') {
 	//Send email to receiver
 	COM_mail($_PAY_CONF['receiverEmailAddr'], $subject, $subject . ' >> ' . $text, '', true);
 	$_REQUEST['msg'] = $LANG_PAYPAL_1['order_validated'];
+    }
 }
 
 //Main
