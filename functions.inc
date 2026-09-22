@@ -436,24 +436,15 @@ function paypal_access_check ($rights = 'paypal.viewer')
 */
 function PAYPAL_siteHeader($pagetitle = '')
 {
-    global $_PAY_CONF;
-
-    $retval = '';
-
-    switch( $_PAY_CONF['display_blocks'] ) {
-    case 0 :    // none
-    case 2 :    // right only
-        $retval .= COM_siteHeader('none', $pagetitle);
-        break;
-    case 1 :    // left only
-    case 3 :    // both
-    default :
-        $retval .= COM_siteHeader('menu', $pagetitle);
-        break;
+    // Legacy compatibility helper retained for third-party callers.
+    // Modernized PayPal pages render complete documents with
+    // PAYPAL_createHTMLDocument().
+    if (function_exists('COM_siteHeader')) {
+        return call_user_func('COM_siteHeader', 'none', $pagetitle);
     }
-    return $retval;
-}
 
+    return '';
+}
 
 /**
 *   Get the site footer, with or without right blocks according to config.
@@ -463,22 +454,11 @@ function PAYPAL_siteHeader($pagetitle = '')
 */
 function PAYPAL_siteFooter()
 {
-    global $_PAY_CONF;
-
-    $retval = '';
-
-    switch( $_PAY_CONF['display_blocks'] ) {
-    case 0 :    // none
-    case 1 :    // left only
-        $retval .= COM_siteFooter();
-        break;
-    case 2 :    // right only
-    case 3 :    // left and right
-    default :
-        $retval .= COM_siteFooter(true);
-        break;
+    if (function_exists('COM_siteFooter')) {
+        return call_user_func('COM_siteFooter');
     }
-    return $retval;
+
+    return '';
 }
 
 /**
