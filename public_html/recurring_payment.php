@@ -33,7 +33,7 @@ require_once '../lib-common.php';
 
 // take user back to the homepage if the plugin is not active
 if (!in_array('paypal', $_PLUGINS) ) {
-    $display .= COM_refresh($_CONF['site_url'] . '/index.php');
+    $display = COM_refresh($_CONF['site_url'] . '/index.php');
     exit;
 }
 
