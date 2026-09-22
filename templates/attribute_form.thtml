@@ -1,7 +1,9 @@
 {# begin {templatelocation} #}
 
 <form action="{admin_url}/plugins/paypal/index.php?mode=attributes" method="POST" enctype="multipart/form-data"  class="uk-form paypal_form">
-	<fieldset style="margin-top: 10px;"><legend><b>{main_settings}</b></legend>
+	
+<input type="hidden" name="{gltoken_name}" value="{gltoken}">
+<fieldset style="margin-top: 10px;"><legend><b>{main_settings}</b></legend>
 	{at_id}
 	<h2>{attribute_label}<font color="red"> *</font> <input type="text" name="at_name" value="{at_name}" size="80" maxlength="255" {xhtml}></h2>	
 	<h2>{code_label} <input type="text" name="at_code" value="{code}" size="20" maxlength="30" {xhtml}></h2>
