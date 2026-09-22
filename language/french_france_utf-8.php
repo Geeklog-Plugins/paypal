@@ -133,9 +133,6 @@ $LANG_PAYPAL_1 = array(
 	'total'                   => 'Total:',
 	'ipn_data'                => 'IPN Data',
 	'info_picture'            => 'Agrandir l\'image',
-	'online'                  => 'en ligne',
-	'plugin_conf'             => 'La configuration du plugin paypal est aussi',
-	'plugin_doc'              => 'La documentation pour l\'installation, la mise à jour et l\'usage du plugin paypal est',
 	'products_list'           => 'Listes des articles',
 	'create_product'          => 'créer un nouvel article',
     'you_can'                 => 'Vous pouvez ',
@@ -234,7 +231,7 @@ $LANG_PAYPAL_1 = array(
 	'edit_user_details'       => 'Editer les coordonnées',
 	'editing_user_details'    => 'Edition des coordonnées du membre',
 	'membership_informations' => 'Description de l\'adhésion',
-    'install_jquery'          => 'Pour permettre aux utilisateurs de votre site d\'afficher les images des articles dans une lightbox, vous devez installer le plugin jQuery pour Geeklog.',
+    'add_attributes'          => 'Enregistrez d\'abord votre produit, puis vous pourrez ajouter des attributs. Vous devez créer au moins un attribut avant de pouvoir l\'ajouter.',
     'see_members_list'        => 'Voir la liste publique des membres',
     'details_save_success'    => 'Vos coordonnées ont bien été enregistrées.',
     'details_save_fail'       => 'Oups une erreur s\'est produite. Pouvez vous essayer de saisir à nouveau vos coordonnées.',
@@ -444,10 +441,6 @@ $LANG_PAYPAL_EMAIL = array(
 	'order_confirmation'          => 'Confirmation de commande',
 	'thank_you_order'             => 'Merci pour votre commande de :',
 	'send_check'                  => 'Afin de valider vos achats, merci de nous transmettre votre règlement à l\'adresse suivante :',
-);
-
-$LANG_PAYPAL_PRO = array (
-    'add_attributes' => 'Enregistrez d\'abord votre produit, puis vous pourrez ajouter des attributs. Vous devez créer au moins un attribut avant de pouvoir l\'ajouter.',
 );
 
 $LANG_PAYPAL_LOGIN = array(
