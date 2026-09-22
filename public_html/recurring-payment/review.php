@@ -42,6 +42,7 @@ paypal_access_check('paypal.user');
 
 $vars = array('msg' => 'text',
               'pid' => 'number',
+              'token' => 'text',
               );
 paypal_filterVars($vars, $_REQUEST);
 
@@ -49,9 +50,7 @@ paypal_filterVars($vars, $_REQUEST);
 
 //Main
 
-$display .= PAYPAL_siteHeader();
-
-$display .= paypal_user_menu();
+$display = paypal_user_menu();
 
 /*==================================================================
  PayPal Express Checkout Call
@@ -141,6 +140,4 @@ $display .= "<h2>{$LANG_PAYPAL_1['confirm_informations']}</h2>
 <input type=\"submit\" value=\"{$LANG_PAYPAL_1['review']}\"/>
 </form>";
 
-$display .= PAYPAL_siteFooter();
-
-COM_output($display);
+COM_output(PAYPAL_createHTMLDocument($display));
