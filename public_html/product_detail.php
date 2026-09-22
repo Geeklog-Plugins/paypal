@@ -690,11 +690,6 @@ $type = isset($A['type']) ? $A['type'] : 'product';
 $display = '';
 $saved_images = '';
 
-if ($A['customisable'] != 0 && !function_exists('PAYPALPRO_displayAttributes') ) {
-    echo COM_refresh($_PAY_CONF['site_url'] . '/index.php');
-	exit;
-}
-
 $pageTitle = $A['name'] . ' - ' . $A['cat_name'];
 
 if (SEC_hasRights('paypal.user,paypal.admin', 'OR')) {
