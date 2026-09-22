@@ -67,24 +67,67 @@ function PAYPAL_plot()
     }
 
     $max = !empty($plots) ? max($plots) : 0.0;
-    $bars = '';
+    $chartWidth = 960;
+    $chartHeight = 260;
+    $paddingLeft = 55;
+    $paddingRight = 20;
+    $paddingTop = 20;
+    $paddingBottom = 45;
+    $plotWidth = $chartWidth - $paddingLeft - $paddingRight;
+    $plotHeight = $chartHeight - $paddingTop - $paddingBottom;
+
+    $count = count($plots);
+    $points = array();
+    $labels = '';
+    $index = 0;
 
     foreach ($plots as $date => $amount) {
-        $width = $max > 0 ? (int) round(($amount / $max) * 100) : 0;
-        $label = date('Y-m', strtotime($date));
-        $value = number_format(
-            $amount,
-            $_CONF['decimal_count'],
-            $_CONF['decimal_separator'],
-            $_CONF['thousand_separator']
-        );
+        $x = $paddingLeft;
+        if ($count > 1) {
+            $x += ($plotWidth / ($count - 1)) * $index;
+        }
 
-        $bars .= '<div class="paypal-sales-row">'
-            . '<div class="paypal-sales-label">' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</div>'
-            . '<div class="paypal-sales-track"><div class="paypal-sales-bar" style="width:' . $width . '%"></div></div>'
-            . '<div class="paypal-sales-value">' . $value . ' ' . htmlspecialchars($_PAY_CONF['currency'], ENT_QUOTES, 'UTF-8') . '</div>'
-            . '</div>';
+        if ($max > 0) {
+            $y = $paddingTop + $plotHeight - (($amount / $max) * $plotHeight);
+        } else {
+            // No sales: draw a visible flat zero line on the x axis.
+            $y = $paddingTop + $plotHeight;
+        }
+
+        $points[] = round($x, 2) . ',' . round($y, 2);
+
+        $label = date('Y-m', strtotime($date));
+        $labels .= '<text x="' . round($x, 2) . '" y="' . ($chartHeight - 18)
+            . '" text-anchor="middle" class="paypal-sales-axis-label">'
+            . htmlspecialchars($label, ENT_QUOTES, 'UTF-8')
+            . '</text>';
+
+        ++$index;
     }
+
+    $axisMax = $max > 0 ? $max : 0;
+    $axisMaxLabel = number_format(
+        $axisMax,
+        $_CONF['decimal_count'],
+        $_CONF['decimal_separator'],
+        $_CONF['thousand_separator']
+    );
+
+    $svg = '<div class="paypal-sales-chart" role="img" aria-label="Sales history">'
+        . '<svg viewBox="0 0 ' . $chartWidth . ' ' . $chartHeight . '" preserveAspectRatio="none">'
+        . '<line x1="' . $paddingLeft . '" y1="' . $paddingTop . '" x2="' . $paddingLeft
+        . '" y2="' . ($paddingTop + $plotHeight) . '" class="paypal-sales-axis"></line>'
+        . '<line x1="' . $paddingLeft . '" y1="' . ($paddingTop + $plotHeight) . '" x2="'
+        . ($chartWidth - $paddingRight) . '" y2="' . ($paddingTop + $plotHeight)
+        . '" class="paypal-sales-axis"></line>'
+        . '<text x="5" y="' . ($paddingTop + 5) . '" class="paypal-sales-axis-value">'
+        . htmlspecialchars($axisMaxLabel . ' ' . $_PAY_CONF['currency'], ENT_QUOTES, 'UTF-8')
+        . '</text>'
+        . '<text x="15" y="' . ($paddingTop + $plotHeight) . '" class="paypal-sales-axis-value">0</text>'
+        . '<polyline points="' . implode(' ', $points) . '" class="paypal-sales-line"></polyline>'
+        . $labels
+        . '</svg>'
+        . '</div>';
 
     $summary = '<p>'
         . $LANG_PAYPAL_1['period_stat'] . ' ' . $_PAY_CONF['currency'] . ' '
@@ -97,5 +140,5 @@ function PAYPAL_plot()
         . number_format($totalMonth, $_CONF['decimal_count'], $_CONF['decimal_separator'], $_CONF['thousand_separator'])
         . '</p>';
 
-    return $summary . '<div class="paypal-sales-chart">' . $bars . '</div>';
+    return $summary . $svg;
 }
