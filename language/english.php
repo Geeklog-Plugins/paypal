@@ -194,7 +194,7 @@ $LANG_PAYPAL_1 = array(
 	'create_subscription'     => 'create a new subscription or accession',
 	'subscriptions_empty'     => 'There is no subscription.',
 	'add_to_group'            => 'Group',
-	'create_new_subscription' => 'Creating a new subscription - Paypal Pro feature',
+	'create_new_subscription' => 'Creating a new subscription',
 	'edit_subscription'       => 'Edit subscription',
 	'subscription_informations' => 'Subscription informations',
 	'notification'            => 'Notification',
@@ -449,9 +449,7 @@ $LANG_PAYPAL_EMAIL = array(
 );
 
 $LANG_PAYPAL_PRO = array (
-    'pro_feature'                     => 'Note: You are using the paypal plugin limited edition. To get full features you need to upgrade to Paypal Pro plugin version.',
-    'pro_feature_manual_subscription' => 'Manual subscription is a Paypal Pro feature.',
-	'add_attributes'                  => 'Save your product first, then you can add attributes to this product. Nota bene: You need to create at least one attribute before you can add it.',
+    'add_attributes' => 'Save your product first, then you can add attributes to this product. You need to create at least one attribute before you can add it.',
 );
 
 $LANG_PAYPAL_LOGIN = array(
@@ -545,7 +543,7 @@ $LANG_confignames['paypal'] = array(
 	'categoryHeading'            => 'Categories header',
 	'seo_shop_title'             => 'SEO shop title',
 	'displayCatDescription'      => 'Display category description',
-	'attribute_thumbnail_size'   => 'Attribute thumbnail size (Pro version)',
+	'attribute_thumbnail_size'   => 'Attribute thumbnail size',
 	//Paypal 1.6
 	'API_UserName'               => 'API UserName',
     'API_Password' 	             => 'API Password',
