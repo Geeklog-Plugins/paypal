@@ -1598,43 +1598,96 @@ function phpblock_paypal_searchBlock()
 */
 function phpblock_paypal_randomBlock()
 {
-	global $_CONF, $_TABLES, $_PAY_CONF, $_SCRIPTS;
-	
-	$retval = '';
-    
-    
-	$T = COM_newTemplate($_CONF['path'] . 'plugins/paypal/templates/blocks');
-	$T->set_file('random_block', 'random_block.thtml');
-	// Get on random product from database
-    $sql = "SELECT p.*, i.pi_filename
-            FROM {$_TABLES['paypal_products']} AS p
-            LEFT JOIN {$_TABLES['paypal_images']} AS i
-            ON i.pi_pid = p.id AND i.pi_img_num IN (SELECT MIN(pi_img_num) FROM {$_TABLES['paypal_images']} WHERE pi_img_num >= 1 AND pi_pid = p.id) 
-            WHERE p.active = 1 AND p.show_in_blocks = 1	
-			ORDER BY RAND() LIMIT 1 	
-		    ";
-	$res = DB_query($sql);
-	
-	$A = DB_fetchArray($res);
-	
-	if (!isset($A['name']) || !SEC_hasAccess2($A)) return;
-	
-	if ($A['pi_filename'] == '') {
-		$T->set_var('small_pic', '');
-	} else {
-		$T->set_var('small_pic', '<a class="product-details" href="' . $_PAY_CONF['site_url'] . '/product_detail.php?n=' . urlencode($A['name']) . '&amp;product='. $A['id'] . '"><img class="paypal-image-link" src="'. $_PAY_CONF['site_url'] . '/timthumb.php?src=' . $_PAY_CONF['images_url']
-		. $A['pi_filename'] . '&amp;w='. $_PAY_CONF['max_thumbnail_size'] . '&amp;zc=1&amp;q=100" alt="' . $A['name'] . '" /></a>');
-	}
+    global $_CONF, $_TABLES, $_PAY_CONF;
 
-	$T->set_var('site_url', $_PAY_CONF['site_url']);
-	$T->set_var('item_id', $A['id']);
-	//Todo make shorten name
-	$T->set_var('item_name', $A['name']);
-	$T->set_var('price', PAYPAL_productPrice($A) . $_PAY_CONF['currency']);
-	if ($A['price_ref'] != '' && ($A['price_ref'] > $A['price'])) $T->set_var('price', '<span class="price_deleted">' . number_format($A['price_ref'], $_CONF['decimal_count'], $_CONF['decimal_separator'], $_CONF['thousand_separator']) . '</span>' . $_PAY_CONF['currency']);
-	$retval .= $T->parse('', 'random_block');
+    $sql = "SELECT p.id "
+        . "FROM {$_TABLES['paypal_products']} AS p "
+        . "WHERE p.active = 1 AND p.hidden = 0 AND p.show_in_blocks = 1 "
+        . COM_getPermSQL('AND', 0, 2, 'p');
 
-	return $retval;
+    $result = DB_query($sql);
+    $selectedId = 0;
+    $seen = 0;
+
+    // Reservoir sampling avoids ORDER BY RAND() while giving each accessible
+    // product the same chance of being selected.
+    while ($row = DB_fetchArray($result)) {
+        ++$seen;
+        if (mt_rand(1, $seen) === 1) {
+            $selectedId = (int) $row['id'];
+        }
+    }
+
+    if ($selectedId <= 0) {
+        return '';
+    }
+
+    $sql = "SELECT p.*, i.pi_filename "
+        . "FROM {$_TABLES['paypal_products']} AS p "
+        . "LEFT JOIN {$_TABLES['paypal_images']} AS i "
+        . "ON i.pi_pid = p.id "
+        . "AND i.pi_img_num = ("
+        . "SELECT MIN(pi_img_num) FROM {$_TABLES['paypal_images']} "
+        . "WHERE pi_img_num >= 1 AND pi_pid = p.id"
+        . ") "
+        . "WHERE p.id = {$selectedId} LIMIT 1";
+
+    $A = DB_fetchArray(DB_query($sql));
+    if (!is_array($A) || empty($A['name'])) {
+        return '';
+    }
+
+    $template = COM_newTemplate($_CONF['path'] . 'plugins/paypal/templates/blocks');
+    $template->set_file('random_block', 'random_block.thtml');
+
+    $productUrl = $_PAY_CONF['site_url']
+        . '/product_detail.php?n=' . rawurlencode($A['name'])
+        . '&amp;product=' . (int) $A['id'];
+
+    $smallPic = '';
+    if (!empty($A['pi_filename'])) {
+        $imageUrl = rtrim($_PAY_CONF['images_url'], '/')
+            . '/' . rawurlencode(basename($A['pi_filename']));
+        $maxSize = isset($_PAY_CONF['max_thumbnail_size'])
+            ? max(1, (int) $_PAY_CONF['max_thumbnail_size'])
+            : 160;
+
+        $smallPic = '<a class="product-details" href="' . $productUrl . '">'
+            . '<img class="paypal-image-link" loading="lazy" decoding="async" src="'
+            . htmlspecialchars($imageUrl, ENT_QUOTES, 'UTF-8') . '" '
+            . 'style="max-width:' . $maxSize . 'px;height:auto;" '
+            . 'alt="' . htmlspecialchars($A['name'], ENT_QUOTES, 'UTF-8') . '"' . XHTML . '>'
+            . '</a>';
+    }
+
+    $price = number_format(
+        PAYPAL_productPrice($A),
+        $_CONF['decimal_count'],
+        $_CONF['decimal_separator'],
+        $_CONF['thousand_separator']
+    ) . ' ' . $_PAY_CONF['currency'];
+
+    if ($A['price_ref'] !== '' && (float) $A['price_ref'] > (float) $A['price']) {
+        $price = '<span class="price_deleted">'
+            . number_format(
+                $A['price_ref'],
+                $_CONF['decimal_count'],
+                $_CONF['decimal_separator'],
+                $_CONF['thousand_separator']
+            )
+            . '</span> ' . $price;
+    }
+
+    $template->set_var(array(
+        'site_url' => $_PAY_CONF['site_url'],
+        'product_url' => $productUrl,
+        'item_id' => (int) $A['id'],
+        'item_name' => htmlspecialchars($A['name'], ENT_QUOTES, 'UTF-8'),
+        'small_pic' => $smallPic,
+        'price' => $price,
+    ));
+
+    return $template->parse('', 'random_block');
 }
 
 function PAYPAL_listPurchases($list='one')
