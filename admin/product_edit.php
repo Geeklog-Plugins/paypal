@@ -168,56 +168,43 @@ function PAYPAL_getProductForm($product = array(), $type = 'product') {
 		
     });' . LB;
 
-	$js .= "jQuery(document).ready(function() {
-		jQuery('#load').hide();
-		});
+    $csrfToken = SEC_createToken();
+    $csrfName = CSRF_TOKEN;
 
-		jQuery(function() {
-			jQuery(\".delete\").click(function() {
-				jQuery('#load').show();
-				var id = jQuery(this).attr(\"id\");
-				var pid = jQuery(this).attr(\"pid\");
-				var aid = jQuery(this).attr(\"aid\");
-				var action = jQuery(this).attr(\"class\");
-				var string = 'id='+ id + '&action=' + action + '&pid=' + pid;
-					
-				jQuery.ajax({
-					type: \"POST\",
-					url: \"ajax.php\",
-					data: string,
-					cache: false,
-					async:false,
-					success: function(result){
-						jQuery(\"#attributes_actions\").replaceWith(result);
-					}   
-				});
-				jQuery('#load').hide();
-				return false;
-			});
-			jQuery(\".add\").click(function() {
-				jQuery('#load').show();
-				var id = jQuery(this).attr(\"id\");
-				var pid = jQuery(this).attr(\"pid\");
-				var aid = jQuery(this).attr(\"aid\");
-				var action = jQuery(this).attr(\"class\");
-				var string = 'id='+ id + '&action=' + action + '&pid=' + pid;
-					
-				jQuery.ajax({
-					type: \"POST\",
-					url: \"ajax.php\",
-					data: string,
-					cache: false,
-					async:false,
-					success: function(result){
-						jQuery(\"#attributes_actions\").replaceWith(result);
-					}   
-				});
-				jQuery('#load').hide();
-				return false;
-			});
-		});
-	"  . LB;
-	
+    $js .= "
+    jQuery(function() {
+        jQuery('#load').hide();
+
+        jQuery(document).on('click', '#attributes_actions .delete, #attributes_actions .add', function(event) {
+            event.preventDefault();
+
+            var button = jQuery(this);
+            var id = button.attr('id');
+            var pid = button.attr('pid');
+            var action = button.hasClass('delete') ? 'delete' : 'add';
+            var data = {
+                id: id,
+                pid: pid,
+                action: action
+            };
+            data[" . json_encode($csrfName) . "] = " . json_encode($csrfToken) . ";
+
+            jQuery('#load').show();
+
+            jQuery.ajax({
+                type: 'POST',
+                url: 'ajax.php',
+                data: data,
+                cache: false
+            }).done(function(result) {
+                jQuery('#attributes_actions').replaceWith(result);
+            }).always(function() {
+                jQuery('#load').hide();
+            });
+        });
+    });
+    " . LB;
+
 	//Hide #attributes if product not customisable
 
 	if ($product['customisable'] == '0' || $product['customisable'] == '') {
