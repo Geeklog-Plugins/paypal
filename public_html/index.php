@@ -88,7 +88,9 @@ if (SEC_hasRights('paypal.user,paypal.admin', 'OR')) {
 
 switch ($_REQUEST['mode']) {
     case 'endTransaction':
-        PAYPAL_getCart()->empty_cart();
+        $cart = PAYPAL_getCart();
+        $cart->empty_cart();
+        PAYPAL_saveCart($cart);
 
         $txnId = isset($_POST['txn_id']) ? $_POST['txn_id'] : '';
         $firstName = isset($_POST['first_name']) ? $_POST['first_name'] : '';
