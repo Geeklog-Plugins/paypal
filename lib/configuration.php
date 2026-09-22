@@ -119,7 +119,7 @@ function PAYPAL_applyConfigTabs()
     // Remove obsolete presentation-only structures from the old layout.
     $obsolete = array(
         'fs_main', 'fs_permissions', 'sg_display', 'fs_display',
-        'fs_images', 'fs_checkoutpage', 'sg_myshop', 'fs_shopdetails'
+        'fs_checkoutpage', 'sg_myshop', 'fs_shopdetails'
     );
     foreach ($obsolete as $name) {
         $safeName = DB_escapeString($name);
