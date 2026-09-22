@@ -107,14 +107,12 @@ switch ($_REQUEST['mode']) {
         }
 		$msg .=  '</ul><p>' . $LANG_PAYPAL_1['total']  . ' ' . $_POST['mc_gross'] . ' ' . $_POST['mc_currency'] . '</p>';
         $display .= COM_showMessageText($msg, $LANG_PAYPAL_1['thanks']);
-		$display .= '<div id="cart">' . PAYPAL_displayCart() .'</div>';
         break;
 	
 	case 'cancel':
 		$msg = $LANG_PAYPAL_1['cancel_details']; 
         $display .= COM_showMessageText($msg, $LANG_PAYPAL_1['cancel']);
 		$display .= PAYPAL_displayProducts('',0,$_REQUEST['category']);
-		$display .= '<div id="cart">' . PAYPAL_displayCart() .'</div>';
         break;
 		
 	default :
@@ -123,8 +121,6 @@ switch ($_REQUEST['mode']) {
         
 		if ($_PAY_CONF['paypal_main_footer'] != '') $display .= '<div>' . PLG_replaceTags($_PAY_CONF['paypal_main_footer']) . '</div>';
 		
-		//Display cart
-        $display .= '<div id="cart">' . PAYPAL_displayCart() .'</div>';
 }
 
 COM_output(PAYPAL_createHTMLDocument($display, $pageTitle));
