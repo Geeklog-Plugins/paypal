@@ -576,7 +576,7 @@ class BaseIPN {
                $_PAY_CONF['purchase_email_anon'] )) {
             
 			// setup templates
-            $message = new Template($_CONF['path'] . 'plugins/paypal/templates');
+            $message = COM_newTemplate($_CONF['path'] . 'plugins/paypal/templates');
             $message->set_file(array('subject' => 'purchase_email_subject.txt',
                                      'message' => 'purchase_email_message.txt' ));
             // site variables
@@ -587,6 +587,7 @@ class BaseIPN {
 			$message->set_var('purchase_receipt', $LANG_PAYPAL_EMAIL['purchase_receipt']);
 
             // list of product names
+            $li_products = '';
 			for ($i = 0; $i < count($products); $i++) {
 			$li_products .= '<li>' . $names[$i];
 			}
