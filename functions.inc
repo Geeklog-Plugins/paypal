@@ -1391,7 +1391,6 @@ function phpblock_paypal_randomBlock()
 	
 	$retval = '';
     
-    $_SCRIPTS->setJavaScriptFile('paypal_cart', '/' . $_PAY_CONF['paypal_folder'] . '/js/jcart-javascript.php');
     
 	$T = COM_newTemplate($_CONF['path'] . 'plugins/paypal/templates/blocks');
 	$T->set_file('random_block', 'random_block.thtml');
