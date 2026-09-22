@@ -596,9 +596,17 @@ $LANG_confignames['paypal'] = array(
 *   @global array $LANG_configsubgroups['paypal']
 */
 $LANG_configsubgroups['paypal'] = array(
-    'sg_main' => 'Main Settings',
-	'sg_display' => 'Display Settings',
-	'sg_myshop' => 'Ma boutique'
+    'sg_main' => 'Paramètres principaux'
+);
+
+$LANG_tab['paypal'] = array(
+    'tab_general' => 'Général',
+    'tab_payments' => 'Paiements',
+    'tab_catalog' => 'Catalogue',
+    'tab_images' => 'Images',
+    'tab_checkout' => 'Checkout PayPal',
+    'tab_shop' => 'Boutique',
+    'tab_blocks' => 'Blocs dynamiques'
 );
 
 /**
@@ -606,13 +614,14 @@ $LANG_configsubgroups['paypal'] = array(
 *   @global array $LANG_fs['paypal']
 */
 $LANG_fs['paypal'] = array(
-    'fs_main'            => 'General Settings',
-    'fs_images'          => 'Images settings',
-    'fs_permissions'     => 'Default Permissions',
-	'fs_display'         => 'Display settings',
-	'fs_checkoutpage'    => 'Paypal checkout page',
-	'fs_shopdetails'     => 'Shop details'
- );
+    'fs_general'  => 'Paramètres généraux',
+    'fs_payments' => 'Moyens de paiement et API PayPal',
+    'fs_catalog'  => 'Affichage du catalogue',
+    'fs_images'   => 'Images',
+    'fs_checkout' => 'Apparence du checkout PayPal',
+    'fs_shop'     => 'Informations de la boutique',
+    'fs_blocks'   => 'Blocs dynamiques'
+);
 
 /**
 *   Configuration system selection strings
