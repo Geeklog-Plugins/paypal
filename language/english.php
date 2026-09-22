@@ -596,9 +596,17 @@ $LANG_confignames['paypal'] = array(
 *   @global array $LANG_configsubgroups['paypal']
 */
 $LANG_configsubgroups['paypal'] = array(
-    'sg_main' => 'Main Settings',
-	'sg_display' => 'Display Settings',
-	'sg_myshop' => 'My shop'
+    'sg_main' => 'Main Settings'
+);
+
+$LANG_tab['paypal'] = array(
+    'tab_general' => 'General',
+    'tab_payments' => 'Payments',
+    'tab_catalog' => 'Catalog',
+    'tab_images' => 'Images',
+    'tab_checkout' => 'PayPal Checkout',
+    'tab_shop' => 'Shop',
+    'tab_blocks' => 'Dynamic Blocks'
 );
 
 /**
@@ -606,13 +614,14 @@ $LANG_configsubgroups['paypal'] = array(
 *   @global array $LANG_fs['paypal']
 */
 $LANG_fs['paypal'] = array(
-    'fs_main'            => 'General Settings',
-    'fs_images'          => 'Images settings',
-    'fs_permissions'     => 'Default Permissions',
-	'fs_display'         => 'Display settings',
-	'fs_checkoutpage'    => 'Paypal checkout page',
-	'fs_shopdetails'     => 'Shop details'
- );
+    'fs_general'  => 'General Settings',
+    'fs_payments' => 'Payment Methods and PayPal API',
+    'fs_catalog'  => 'Catalog Display',
+    'fs_images'   => 'Images',
+    'fs_checkout' => 'PayPal Checkout Appearance',
+    'fs_shop'     => 'Shop Details',
+    'fs_blocks'   => 'Dynamic Blocks'
+);
 
 /**
 *   Configuration system selection strings
