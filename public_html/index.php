@@ -95,7 +95,7 @@ switch ($_REQUEST['mode']) {
         }
 		// INITIALIZE JCART AFTER SESSION START
 		$cart =& $_SESSION['jcart']; 
-		if(!is_object($cart)) $cart = new jcart();
+		if(!($cart instanceof jcart)) $cart = new jcart();
 		// EMPTY THE CART
 		$cart->empty_cart();
 		
