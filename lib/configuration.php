@@ -162,13 +162,17 @@ function PAYPAL_ensureConfigStructure($name, $type, $id)
         return;
     }
 
-    $null = serialize(null);
-    $safeNull = DB_escapeString($null);
-    DB_query(
-        "INSERT INTO {$_TABLES['conf_values']} "
-        . "(name, value, type, group_name, default_value, subgroup, "
-        . "selectionArray, sort_order, tab, fieldset) VALUES ("
-        . "'{$safeName}', '{$safeNull}', '{$safeType}', 'paypal', "
-        . "'{$safeNull}', 0, NULL, 0, {$id}, {$id})"
+    $config = config::get_instance();
+    $config->add(
+        $name,
+        null,
+        $type,
+        0,
+        $id,
+        null,
+        0,
+        true,
+        'paypal',
+        $id
     );
 }
