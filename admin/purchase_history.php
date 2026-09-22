@@ -363,6 +363,7 @@ if ($paypalMode == 'edit' && SEC_checkToken()) {
 		$message->set_var('purchase_receipt', $LANG_PAYPAL_EMAIL['purchase_receipt']);
 
 		// list of product names
+        $products = '';
 		for ($i2 = 0; $i2 < ($i-1); $i2++) {
 		    $products .= '<p>' . $names[$i2] . '</p>';
 		}
