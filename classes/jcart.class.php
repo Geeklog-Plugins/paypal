@@ -521,7 +521,10 @@ $categories = array();
 		// THE CART IS EMPTY
 		else
 			{
-$cart->set_var('empty', '<strong>' . $text['empty_message'] . '</strong>');
+            $emptyMessage = $block == 1
+                ? $text['empty_message']
+                : '<strong>' . $text['empty_message'] . '</strong>';
+            $cart->set_var('empty', $emptyMessage);
 			$retval .= $cart->parse('', 'cart_empty');
 			}
 
@@ -533,7 +536,10 @@ $cart->set_var('empty', '<strong>' . $text['empty_message'] . '</strong>');
 		. ' ' . $text['currency_symbol'] . '</strong>');
 		
 		// IF THIS IS THE CHECKOUT HIDE THE CART CHECKOUT BUTTON
-		if ($is_checkout !== true && (!isset($_REQUEST['pay_by']) || $_REQUEST['pay_by'] != 'check')) {
+		if ($this->itemcount > 0
+            && $is_checkout !== true
+            && (!isset($_REQUEST['pay_by']) || $_REQUEST['pay_by'] != 'check')
+        ) {
             $src = '';
 			if ($button['checkout']) {
     			$input_type = 'image';
