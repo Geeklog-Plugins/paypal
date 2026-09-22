@@ -45,15 +45,24 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 }
 
 // INITIALIZE JCART AFTER SESSION START
-$cart =& $_SESSION['jcart']; if(!is_object($cart)) $cart = new jcart();
+if (!isset($_SESSION['jcart']) || !is_object($_SESSION['jcart'])) {
+    $_SESSION['jcart'] = new jcart();
+}
+$cart =& $_SESSION['jcart'];
+
+$updateCart = !empty($_POST['jcart_update_cart']);
+$emptyCart = !empty($_POST['jcart_empty']);
+$checkoutPage = isset($_POST['jcart_checkout_page']) ? $_POST['jcart_checkout_page'] : $_PAY_CONF['site_url'] . '/checkout.php';
+$payBy = isset($_POST['pay_by']) ? $_POST['pay_by'] : '';
+$shipping = isset($shipping) && is_numeric($_POST['shipping']) ? $_POST['shipping'] : '0.00';
 
 // WHEN JAVASCRIPT IS DISABLED THE UPDATE AND EMPTY BUTTONS ARE DISPLAYED
 // RE-DISPLAY THE CART IF THE VISITOR CLICKS EITHER BUTTON
-if ($_POST['jcart_update_cart']  || $_POST['jcart_empty'])
+if ($updateCart || $emptyCart)
 	{
 
 	// UPDATE THE CART
-	if ($_POST['jcart_update_cart'])
+	if ($updateCart)
 		{
 		$cart_updated = $cart->update_cart();
 		if ($cart_updated !== true)
@@ -63,13 +72,13 @@ if ($_POST['jcart_update_cart']  || $_POST['jcart_empty'])
 		}
 
 	// EMPTY THE CART
-	if ($_POST['jcart_empty'])
+	if ($emptyCart)
 		{
 		$cart->empty_cart();
 		}
 
 	// REDIRECT BACK TO THE CHECKOUT PAGE
-	header('Location: ' . $_POST['jcart_checkout_page']);
+	header('Location: ' . $checkoutPage);
 	exit;
 	}
 
@@ -134,13 +143,13 @@ else
 	// SEND CART CONTENTS TO PAYPAL USING THEIR UPLOAD METHOD, FOR DETAILS SEE http://tinyurl.com/djoyoa
 	else if ($valid_prices === true)
 		{
-			if ($_POST['pay_by'] == 'check') {
+			if ($payBy == 'check') {
 			   echo COM_refresh($_PAY_CONF['site_url'] . '/informations.php?shipping=' . $_POST['shipping'] . '&pay_by=check');
 			   exit();
 			} else {
 				// PAYPAL COUNT STARTS AT ONE INSTEAD OF ZERO
 				$paypal_count = 1;
-				$items_query_string;
+				$items_query_string = '';
 				foreach ($cart->get_contents() as $item)
 					{
 					// BUILD THE QUERY STRING
