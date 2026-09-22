@@ -491,6 +491,8 @@ function PAYPAL_siteFooter()
 function paypal_viewer_menu() {
     global $_CONF, $_PAY_CONF, $LANG_PAYPAL_1, $_TABLES;
 
+    $display = '';
+
     // generate the menu from the template
     $menu = COM_newTemplate($_CONF['path'] . 'plugins/paypal/templates/menus');
     $menu->set_file(array('menu' => 'viewer_menu.thtml'));
@@ -543,6 +545,8 @@ function paypal_viewer_menu() {
 function paypal_user_menu() {
     global $_CONF, $_PAY_CONF, $LANG_PAYPAL_1, $_TABLES;
 
+    $display = '';
+
     // generate the menu from the template
     $menu = COM_newTemplate($_CONF['path'] . 'plugins/paypal/templates/menus');
     $menu->set_file(array('menu' => 'user_menu.thtml'));
@@ -550,6 +554,7 @@ function paypal_user_menu() {
 	
 	// Display types
     $types = 0;
+    $separator = '';
     //Products
 	$sql = "SELECT type 
 			    FROM {$_TABLES['paypal_products']}
@@ -619,6 +624,8 @@ function paypal_user_menu() {
  */
 function paypal_admin_menu() {
     global $_CONF, $_PAY_CONF, $_TABLES, $LANG_PAYPAL_1, $LANG_PAYPAL_ADMIN;
+
+    $display = '';
 
     // generate the menu from the template
     $menu = COM_newTemplate($_CONF['path'] . 'plugins/paypal/templates/menus');
