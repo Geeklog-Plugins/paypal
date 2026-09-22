@@ -44,7 +44,7 @@ $type = $_REQUEST['type']; //purchase or subscription
 //if (($_USER['uid'] < 2) && ($_PAY_CONF['anonymous_buy'] == 0)) {
 if ($_USER['uid'] < 2 ) {
     $display .= COM_siteHeader();
-	if (SEC_hasRights('paypal.user', 'paypal.admin')) {
+	if (SEC_hasRights('paypal.user,paypal.admin', 'OR')) {
         $display .= paypal_user_menu();
     } else {
         $display .= paypal_viewer_menu();
@@ -113,7 +113,7 @@ if ( $A['user_id'] != '' && ($_USER['uid'] != $A['user_id']) && SEC_hasRights('p
 //Log-In to access
 if (($_USER['uid'] < 2) && ($A['logged'] == 1)) {
     $display .= COM_siteHeader();
-	if (SEC_hasRights('paypal.user', 'paypal.admin')) {
+	if (SEC_hasRights('paypal.user,paypal.admin', 'OR')) {
         $display .= paypal_user_menu();
     } else {
         $display .= paypal_viewer_menu();
@@ -349,7 +349,7 @@ if ($_REQUEST['mode'] == 'print') {
     $display = $content;
 } else {
     $display = COM_siteHeader();
-    if (SEC_hasRights('paypal.user', 'paypal.admin')) {
+    if (SEC_hasRights('paypal.user,paypal.admin', 'OR')) {
         $display .= paypal_user_menu();
     } else {
         $display .= paypal_viewer_menu();
