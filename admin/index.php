@@ -1148,11 +1148,11 @@ if ( !file_exists($_PAY_CONF['path_images']) || !is_writable($_PAY_CONF['path_im
             if (!file_exists($_PAY_CONF['path_at_images']) || !is_writable($_PAY_CONF['path_at_images'])) {
 				$display .= COM_showMessageText( '>> '. $_PAY_CONF['path_at_images'] . '<p>' . $LANG_PAYPAL_1['image_not_writable'] . '</p>');
 			}
-            $display .= PAYPALPRO_attributes();
+            $display .= PAYPAL_attributes();
 			break;
 		
 		case 'attributetypes':
-            $display .= PAYPALPRO_attributeTypes();
+            $display .= PAYPAL_attributeTypes();
 			break;
 			
 		case 'shipping':
@@ -1351,8 +1351,8 @@ if ( !file_exists($_PAY_CONF['path_images']) || !is_writable($_PAY_CONF['path_im
 		default : 
             $display .= '<div style="clear:both;">&nbsp;</div>' . COM_startBlock($LANG_PAYPAL_1['products_list']);
 			
-            $attributesmenu = PAYPALPRO_attributesMenu();
-            $attributetypesmenu = PAYPALPRO_attributeTypesMenu();
+            $attributesmenu = PAYPAL_attributesMenu();
+            $attributetypesmenu = PAYPAL_attributeTypesMenu();
             $new_recurrent = '<a href="' . $_CONF['site_url'] . '/admin/plugins/paypal/product_edit.php?type=recurrent">' 
 			. $LANG_PAYPAL_1['new_recurrent'] . ' </a> | ';
 			
