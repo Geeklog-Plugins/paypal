@@ -84,6 +84,27 @@ require_once $_CONF['path_system'].'classes/config.class.php';
 $c = config::get_instance();
 $_PAY_CONF = $c->get_config('paypal');
 
+// PayPal 1.7.0 renamed the historical misspelled configuration key.
+// Keep this migration here as well as in upgrade.php so pre-release 1.7.0
+// installations whose stored plugin version is already 1.7.0 are repaired.
+if (!array_key_exists('enable_pay_by_check', $_PAY_CONF)
+    && array_key_exists('enable_pay_by_ckeck', $_PAY_CONF)
+) {
+    $c->add(
+        'enable_pay_by_check',
+        (int) $_PAY_CONF['enable_pay_by_ckeck'],
+        'select',
+        0,
+        0,
+        3,
+        70,
+        true,
+        'paypal'
+    );
+    $c->del('enable_pay_by_ckeck', 'paypal');
+    $_PAY_CONF = $c->get_config('paypal');
+}
+
 /*
 * Include specific paypal config file
 */
