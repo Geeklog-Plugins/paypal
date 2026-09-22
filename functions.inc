@@ -679,6 +679,7 @@ function paypal_admin_menu() {
     $menu = COM_newTemplate($_CONF['path'] . 'plugins/paypal/templates/menus');
     $menu->set_file(array('menu' => 'admin_menu.thtml'));
     $menu->set_var('site_url', $_CONF['site_url']);
+    $menu->set_var('admin_url', $_CONF['site_admin_url']);
 	$menu->set_var('paypal_url', $_PAY_CONF['site_url']);
     $menu->set_var('homepage_label', $LANG_PAYPAL_1['homepage_label']);
     $menu->set_var('store', $LANG_PAYPAL_1['store']);
@@ -690,6 +691,7 @@ function paypal_admin_menu() {
 	$menu->set_var('downloads_history', $LANG_PAYPAL_1['downloads']);
     $menu->set_var('view_IPN_log', $LANG_PAYPAL_1['IPN_logs']);
     $menu->set_var('help', $LANG_PAYPAL_1['help']);
+    $menu->set_var('configuration', $LANG_PAYPAL_1['configuration']);
     /**
      * @todo add support for pending transaction, not fully implemented
      */
