@@ -379,7 +379,7 @@ function paypal_viewer_menu() {
     $menu->set_var('product_list_label', $type_layout);
 	
 	if ($_PAY_CONF['view_membership'] == '1') {
-    	$menu->set_var('memberships', '| <a href="' . $_PAY_CONF['site_url'] . '/memberships_history.php">' . $LANG_PAYPAL_1['members_list'] . '</a>');
+    	$menu->set_var('memberships', '<a href="' . $_PAY_CONF['site_url'] . '/memberships_history.php">' . $LANG_PAYPAL_1['members_list'] . '</a>');
 	} else {
 	    $menu->set_var('memberships', '');
 	}
@@ -454,12 +454,12 @@ function paypal_user_menu() {
     $menu->set_var('paypal_url', 'https://' . $_PAY_CONF['paypalURL']);
     $menu->set_var('business', $_PAY_CONF['receiverEmailAddr']);
 	if ($_PAY_CONF['view_membership'] == '1') {
-    	$menu->set_var('memberships', '| <a href="' . $_PAY_CONF['site_url'] . '/memberships_history.php">' . $LANG_PAYPAL_1['members_list'] . '</a>');
+    	$menu->set_var('memberships', '<a href="' . $_PAY_CONF['site_url'] . '/memberships_history.php">' . $LANG_PAYPAL_1['members_list'] . '</a>');
 	} else {
 	    $menu->set_var('memberships', '');
 	}
 	if (SEC_hasRights('paypal.admin')) {
-        $menu->set_var('admin', ' | ' . '<a href="' . $_CONF['site_url'] . '/admin/plugins/paypal/index.php">' . $LANG_PAYPAL_1['admin'] . '</a>');
+        $menu->set_var('admin', '<a href="' . $_CONF['site_url'] . '/admin/plugins/paypal/index.php">' . $LANG_PAYPAL_1['admin'] . '</a>');
     } else {
 	    $menu->set_var('admin', '');
 	}
@@ -1062,7 +1062,7 @@ function PAYPAL_displayProducts ($pid = '', $autotag=0, $category = '', $column 
     if (empty($pid)) {
         $retval .= $product->parse('', 'start');
     } else {
-        $retval .= '<table class="product_list" cellspacing="5" border="0" width="100%">';
+        $retval .= '<div class="paypal-product-grid paypal-product-grid--single">';
     }
 
     // query
@@ -1168,7 +1168,7 @@ function PAYPAL_displayProducts ($pid = '', $autotag=0, $category = '', $column 
             if ($A['shipping_type'] == 0) {
 			    $product->set_var('item_weight', '0.00');
 				if ($A['product_type'] == 0 && $A['type'] == 'product') {
-				    $product->set_var('free_shipping', '<small><font style="color:red">' . $LANG_PAYPAL_CART['free_shipping'] . '</font></small>');
+				    $product->set_var('free_shipping', '<span class="paypal-badge paypal-badge--shipping">' . $LANG_PAYPAL_CART['free_shipping'] . '</span>');
 				} else {
 				    $product->set_var('free_shipping', '');
 			    }
@@ -1237,22 +1237,9 @@ function PAYPAL_displayProducts ($pid = '', $autotag=0, $category = '', $column 
 				$product->set_var('edit', "<form action=\"{$_CONF['site_url']}/admin/plugins/paypal/product_edit.php?op=edit&amp;id={$A['id']}\" method=\"POST\"><div style=\"float:right; margin-left:5px;\"> <input type=\"image\" src=\"{$_PAY_CONF['site_url']}/images/edit.png\" name=\"id\" value=\"{$A['id']}\" align=\"middle\" /></div><input type=\"hidden\" name=\"op\" value=\"edit\" /></form>");
 			}
 
-			if (($A['hidden'] == 0)  || SEC_hasRights('paypal.admin')) {
-				if ($_PAY_CONF['products_col'] == 1) {
-					$p_retval .= '<tr valign="top">' . $product->parse('', 'product') . '</tr>';
-				} else if ($col_number == $_PAY_CONF['products_col']) {
-					$p_retval .= $product->parse('', 'product') . '</tr>';
-					$col_number = 1;
-				} else if ($col_number == 1){
-					$p_retval .= '<tr valign="top">' . $product->parse('', 'product') . '<td class="product-separator"></td>';
-					$col_number = $col_number+1;
-				} else {
-					$p_retval .= $product->parse('', 'product') . '<td class="product-separator"></td>';
-					$col_number = $col_number+1;
-				}
-			} else {
-			  $p_retval .= '';
-			}
+            if (($A['hidden'] == 0) || SEC_hasRights('paypal.admin')) {
+                $p_retval .= $product->parse('', 'product');
+            }
 		}
 	}
 	$retval .= $p_retval;
@@ -1282,8 +1269,7 @@ function PAYPAL_displayProducts ($pid = '', $autotag=0, $category = '', $column 
     if (empty($pid)) {
         $retval .= $product->parse('', 'end');
     } else {
-        $retval .= '<div style="clear:both"></div>
-        </table>';
+        $retval .= '</div>';
     }
 
     return $retval;
