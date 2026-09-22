@@ -136,8 +136,14 @@ function PAYPAL_getListField_paypal_transactions($fieldname, $fieldvalue, $A, $i
 {
     global $_CONF, $_PAY_CONF, $LANG_PAYPAL_1;
 	
-	$out = preg_replace('!s:(\d+):"(.*?)";!se', "'s:'.strlen('$2').':\"$2\";'", $A['ipn_data'] ); 
-    $ipn = unserialize($out);
+    $out = preg_replace_callback(
+        '!s:(\\d+):"(.*?)";!s',
+        function ($matches) {
+            return 's:' . strlen($matches[2]) . ':"' . $matches[2] . '";';
+        },
+        $A['ipn_data']
+    );
+    $ipn = @unserialize($out);
 	if (!is_array($ipn)) {
         $ipn = array();
     }
@@ -193,10 +199,10 @@ function PAYPAL_getListField_paypal_transactions($fieldname, $fieldvalue, $A, $i
     return $retval;
 }
 
-$paypalMode = isset($_REQUEST['mode']) ? COM_applyFilter($_REQUEST['mode']) : '';
-if ($paypalMode == 'edit') {
+$paypalMode = isset($_POST['mode']) ? COM_applyFilter($_POST['mode']) : '';
+if ($paypalMode == 'edit' && SEC_checkToken()) {
     // Update a manually pending transaction only.
-    $paypalTxnId = isset($_REQUEST['txn_id']) ? COM_applyFilter($_REQUEST['txn_id']) : '';
+    $paypalTxnId = isset($_POST['txn_id']) ? COM_applyFilter($_POST['txn_id']) : '';
     $paypalTxnSql = DB_escapeString($paypalTxnId);
 	$sql = "SELECT * FROM {$_TABLES['paypal_ipnlog']} WHERE txn_id = '{$paypalTxnSql}'";
 	$res = DB_query($sql);
