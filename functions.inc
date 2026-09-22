@@ -87,6 +87,7 @@ require_once ($_CONF['path'] . 'plugins/paypal/paypal.php');
 
 require_once ($_CONF['path'] . 'plugins/paypal/interoperability.php');
 require_once ($_CONF['path'] . 'plugins/paypal/services.inc.php');
+require_once ($_CONF['path'] . 'plugins/paypal/storage.php');
 
 /*
 * Include classes
