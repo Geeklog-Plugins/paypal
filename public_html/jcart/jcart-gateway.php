@@ -68,6 +68,8 @@ if ($updateCart || $emptyCart)
 		$cart->empty_cart();
 		}
 
+    PAYPAL_saveCart($cart);
+
 	// REDIRECT BACK TO THE CHECKOUT PAGE
 	header('Location: ' . $checkoutPage);
 	exit;
