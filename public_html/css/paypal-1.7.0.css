@@ -542,3 +542,43 @@
     margin-top: .5rem;
   }
 }
+
+
+/* Admin and account forms */
+.paypal-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.paypal-form-grid label {
+  display: grid;
+  gap: .4rem;
+  align-content: start;
+}
+
+.paypal-form-grid label > span:first-child {
+  font-weight: 700;
+}
+
+.paypal-inline-field {
+  display: flex;
+  gap: .5rem;
+  align-items: center;
+}
+
+.paypal-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .6rem;
+  margin-top: 1rem;
+}
+
+.paypal-required-note {
+  font-size: .9rem;
+  opacity: .75;
+}
+
+.paypal-danger {
+  border-color: currentColor;
+}
