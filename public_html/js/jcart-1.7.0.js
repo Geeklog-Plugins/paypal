@@ -11,8 +11,11 @@
     }
 
     function refreshCart(data) {
-        $('#jcart').html(data);
-        $('.jcart-hide').remove();
+        var $cart = $('#jcart');
+        if ($cart.length) {
+            $cart.html(data);
+            $('.jcart-hide').remove();
+        }
     }
 
     function refreshCartBlock(data) {
