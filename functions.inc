@@ -1428,7 +1428,7 @@ function phpblock_paypal_randomBlock()
 
 function PAYPAL_listPurchases($list='one')
 {
-    global $_CONF, $_TABLES, $LANG_PAYPAL_1, $LANG_PAYPAL_ADMIN, $_USER;
+    global $_CONF, $_TABLES, $_PAY_CONF, $LANG_PAYPAL_1, $LANG_PAYPAL_ADMIN, $_USER;
 
     require_once $_CONF['path_system'] . 'lib-admin.php';
 
