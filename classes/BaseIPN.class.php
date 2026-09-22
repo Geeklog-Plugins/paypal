@@ -552,10 +552,16 @@ class BaseIPN {
 			
 			//TODO + attribute name
 			
-			// Set quantity to one if empty
-			if($quantity[$i] =='') $quantity[$i] = 1;
-			
-            $names[] = $product_name[$i] . ' x ' . $quantity[$i] ;
+            $itemQuantity = isset($quantity[$i]) ? (int) $quantity[$i] : 1;
+            if ($itemQuantity < 1) {
+                $itemQuantity = 1;
+            }
+            $quantity[$i] = $itemQuantity;
+
+            $itemName = isset($product_name[$i]) && $product_name[$i] !== ''
+                ? $product_name[$i]
+                : $A['name'];
+            $names[] = $itemName . ' x ' . $itemQuantity;
 
             // Do record anonymous users in purchase table
 			//TODO record product name + product_id with attribute
