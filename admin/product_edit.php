@@ -402,8 +402,8 @@ function PAYPAL_getProductForm($product = array(), $type = 'product') {
     }
 	
     if (!empty($product['id'])) {
-        $template->set_var('attributes', PAYPALPRO_displayAttributes($product['id']));
-        $template->set_var('add_attributes', PAYPALPRO_displayAttributesToAdd($product['id']));
+        $template->set_var('attributes', PAYPAL_displayAttributes($product['id']));
+        $template->set_var('add_attributes', PAYPAL_displayAttributesToAdd($product['id']));
     } else {
         $template->set_var('attributes', '');
         $template->set_var('add_attributes', $LANG_PAYPAL_1['add_attributes']);
