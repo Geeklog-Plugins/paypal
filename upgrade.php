@@ -728,15 +728,20 @@ function paypal_upgrade()
                         $name,
                         $definition[0],
                         $definition[1],
-                        1,
-                        8,
+                        0,
+                        60,
                         $definition[2],
                         $definition[3],
                         true,
-                        'paypal'
+                        'paypal',
+                        60
                     );
                 }
             }
+
+            // PayPal 1.7.0: reorganize configuration into Geeklog tabs
+            // without changing the stored values.
+            PAYPAL_applyConfigTabs();
 
             // PayPal 1.7.0: IPN logs must support IPv6 addresses.
             DB_query("ALTER TABLE {$_TABLES['paypal_ipnlog']} MODIFY ip_addr varchar(45) NOT NULL");
