@@ -1647,12 +1647,17 @@ function PAYPAL_listSubscriptions($list, $active = 0, $group ='')
     require_once $_CONF['path_system'] . 'lib-admin.php';
 
     $retval = '';
-	
-	if (DB_count($_TABLES['paypal_subscriptions']) == 0){
-	    $retval .= '<p>' . $LANG_PAYPAL_1['subscriptions_empty'] . '</p>';
-	}
-	
-	$defsort_arr = array('field' => 'purchase_date', 'direction' => 'desc');
+    $header_arr = array();
+    $text_arr = array(
+        'has_extras' => false,
+        'form_url' => '',
+    );
+
+    if (DB_count($_TABLES['paypal_subscriptions']) == 0) {
+        return '<p>' . $LANG_PAYPAL_1['subscriptions_empty'] . '</p>';
+    }
+
+    $defsort_arr = array('field' => 'purchase_date', 'direction' => 'desc');
 
     if ($list == 'all') {
         $header_arr = array(      // display 'text' and use table field 'field'
