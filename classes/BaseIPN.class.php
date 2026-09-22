@@ -238,14 +238,13 @@ class BaseIPN {
 		
 		if ( $id == '') {
 		    // Alert admin of a possible charset issue
-			if ( $in['charset'] != '' && strtolower($in['charset']) != strtolower($_CONF['default_charset']) )  {
+            if (!empty($in['charset'])
+                && strtolower($in['charset']) != strtolower($_CONF['default_charset'])) {
 				COM_errorLog('PAYPAL: IPN Charset possible issue. Please check your settings https://www.paypal.com/ie/cgi-bin/webscr?cmd=_profile-language-encoding. Paypal charset is set to ' 
 				. $in['charset'] .  ' but your default charset is set to ' . $_CONF['default_charset']);
 			}
 		
-			// Log to database
-			$input_arr = array();
-			//grabs the $_POST variables and adds slashes
+            // Log to database using escaped values without mutating the IPN payload.
             $ipAddress = isset($_SERVER['REMOTE_ADDR']) ? DB_escapeString($_SERVER['REMOTE_ADDR']) : '';
             $serialized = DB_escapeString(serialize($in));
 			$sql = "INSERT INTO {$_TABLES['paypal_ipnlog']} SET ip_addr = '{$ipAddress}', "
