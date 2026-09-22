@@ -74,7 +74,14 @@ foreach ($cart->get_contents() as $item) {
 	$quantities[$i] = $item['qty'];
 	$item_price[$i]	= $item['price'];
 	$A = DB_fetchArray(DB_query("SELECT * FROM {$_TABLES['paypal_products']} WHERE id = '{$item_id}' LIMIT 1"));
-	if ($item_price[$i] <> PAYPAL_productPrice($A) || !SEC_hasAccess2($A) || $A['active'] != '1') $valid_prices = false;
+    if (!is_array($A)
+        || $item_price[$i] <> PAYPAL_productPrice($A)
+        || !SEC_hasAccess2($A)
+        || !isset($A['active'])
+        || $A['active'] != '1'
+    ) {
+        $valid_prices = false;
+    }
 	$i++;
 }
 if ($valid_prices !== true) {
