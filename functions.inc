@@ -1264,7 +1264,7 @@ function PAYPAL_displayProducts ($pid = '', $autotag=0, $category = '', $column 
 				    $width = '100%';
 					$height = '100%';
 				}
-				$product->set_var('small_pic', '<a class="product-details" href="' . $_PAY_CONF['site_url'] . '/product_detail.php?n=' . urlencode($A['name']) . '&amp;product='. $A['id'] . '"><img class="lightbox" src="'. $_PAY_CONF['site_url'] . '/timthumb.php?src=' . $_PAY_CONF['images_url'] . $A['pi_filename'] . '&amp;w='. $width . '&amp;h='. $height . '&amp;zc=1&amp;q=100" alt="' . $A['name'] . '" /></a>');
+				$product->set_var('small_pic', '<a class="product-details" href="' . $_PAY_CONF['site_url'] . '/product_detail.php?n=' . urlencode($A['name']) . '&amp;product='. $A['id'] . '"><img class="paypal-image-link" src="'. $_PAY_CONF['site_url'] . '/timthumb.php?src=' . $_PAY_CONF['images_url'] . $A['pi_filename'] . '&amp;w='. $width . '&amp;h='. $height . '&amp;zc=1&amp;q=100" alt="' . $A['name'] . '" /></a>');
 				
 			}
 
@@ -1494,7 +1494,7 @@ function plugin_dopluginsearch_paypal($query, $datestart, $dateend, $topic, $typ
             if ($row['pi_filename'] == '') {
                 $image = '';
             } else {
-                $image = ' <a class="lightbox" href="' . $_PAY_CONF['images_url'] . $row['pi_filename'] . '"><img class="lightbox" src="'. $_PAY_CONF['site_url'] . '/timthumb.php?src=' . $_PAY_CONF['images_url'] . $row['pi_filename'] . '&amp;h=55&amp;zc=1&amp;q=100" alt="' . $row['title'] . '" align="top" style="margin-top:3px;"/></a>';
+                $image = ' <a class="paypal-image-link" href="' . $_PAY_CONF['images_url'] . $row['pi_filename'] . '"><img class="paypal-image-link" src="'. $_PAY_CONF['site_url'] . '/timthumb.php?src=' . $_PAY_CONF['images_url'] . $row['pi_filename'] . '&amp;h=55&amp;zc=1&amp;q=100" alt="' . $row['title'] . '" align="top" style="margin-top:3px;"/></a>';
             }
 			$formattedResults[] = array(LF_SOURCE_NAME=>'paypal',
                                 LF_SOURCE_TITLE=>$LANG_paypal_1['products'],
@@ -1574,7 +1574,7 @@ function phpblock_paypal_randomBlock()
 	if ($A['pi_filename'] == '') {
 		$T->set_var('small_pic', '');
 	} else {
-		$T->set_var('small_pic', '<a class="product-details" href="' . $_PAY_CONF['site_url'] . '/product_detail.php?n=' . urlencode($A['name']) . '&amp;product='. $A['id'] . '"><img class="lightbox" src="'. $_PAY_CONF['site_url'] . '/timthumb.php?src=' . $_PAY_CONF['images_url']
+		$T->set_var('small_pic', '<a class="product-details" href="' . $_PAY_CONF['site_url'] . '/product_detail.php?n=' . urlencode($A['name']) . '&amp;product='. $A['id'] . '"><img class="paypal-image-link" src="'. $_PAY_CONF['site_url'] . '/timthumb.php?src=' . $_PAY_CONF['images_url']
 		. $A['pi_filename'] . '&amp;w='. $_PAY_CONF['max_thumbnail_size'] . '&amp;zc=1&amp;q=100" alt="' . $A['name'] . '" /></a>');
 	}
 
