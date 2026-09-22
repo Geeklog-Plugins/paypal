@@ -112,7 +112,7 @@ function PAYPAL_handleView($url, $product)
          . 'GROUP BY rt_id';
     $result = DB_query ($sql);
     $B = DB_fetchArray ($result);
-    $allowed = $B['count'];
+    $allowed = (is_array($B) && isset($B['count'])) ? (int) $B['count'] : 0;
 
     if ( $allowed >= 1 ) {
         $delete_option = ( SEC_hasRights( 'rating.edit' ) &&
@@ -351,7 +351,7 @@ function PAYPAL_get_review( &$comments, $order, $url, $delete_option = false, $p
 			         . 'GROUP BY rid';
 			    $result = DB_query ($sql);
 			    $B = DB_fetchArray ($result);
-			    $allowed = $B['count'];
+			    $allowed = (is_array($B) && isset($B['count'])) ? (int) $B['count'] : 0;
 			
 			    if ( $allowed >= 1 ) {
 			        $access = SEC_hasAccess( $B['owner_id'], $B['group_id'],
@@ -588,8 +588,8 @@ function PAYPAL_review_bar( $rt_id, $title, $order, $url )
     } else {
         $result = DB_query( "SELECT username,fullname FROM {$_TABLES['users']} WHERE uid = 1" );
         $N = DB_fetchArray( $result );
-        $username = $N['username'];
-        $fullname = $N['fullname'];
+        $username = (is_array($N) && isset($N['username'])) ? $N['username'] : 'Anonymous';
+        $fullname = (is_array($N) && isset($N['fullname'])) ? $N['fullname'] : '';
         $uid = 1;
     }
     
@@ -619,7 +619,7 @@ function PAYPAL_review_bar( $rt_id, $title, $order, $url )
 	         . 'GROUP BY rt_id';
 	    $result = DB_query ($sql);
 	    $B = DB_fetchArray ($result);
-	    $allowed = $B['count'];
+	    $allowed = (is_array($B) && isset($B['count'])) ? (int) $B['count'] : 0;
 	
 	    if ( $allowed >= 1 ) {
 	        $access = SEC_hasAccess( $B['owner_id'], $B['group_id'], $B['perm_owner'], $B['perm_group'], $B['perm_members'], $B['perm_anon'] );    
