@@ -114,11 +114,18 @@ function plugin_getListField_paypal_IPNlog($fieldname, $fieldvalue, $A, $icon_ar
 	
 	//$A['ipn_data'] = base64_decode($A['ipn_data']);
 	
-	$out = preg_replace('!s:(\d+):"(.*?)";!se', "'s:'.strlen('$2').':\"$2\";'", $A['ipn_data'] ); 
-	
-	if (!$ipn = unserialize($out)) {
-	    $ipn = repairSerializedArray($A['ipn_data']);
-	}
+    $out = preg_replace_callback(
+        '!s:(\\d+):"(.*?)";!s',
+        function ($matches) {
+            return 's:' . strlen($matches[2]) . ':"' . $matches[2] . '";';
+        },
+        isset($A['ipn_data']) ? $A['ipn_data'] : ''
+    );
+
+    $ipn = @unserialize($out);
+    if (!is_array($ipn)) {
+        $ipn = repairSerializedArray(isset($A['ipn_data']) ? $A['ipn_data'] : '');
+    }
 	
 	if (!is_array($ipn)) {
         $ipn = array();
@@ -140,11 +147,19 @@ function plugin_getListField_paypal_IPNlog($fieldname, $fieldvalue, $A, $icon_ar
 		case "txn_id":
             $retval = '<a href="' . $_CONF['site_url'] . '/admin/plugins/paypal/ipnlog.php?view=ipnlog&op=single&txn_id=' . $A['txn_id'] . '">' . $A['txn_id'] . '</a>';
             break;
-		case "payment_status":
-            $retval = $ipn['payment_status'];
+        case "payment_status":
+            $retval = isset($ipn['payment_status']) ? $ipn['payment_status'] : '';
             break;
-		case "custom":
-            ($ipn['custom'] > 1) ? $retval = '<a href="' . $_CONF['site_url'] . '/users.php?mode=profile&uid=' . $ipn['custom'] . '">' . $ipn['last_name'] . '</a>' . ' (' . $ipn['custom'] . ')' : $retval = $ipn['last_name'] ;
+
+        case "custom":
+            $custom = isset($ipn['custom']) ? (int) $ipn['custom'] : 0;
+            $lastName = isset($ipn['last_name']) ? $ipn['last_name'] : '';
+            if ($custom > 1) {
+                $retval = '<a href="' . $_CONF['site_url'] . '/users.php?mode=profile&uid='
+                    . $custom . '">' . $lastName . '</a> (' . $custom . ')';
+            } else {
+                $retval = $lastName;
+            }
             break;
 
         default:
@@ -169,6 +184,9 @@ function PAYPAL_ipnlog_single($id, $txn_id) {
 	global $_TABLES, $LANG_PAYPAL_1, $_CONF, $_PAY_CONF, $_SCRIPTS;
 	
 	$input_ipn = 0;
+
+    $csrfTokenName = CSRF_TOKEN;
+    $csrfTokenValue = SEC_createToken();
 
     $js = 'jQuery(document).ready(function() {
 	    jQuery(".paypal_handle_purchase").live("click", function() {
@@ -199,7 +217,8 @@ function PAYPAL_ipnlog_single($id, $txn_id) {
     if ($id > 0) {
         $sql = "SELECT * FROM {$_TABLES['paypal_ipnlog']} WHERE id = $id";
     } else {
-        $sql = "SELECT * FROM {$_TABLES['paypal_ipnlog']} WHERE txn_id = '$txn_id'";
+        $safeTxnId = DB_escapeString((string) $txn_id);
+        $sql = "SELECT * FROM {$_TABLES['paypal_ipnlog']} WHERE txn_id = '{$safeTxnId}'";
     }
     $res = DB_query($sql);
     $A = DB_fetchArray($res);
