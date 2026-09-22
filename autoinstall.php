@@ -123,6 +123,47 @@ function plugin_autoinstall_paypal($pi_name)
 * @return   boolean             true: plugin compatible; false: not compatible
 *
 */
+if (!function_exists('plugin_autouninstall_paypal')) {
+    function plugin_autouninstall_paypal()
+    {
+        return array(
+            'tables' => array(
+                'paypal_ipnlog',
+                'paypal_downloads',
+                'paypal_products',
+                'paypal_purchases',
+                'paypal_images',
+                'paypal_categories',
+                'paypal_subscriptions',
+                'paypal_users',
+                'paypal_attributes',
+                'paypal_attribute_type',
+                'paypal_product_attribute',
+                'paypal_stock',
+                'paypal_delivery',
+                'paypal_stock_movements',
+                'paypal_providers',
+                'paypal_shipper_service',
+                'paypal_shipping_to',
+                'paypal_shipping_cost',
+                'paypal_recurrent'
+            ),
+            'groups' => array(
+                'Paypal Admin',
+                'Paypal User',
+                'Paypal Viewer'
+            ),
+            'features' => array(
+                'paypal.admin',
+                'paypal.user',
+                'paypal.viewer'
+            ),
+            'php_blocks' => array(),
+            'vars' => array()
+        );
+    }
+}
+
 function plugin_compatible_with_this_version_paypal($pi_name)
 {
     global $_CONF, $_DB_dbms;
