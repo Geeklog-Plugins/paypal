@@ -208,7 +208,7 @@ function plugin_initconfig_paypal()
                 'select', 0, 0, 3, 63, true, 'paypal');
 		$c->add('enable_pay_by_paypal', 1,
                 'select', 0, 0, 3, 65, true, 'paypal');
-		$c->add('enable_pay_by_ckeck', 0,
+		$c->add('enable_pay_by_check', 0,
                 'select', 0, 0, 3, 70, true, 'paypal');
 		$c->add('API_UserName', 0,
                 'text', 0, 0, 0, 100, true, 'paypal');
