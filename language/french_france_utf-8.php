@@ -366,6 +366,7 @@ $LANG_PAYPAL_ADMIN = array(
 	'prod_type'               => 'Type de produit',
 	'prod_types'              => array(0 => 'Physique', 1 => 'Téléchargeable', 2 => 'Virtuel/Service'),
 	'weight'                  => 'Poids(en kilogrammes)',
+	'per_item'                => 'Par article',
 	'shipping_type'           => 'Type d\'expédition',
 	'shipping_amt'            => 'Frais d\'expédition',
 	'shipping_options'        => array(0 => 'Pas de frais de port / Port gratuit', 1 => 'Appliquer les frais de port'),
