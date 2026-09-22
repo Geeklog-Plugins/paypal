@@ -45,8 +45,11 @@ $valid_process = true;
 $display = '';
 $req = '';
 $item_id = isset($_POST['item_number']) ? $_POST['item_number'] : '';
-$item_price = isset($_POST['amount']) ? $_POST['amount'] : '';
-$paypalURL = 'https://' . $_PAY_CONF['paypalURL'] . '/cgi-bin/webscr?cmd=_xclick';
+$item_price = 0.0;
+$paypalHost = (isset($_PAY_CONF['paypalURL']) && stripos($_PAY_CONF['paypalURL'], 'sandbox') !== false)
+    ? 'www.sandbox.paypal.com'
+    : 'www.paypal.com';
+$paypalURL = 'https://' . $paypalHost . '/cgi-bin/webscr?cmd=_xclick';
 
 
 /* MAIN */
@@ -59,7 +62,21 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 $_SESSION["user_id"] = $_USER['uid'];
 $_SESSION["item_id"] = $item_id;
 
-$A = DB_fetchArray(DB_query("SELECT * FROM {$_TABLES['paypal_products']} WHERE id = '{$item_id}' LIMIT 1"));
+$A = array();
+if ($item_id > 0) {
+    $A = DB_fetchArray(
+        DB_query(
+            "SELECT * FROM {$_TABLES['paypal_products']} "
+            . "WHERE id = " . (int) $item_id . " LIMIT 1"
+        )
+    );
+}
+if (!is_array($A) || empty($A['id'])) {
+    $display .= $jcart['text']['checkout_error'];
+    COM_output(PAYPAL_createHTMLDocument($display));
+    exit;
+}
+$item_price = (float) PAYPAL_productPrice($A);
 
 if ($A['type'] == 'recurrent') {
 
@@ -116,13 +133,15 @@ if ($A['type'] == 'recurrent') {
     
 } else {
 
-	if ($item_price <> $A['price'] || !SEC_hasAccess2($A) || $A['active'] != '1') $valid_process = false;
+    if (SEC_hasAccess2($A) < 2 || (int) $A['active'] !== 1) {
+        $valid_process = false;
+    }
 
 	$PAYPAL_POST['business'] = $_PAY_CONF['receiverEmailAddr'];
 	$PAYPAL_POST['item_name'] = $A['name'];
 	$PAYPAL_POST['custom'] = $_USER['uid'];
 	$PAYPAL_POST['item_number'] = $A['id'];
-	$PAYPAL_POST['amount'] = $A['price'];
+    $PAYPAL_POST['amount'] = number_format($item_price, 2, '.', '');
 	$PAYPAL_POST['no_note'] = '1';
 	$PAYPAL_POST['currency_code'] = $_PAY_CONF['currency'];
 	$PAYPAL_POST['return'] = $_PAY_CONF['site_url'] . '/index.php?mode=endTransaction';
@@ -142,7 +161,7 @@ if ($A['type'] == 'recurrent') {
 
 
 	foreach ($PAYPAL_POST as $key => $value) {
-		$value = urlencode(stripslashes($value));
+        $value = rawurlencode((string) $value);
 		$req .= "&$key=$value";
 	}
 
