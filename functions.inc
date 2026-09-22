@@ -120,18 +120,30 @@ foreach ($dynamicBlockDefaults as $name => $definition) {
             $name,
             $definition[0],
             $definition[1],
-            1,
-            8,
+            0,
+            60,
             $definition[2],
             $definition[3],
             true,
-            'paypal'
+            'paypal',
+            60
         );
         $dynamicBlockConfigChanged = true;
     }
 }
 if ($dynamicBlockConfigChanged) {
     $_PAY_CONF = $c->get_config('paypal');
+}
+
+$paypalTabsReady = isset($_TABLES['conf_values'])
+    ? (int) DB_getItem(
+        $_TABLES['conf_values'],
+        'COUNT(*)',
+        "group_name = 'paypal' AND name = 'tab_general'"
+    )
+    : 0;
+if ($paypalTabsReady === 0) {
+    PAYPAL_applyConfigTabs();
 }
 
 /*
@@ -143,6 +155,7 @@ require_once ($_CONF['path'] . 'plugins/paypal/interoperability.php');
 require_once ($_CONF['path'] . 'plugins/paypal/services.inc.php');
 require_once ($_CONF['path'] . 'plugins/paypal/storage.php');
 require_once ($_CONF['path'] . 'plugins/paypal/uninstall.php');
+require_once ($_CONF['path'] . 'plugins/paypal/lib/configuration.php');
 
 /*
 * Include classes
