@@ -117,6 +117,7 @@ $LANG_PAYPAL_1 = array(
 	'product_list_label'      => 'Product List',
 	'view_cart'               => 'View cart',
     'random_product'          => 'Random product',
+    'configuration'           => 'Configuration',
     'help'                    => 'Help',
     'create_recurring_payment'=> 'create a new recurring payment',
     'manage_attribute_types'  => 'manage attribute types',
