@@ -68,9 +68,10 @@ function PAYPAL_listTransactions()
 
     $retval = '';
 
-	if (DB_count($_TABLES['paypal_ipnlog']) == 0){
-	    $retval .= '<p>' . $LANG_PAYPAL_1['ipnlog_empty'] . '</p>';
-	}
+    if (DB_count($_TABLES['paypal_ipnlog']) == 0) {
+        return '<p>' . $LANG_PAYPAL_1['ipnlog_empty'] . '</p>';
+    }
+
     // Todo make mc_gross sortable (need a new field in paypal_purchases table
     $header_arr = array(      // display 'text' and use table field 'field'
         array('text' => $LANG_PAYPAL_1['date_time'], 'field' => 'time', 'sort' => true),
