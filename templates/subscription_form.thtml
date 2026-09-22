@@ -1,6 +1,7 @@
 {# begin {templatelocation} #}
 
 <form action="{site_url}/admin/plugins/paypal/subscriptions.php" method="POST" class="uk-form paypal_form">
+<input type="hidden" name="{gltoken_name}" value="{gltoken}">
 {id}
   <fieldset style="margin-top: 10px;"><legend><b>{informations}</b></legend>  	
 	<h2>{product_id_label} {product_id_select}</h2>	
