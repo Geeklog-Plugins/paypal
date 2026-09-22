@@ -917,14 +917,13 @@ function PAYPAL_displayProducts ($pid = '', $autotag=0, $category = '', $column 
 	
     if ($pid == '' && $autotag != 2) {
         if (isset( $_PAY_CONF['categoryColumns']) && $_PAY_CONF['categoryColumns'] > 0) {
-            $sql = "SELECT p.cat_id, c.cat_id, p.type, c.cat_name, c.description, c.image 
-			    FROM {$_TABLES['paypal_categories']} AS c
-				LEFT JOIN {$_TABLES['paypal_products']} AS p
-				ON p.cat_id = c.cat_id 
-				WHERE c.enabled = '1' AND c.parent_id = '{$category}'" .
-                COM_getPermSQL('AND', 0, 2, 'c');
-            
-            $sql .= " GROUP BY c.cat_id ORDER BY c.cat_name";
+            $categoryId = (int) $category;
+            $sql = "SELECT c.cat_id, c.cat_name, c.description, c.image
+                FROM {$_TABLES['paypal_categories']} AS c
+                WHERE c.enabled = '1'
+                  AND c.parent_id = {$categoryId}"
+                . COM_getPermSQL('AND', 0, 2, 'c')
+                . " ORDER BY c.cat_name";
 			
             $cat_res = DB_query($sql);
             $nrows = DB_numRows($cat_res);
@@ -954,10 +953,10 @@ function PAYPAL_displayProducts ($pid = '', $autotag=0, $category = '', $column 
 							if (file_exists($cat_image) && $C['image'] != '') {
 								$cat->set_var('cat_image','<p><a href="' . $_PAY_CONF['site_url'] . '/index.php?n=' 
 								. urlencode($C['cat_name']) . '&amp;category='. $C['cat_id'] 
-								. '"><img src="' . $_PAY_CONF['site_url'] . '/timthumb.php?src='
-								. $_PAY_CONF['images_cat_url'] . $C['image'] . '&amp;w=' . $imgwidth 
-								. '&amp;q=70&amp;zc=1" class="cat_image" title="' . $C['cat_name'] . '" alt="' 
-								. $C['cat_name'] . '" /></a></p>');
+                                . '"><img src="' . $_PAY_CONF['images_cat_url'] . rawurlencode($C['image'])
+                                . '" class="cat_image" style="max-width:' . (int) $imgwidth . 'px;height:auto" title="'
+                                . htmlspecialchars($C['cat_name'], ENT_QUOTES, 'UTF-8') . '" alt="'
+                                . htmlspecialchars($C['cat_name'], ENT_QUOTES, 'UTF-8') . '"></a></p>');
 							} else {
 								$cat->set_var('cat_image', '');
 							}
@@ -1046,7 +1045,7 @@ function PAYPAL_displayProducts ($pid = '', $autotag=0, $category = '', $column 
         $product->set_var('cpp_payflow_color', '');
     }
     if ($_PAY_CONF['cs']) {
-     $product->set_var('cs' . $_PAY_CONF['cs']);
+     $product->set_var('cs', $_PAY_CONF['cs']);
     } else {
         $product->set_var('cs', '');
     }
@@ -1142,7 +1141,15 @@ function PAYPAL_displayProducts ($pid = '', $autotag=0, $category = '', $column 
 				    $width = '100%';
 					$height = '100%';
 				}
-				$product->set_var('small_pic', '<a class="product-details" href="' . $_PAY_CONF['site_url'] . '/product_detail.php?n=' . urlencode($A['name']) . '&amp;product='. $A['id'] . '"><img class="paypal-image-link" src="'. $_PAY_CONF['site_url'] . '/timthumb.php?src=' . $_PAY_CONF['images_url'] . $A['pi_filename'] . '&amp;w='. $width . '&amp;h='. $height . '&amp;zc=1&amp;q=100" alt="' . $A['name'] . '" /></a>');
+                $product->set_var(
+                    'small_pic',
+                    '<a class="product-details" href="' . $_PAY_CONF['site_url']
+                    . '/product_detail.php?n=' . urlencode($A['name']) . '&amp;product=' . (int) $A['id']
+                    . '"><img class="paypal-image-link" src="' . $_PAY_CONF['images_url']
+                    . rawurlencode($A['pi_filename']) . '" style="max-width:' . htmlspecialchars((string) $width, ENT_QUOTES, 'UTF-8')
+                    . ';max-height:' . htmlspecialchars((string) $height, ENT_QUOTES, 'UTF-8')
+                    . ';width:auto;height:auto" alt="' . htmlspecialchars($A['name'], ENT_QUOTES, 'UTF-8') . '"></a>'
+                );
 				
 			}
 
