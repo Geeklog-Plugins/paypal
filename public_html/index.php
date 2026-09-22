@@ -76,9 +76,9 @@ paypal_filterVars($vars, $_REQUEST);
 $display = '';
 
 if ($_REQUEST['n'] == '') {
-    $display .= PAYPAL_siteHeader($_PAY_CONF['seo_shop_title']);
+    $pageTitle = $_PAY_CONF['seo_shop_title'];
 } else {
-    $display .= PAYPAL_siteHeader($_REQUEST['n'] . ' | ' . $_PAY_CONF['seo_shop_title']);
+    $pageTitle = $_REQUEST['n'] . ' | ' . $_PAY_CONF['seo_shop_title'];
 }
 
 if (SEC_hasRights('paypal.user', 'paypal.admin')) {
@@ -106,7 +106,6 @@ switch ($_REQUEST['mode']) {
 		$msg .=  '</ul><p>' . $LANG_PAYPAL_1['total']  . ' ' . $_POST['mc_gross'] . ' ' . $_POST['mc_currency'] . '</p>';
         $display .= COM_showMessageText($msg, $LANG_PAYPAL_1['thanks']);
 		$display .= '<div id="cart">' . PAYPAL_displayCart() .'</div>';
-        $display .= PAYPAL_siteFooter();
         break;
 	
 	case 'cancel':
@@ -114,7 +113,6 @@ switch ($_REQUEST['mode']) {
         $display .= COM_showMessageText($msg, $LANG_PAYPAL_1['cancel']);
 		$display .= PAYPAL_displayProducts('',0,$_REQUEST['category']);
 		$display .= '<div id="cart">' . PAYPAL_displayCart() .'</div>';
-        $display .= PAYPAL_siteFooter();
         break;
 		
 	default :
@@ -125,10 +123,8 @@ switch ($_REQUEST['mode']) {
 		
 		//Display cart
         $display .= '<div id="cart">' . PAYPAL_displayCart() .'</div>';
-		
-        $display .= PAYPAL_siteFooter();
 }
 
-COM_output($display);
+COM_output(PAYPAL_createHTMLDocument($display, $pageTitle));
 
 ?>
