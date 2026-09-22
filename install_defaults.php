@@ -32,7 +32,7 @@
 // +---------------------------------------------------------------------------+
 //
 
-if (strpos(strtolower($_SERVER['PHP_SELF']), 'install_defaults.php') !== false) {
+if (isset($_SERVER['PHP_SELF']) && strpos(strtolower($_SERVER['PHP_SELF']), 'install_defaults.php') !== false) {
     die('This file can not be used on its own!');
 }
 
@@ -49,7 +49,7 @@ if (strpos(strtolower($_SERVER['PHP_SELF']), 'install_defaults.php') !== false) 
 *   Default values to be used during plugin installation/upgrade
 *   @global array $_PAY_DEFAULT
 */
-global $_DB_table_prefix, $_PAY_DEFAULT, $LANG_PAY_1;
+global $_DB_table_prefix, $_PAY_DEFAULT;
 
 $_PAY_DEFAULT = array();
 
@@ -156,6 +156,7 @@ $_PAY_DEFAULT['order'] = 'name';
 $_PAY_DEFAULT['view_membership'] = 0;
 $_PAY_DEFAULT['view_review'] = 0;
 $_PAY_DEFAULT['display_2nd_buttons'] = 0;
+$_PAY_DEFAULT['categoryHeading'] = 'Categories';
 
 /**
 * Initialize paypal plugin configuration
@@ -259,7 +260,7 @@ function plugin_initconfig_paypal()
 				'text', 1, 9, 0, 11, true, 'paypal');
 		$c->add('maxPerPage', $_PAY_DEFAULT['maxPerPage'],
                 'text', 1, 9, 0, 20, true, 'paypal');
-		$c->add('categoryHeading', $LANG_PAYPAL_1['category_heading'],
+		$c->add('categoryHeading', $_PAY_DEFAULT['categoryHeading'],
                 'text', 1, 9, 0, 21, true, 'paypal');
 		$c->add('categoryColumns', $_PAY_DEFAULT['categoryColumns'],
                 'text', 1, 9, 0, 22, true, 'paypal');
