@@ -58,7 +58,7 @@ if ( $_PAY_CONF['view_membership'] != '1' && !SEC_hasRights('paypal.admin') ) {
 
 //Main
 
-$display = COM_siteHeader();
+$display = '';
 if (SEC_hasRights('paypal.user,paypal.admin', 'OR')) {
     $display .= paypal_user_menu();
 } else {
@@ -69,8 +69,6 @@ if (!empty($_REQUEST['msg'])) $display .= COM_showMessageText( stripslashes($_RE
 
 $display .= '<div id="membership">' . COM_startBlock($LANG_PAYPAL_1['members_list']) . phpblock_PAYPAL_displaySubscriptions() . COM_endBlock() . '</div>';
 
-$display .= COM_siteFooter();
-
-COM_output($display);
+COM_output(PAYPAL_createHTMLDocument($display, $LANG_PAYPAL_1['members_list']));
 
 ?>
