@@ -105,7 +105,7 @@ require_once $_CONF['path'] . 'plugins/paypal/lib/features.php';
 
 function plugin_getheadercode_paypal()
 {
-    global $_CONF, $_PAY_CONF, $_PLUGINS, $_SCRIPTS;
+    global $_CONF, $_PAY_CONF, $_PLUGINS, $_SCRIPTS, $jcart;
 
     $retval = '';
 	
@@ -113,7 +113,26 @@ function plugin_getheadercode_paypal()
 	
     if(stripos(COM_getCurrentURL(), '/' . $_PAY_CONF['paypal_folder'] . '/') !== FALSE) {
         if(stripos(COM_getCurrentURL(), 'informations.php') === FALSE) {
-            $_SCRIPTS->setJavaScriptFile('paypal_cart', '/' . $_PAY_CONF['paypal_folder'] . '/js/jcart-javascript.php');
+            $cartConfig = array(
+                'relayUrl' => $jcart['url'] . 'jcart-relay.php',
+                'relayBlockUrl' => $jcart['url'] . 'jcart-relay-block.php',
+                'itemId' => $jcart['item_id'],
+                'itemRef' => $jcart['item_ref'],
+                'itemName' => $jcart['item_name'],
+                'itemPrice' => $jcart['item_price'],
+                'itemQty' => $jcart['item_qty'],
+                'itemAdd' => $jcart['item_add'],
+                'itemWeight' => $jcart['item_weight'],
+                'updateButton' => $jcart['text']['update_button'],
+            );
+            $_SCRIPTS->setJavaScript(
+                'window.PayPalCartConfig = ' . json_encode($cartConfig) . ';',
+                true
+            );
+            $_SCRIPTS->setJavaScriptFile(
+                'paypal_cart',
+                '/' . $_PAY_CONF['paypal_folder'] . '/js/jcart.js'
+            );
         }
     }
 	
@@ -121,147 +140,6 @@ function plugin_getheadercode_paypal()
     
     if (stripos(COM_getCurrentURL(), 'admin/plugins/paypal/') !== FALSE ) $_SCRIPTS->setCSSFile('paypal_datepicker_css', '/jquery/datepicker/datepicker.css');
  
-    if (stripos(COM_getCurrentURL(), 'plugins/paypal/purchase_history.php') !== FALSE && SEC_hasRights('paypal.admin') && function_exists('PAYPAL_plot')) {
-	    
-		$_SCRIPTS->setCSSFile('paypal_css_jqplot', '/' . $_PAY_CONF['paypal_folder'] . '/css/jquery.jqplot.css');
-		
-		$js = '<!--[if lt IE 9]><script language="javascript" type="text/javascript" src="' . $_CONF['site_url'] . '/' . $_PAY_CONF['paypal_folder'] . '/js/excanvas.js"></script><![endif]-->
-	<script language="javascript" type="text/javascript" src="' . $_CONF['site_url'] . '/' . $_PAY_CONF['paypal_folder'] . '/js/jquery.jqplot.js">
-	</script>
-	<script language="javascript" type="text/javascript" src="' . $_CONF['site_url'] . '/' . $_PAY_CONF['paypal_folder'] . '/js/jqplot.dateAxisRenderer.js">
-	</script>
-	';
-	
-	$_SCRIPTS->setJavaScript($js, false, true);
-	}
-	
-	return $retval;
-}
-
-
-require_once $_CONF['path'] . 'plugins/paypal/uninstall.php';
-
-/**
-* Returns the item(s) for this plugin that should appear on the main menu
-*
-* NOTE: this MUST return the url/value pairs in the following format
-* $<arrayname>[<label>] = <url>
-*
-* @return   mixed   menu entry, or boolean false if disabled / hidden
-*
-*/
-function plugin_getmenuitems_paypal()
-{
-    global $_PAY_CONF, $_USER;
-
-    $menuitems = array();
-  	if ($_PAY_CONF['hide_paypal_menu'] == 0)  {
-	    if  ($_USER['uid'] < 2 && $_PAY_CONF['paypal_login_required'] == 1) {
-		    return $menuitems;
-		} else {
-      	    $menuitems[$_PAY_CONF['menulabel']] = $_PAY_CONF['site_url'] . '/index.php';
-		}
-    }
-    return $menuitems;
-}
-
-/**
-* Returns doc uri for Geeklog-1.6.0 or later
-*/
-function plugin_getdocumentationurl_paypal() {
-	
-	return 'http://geeklog.fr/wiki/plugins:paypal#configuration';
-}
-
-/**
-* Returns the user option for this plugin
-*
-* Adds the plugin to the user menu
-*
-* Universal Plugin:  modify/uncomment use it
-*
-* @return   array   Array containing (plugin name, plugin user url, 0)
-*
-*/
-function plugin_getuseroption_paypal() {
-    global $_PAY_CONF, $_USER, $LANG_PAYPAL_1;
-
-    if (COM_isAnonUser()) return '';
-
-    $menuitems = array();
-
-    $menuitems[] = array($LANG_PAYPAL_1['purchase_history'], $_PAY_CONF['site_url'] . '/purchase_history.php', 0);
-
-    return $menuitems;
-}
-
-/**
-* Implements a [paypal:] autotag.
-*
-* @param    string  $op         operation to perform
-* @param    string  $content    item (e.g. story text), including the autotag
-* @param    array   $autotag    parameters used in the autotag
-* @param    mixed               tag names (for $op='tagname') or formatted content
-*
-*/
-
-function plugin_autotags_paypal($op, $content = '', $autotag = '')
-{
-    global $_CONF, $_TABLES, $LANG_PAYPAL_1, $_PAY_CONF,$_SCRIPTS;
-
-    if ($op == 'tagname') {
-        return array('paypal', 'paypal_product');
-    } else if ($op == 'description') {
-        return array (
-            'paypal' => $LANG_PAYPAL_1['autotag_desc_paypal'],
-			'paypal_product' => $LANG_PAYPAL_1['autotag_desc_paypal_product'],
-            );
-	} elseif ($op == 'parse') {
-        
-        $pid = COM_applyFilter($autotag['parm1']);
-        if (is_numeric($pid) && $pid > 0) {
-            switch( $autotag['tag'] ) {
-                case 'paypal' :
-                    $url = $_PAY_CONF['site_url'] . '/product_detail.php?product=' . $pid;
-                    if (empty($autotag['parm2'])) {
-                        $linktext = DB_getItem($_TABLES['paypal_products'], 'name', "id = '{$pid}'");
-                    } else {
-                        $linktext = $autotag['parm2'];
-                    }
-                    $link = COM_createLink($linktext, $url);
-                    $content = str_replace($autotag['tagstr'], $link, $content);
-                    break;
-
-                case 'paypal_product' :
-                    $_SCRIPTS->setJavaScriptFile('paypal_cart', '/' . $_PAY_CONF['paypal_folder'] . '/js/jcart-javascript.php');
-                    $html = PAYPAL_displayProducts($pid,1);
-                    $content = str_replace($autotag['tagstr'], $html, $content);
-                    break;
-            }
-        }
-
-        return $content;
-    }
-}
-
-
-/**
-* Return plugin entry for "Command and Control" (moderation.php)
-*
-* @return  array  Array containing (plugin name, admin url, url of plugin icon)
-*/
-
-function plugin_cclabel_paypal()
-{
-    global $_CONF, $LANG_PAYPAL_1;
-
-    $retval = array();
-    if (SEC_hasRights('paypal.admin')) {
-        $retval = array($LANG_PAYPAL_1['plugin_name'],
-            $_CONF['site_admin_url'] . '/plugins/paypal/index.php',
-            plugin_geticon_paypal());
-    }
-
     return $retval;
 }
 
