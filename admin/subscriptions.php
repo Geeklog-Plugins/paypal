@@ -197,12 +197,8 @@ $_SCRIPTS->setJavaScript($js, true);
 
 switch ($_REQUEST['mode']) {
     case 'new':
-	    if (function_exists('PAYPALPRO_newSubscription')) {
-		    $display .= PAYPALPRO_newSubscription();
-		} else {
-    		$display .= COM_showMessageText( $LANG_PAYPAL_PRO['pro_feature_manual_subscription'], $LANG_PAYPAL_1['message']);
-		}
-	    break;
+        $display .= PAYPALPRO_newSubscription();
+        break;
 		
 	case 'edit':
         // Get the subscription to edit and display the form
