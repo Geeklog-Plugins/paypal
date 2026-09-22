@@ -1045,6 +1045,9 @@ $display .= paypal_admin_menu();
 
 if (!empty($_REQUEST['msg'])) $display .= PAYPAL_message($_REQUEST['msg']);
 
+// Ensure persistent storage exists before checking image upload availability.
+PAYPAL_ensureStorageDirectories(true);
+
 //Check if picture folder is writable
 if ( !file_exists($_PAY_CONF['path_images']) || !is_writable($_PAY_CONF['path_images']) ) {
     $display .= COM_showMessageText( '>> '. $_PAY_CONF['path_images'] . '<p>' . $LANG_PAYPAL_1['image_not_writable'] . '</p>');
