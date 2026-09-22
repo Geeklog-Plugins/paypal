@@ -45,7 +45,9 @@
  * @package paypal
  */
 
-if (strpos(strtolower($_SERVER['PHP_SELF']), 'functions.inc') !== false) {
+global $_CONF, $_TABLES, $_USER, $_DB_table_prefix, $_PLUGINS, $_PAY_CONF;
+
+if (isset($_SERVER['PHP_SELF']) && strpos(strtolower($_SERVER['PHP_SELF']), 'functions.inc') !== false) {
     die ('This file can not be used on its own.');
 }
 
@@ -83,6 +85,9 @@ $_PAY_CONF = $c->get_config('paypal');
 */
 require_once ($_CONF['path'] . 'plugins/paypal/paypal.php');
 
+require_once ($_CONF['path'] . 'plugins/paypal/interoperability.php');
+require_once ($_CONF['path'] . 'plugins/paypal/services.inc.php');
+
 /*
 * Include classes
 */
@@ -102,7 +107,9 @@ if (file_exists($pluginfile)) {
 
 function plugin_getheadercode_paypal()
 {
-	global $_CONF, $_PAY_CONF, $_PLUGINS, $_SCRIPTS;
+    global $_CONF, $_PAY_CONF, $_PLUGINS, $_SCRIPTS;
+
+    $retval = '';
 	
 	$_SCRIPTS->setJavaScriptLibrary('jquery');
 	
