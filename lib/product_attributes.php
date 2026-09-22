@@ -15,12 +15,11 @@ function PAYPAL_displayAttributes($productId)
     );
 
     $query = array(
-        'sql' => "SELECT pa.*, at.at_name, at.at_code
+        'sql' => "SELECT pa.*, at.at_name, at.at_code, at.at_order
             FROM {$_TABLES['paypal_product_attribute']} AS pa
             LEFT JOIN {$_TABLES['paypal_attributes']} AS at
                 ON pa.pa_aid = at.at_id
-            WHERE pa.pa_pid = {$productId}
-            ORDER BY at.at_order",
+            WHERE pa.pa_pid = {$productId}",
         'query_fields' => array('pa_aid', 'at_name', 'at_code'),
     );
 
@@ -30,7 +29,7 @@ function PAYPAL_displayAttributes($productId)
         $header,
         array('has_extras' => true),
         $query,
-        array('field' => 'pa_id', 'direction' => 'asc')
+        array('field' => 'at_order', 'direction' => 'asc')
     );
 }
 
@@ -82,8 +81,7 @@ function PAYPAL_displayAttributesToAdd($productId)
             LEFT JOIN {$_TABLES['paypal_product_attribute']} AS pa
                 ON pa.pa_aid = at.at_id
                 AND pa.pa_pid = {$productId}
-            WHERE pa.pa_id IS NULL
-            ORDER BY at.at_order",
+            WHERE pa.pa_id IS NULL",
         'query_fields' => array('at_name', 'at_code'),
     );
 
