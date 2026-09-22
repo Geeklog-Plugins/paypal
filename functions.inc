@@ -109,14 +109,15 @@ require_once $_CONF['path'] . 'plugins/paypal/lib/features.php';
 
 function plugin_getheadercode_paypal()
 {
-    global $_CONF, $_PAY_CONF, $_PLUGINS, $_SCRIPTS, $jcart;
+    global $_PAY_CONF, $_SCRIPTS, $jcart;
 
     $retval = '';
-	
-	$_SCRIPTS->setJavaScriptLibrary('jquery');
-	
-    if(stripos(COM_getCurrentURL(), '/' . $_PAY_CONF['paypal_folder'] . '/') !== FALSE) {
-        if(stripos(COM_getCurrentURL(), 'informations.php') === FALSE) {
+    $currentUrl = COM_getCurrentURL();
+
+    $_SCRIPTS->setJavaScriptLibrary('jquery');
+
+    if (stripos($currentUrl, '/' . $_PAY_CONF['paypal_folder'] . '/') !== false
+        && stripos($currentUrl, 'informations.php') === false) {
             $cartConfig = array(
                 'relayUrl' => $jcart['url'] . 'jcart-relay.php',
                 'relayBlockUrl' => $jcart['url'] . 'jcart-relay-block.php',
@@ -137,12 +138,13 @@ function plugin_getheadercode_paypal()
                 'paypal_cart',
                 '/' . $_PAY_CONF['paypal_folder'] . '/js/jcart-1.7.0.js'
             );
-        }
     }
-	
-	$_SCRIPTS->setCSSFile('paypal_css', '/' . $_PAY_CONF['paypal_folder'] . '/css/paypal-1.7.0.css');
-    
-    if (stripos(COM_getCurrentURL(), 'admin/plugins/paypal/') !== FALSE ) $_SCRIPTS->setCSSFile('paypal_datepicker_css', '/jquery/datepicker/datepicker.css');
+
+    $_SCRIPTS->setCSSFile('paypal_css', '/' . $_PAY_CONF['paypal_folder'] . '/css/paypal-1.7.0.css');
+
+    if (stripos($currentUrl, 'admin/plugins/paypal/') !== false) {
+        $_SCRIPTS->setCSSFile('paypal_datepicker_css', '/jquery/datepicker/datepicker.css');
+    }
  
     return $retval;
 }
@@ -218,23 +220,7 @@ function plugin_upgrade_paypal()
 */
 function plugin_pluginstatechange_paypal($type, $status)
 {
-    global $_CONF;
-
-    switch ($status) {
-        case 'installed':
-            break;
-
-        case 'uninstalled':
-            break;
-
-        case 'upgraded':
-            break;
-
-        case 'enabled':
-        case 'disabled':
-            break;
-    }
-
+    // Kept for Geeklog Plugin API compatibility.
 }
 
 /**
