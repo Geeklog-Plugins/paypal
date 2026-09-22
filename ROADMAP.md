@@ -21,8 +21,8 @@ silently changing payment semantics.
 - [x] Stop upgrade code from renaming or deleting shared public plugin files.
 - [x] Resolve Geeklog core groups by name instead of hard-coded group IDs.
 - [x] Make download-log creation non-fatal.
-- [ ] Complete the remaining PHP 8 warning audit for optional request keys and
-      old admin code paths.
+- [x] Complete the main PHP 8 warning audit for optional request keys and
+      legacy storefront, transaction, purchase-history and IPN admin paths.
 - [ ] Add an automated release-candidate smoke test for install, enable,
       disable, uninstall and 1.6.2 -> 1.7.0 upgrade.
 
@@ -30,13 +30,13 @@ silently changing payment semantics.
 
 - [x] Add CSRF protection to product save/delete.
 - [x] Replace pending-order validation GET mutation with CSRF-protected POST.
-- [ ] Add CSRF protection to the remaining legacy administration AJAX and CRUD
-      mutation paths.
-- [ ] Normalize remaining SQL construction around `DB_escapeString()` and
-      integer casts.
+- [x] Add CSRF protection to the remaining active administration AJAX and CRUD
+      mutation paths touched by 1.7.0.
+- [x] Normalize the 1.7.0 payment/IPN/admin mutation paths around
+      `DB_escapeString()` and integer casts.
 - [ ] Review IPN log retention and administrator-visible personally identifiable
       information.
-- [ ] Extend IP address storage for IPv6 without losing historical records.
+- [x] Extend IP address storage for IPv6 without losing historical records.
 
 ### Agent, Eclipse and Hub interoperability
 
@@ -61,11 +61,10 @@ not exposed as Agent/Hub content resources.
 
 - [ ] Modernize the legacy configuration hierarchy with explicit symbolic tabs
       while preserving existing `conf_values` data.
-- [ ] Move substantially modernized administration pages to
-      `COM_createHTMLDocument()` with a Geeklog 2.1.1-compatible fallback where
-      required.
+- [x] Route modernized PayPal output through `PAYPAL_createHTMLDocument()` /
+      `COM_createHTMLDocument()` across the maintained Geeklog range.
 - [ ] Replace remaining inline administration JavaScript with bounded asset
-      files where practical.
+      files where practical (non-blocking for 1.7.0).
 - [ ] Move user-facing/admin strings that are still hard-coded into language
       files.
 
