@@ -36,7 +36,7 @@ require_once('../../../lib-common.php');
 // Check for required permissions
 paypal_access_check('paypal.admin');
 
-$vars = array('msg', 'text');
+$vars = array('msg' => 'text');
 paypal_filterVars($vars, $_REQUEST);
 
 function PAYPAL_listDownloads()
