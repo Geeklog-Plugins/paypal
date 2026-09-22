@@ -101,9 +101,9 @@ class BaseIPN {
 		}
 		foreach ($myPost as $key => $value) {
 				if($get_magic_quotes_exists == true && get_magic_quotes_gpc() == 1) {
-						$value = urlencode(stripslashes($value));
+						$value = rawurlencode(stripslashes($value));
 				} else {
-						$value = urlencode($value);
+						$value = rawurlencode($value);
 				}
 				$req .= "&$key=$value";
 		}
@@ -111,7 +111,11 @@ class BaseIPN {
 		// Post IPN data back to PayPal to validate the IPN data is genuine
 		// Without this step anyone can fake IPN data
 
-		$paypal_url = "https://" . $_PAY_CONF['paypalURL'] . "/cgi-bin/webscr";
+        $sandbox = isset($_PAY_CONF['paypalURL'])
+            && trim($_PAY_CONF['paypalURL']) === 'www.sandbox.paypal.com';
+        $paypal_url = $sandbox
+            ? 'https://ipnpb.sandbox.paypal.com/cgi-bin/webscr'
+            : 'https://ipnpb.paypal.com/cgi-bin/webscr';
 		if(DEBUG) COM_errorLog("PAYPAL-IPN: $paypal_url");
 
 		$ch = curl_init($paypal_url);
@@ -138,8 +142,12 @@ class BaseIPN {
 		//curl_setopt($ch, CURLOPT_HTTPPROXYTUNNEL, 1);
 
 		// Set TCP timeout to 30 seconds
-		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Connection: Close'));
+		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 20);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Connection: Close',
+            'User-Agent: Geeklog-PayPal/1.7.0 IPN-Verification'
+        ));
 
 		// CONFIG: Please download 'cacert.pem' from "http://curl.haxx.se/docs/caextract.html" and set the directory path
 		// of the certificate as shown below. Ensure the file is readable by the webserver.
@@ -154,7 +162,7 @@ class BaseIPN {
 		    // cURL error
 			if(DEBUG) COM_errorLog("PAYPAL-IPN: Can't connect to PayPal to validate IPN message: " . curl_error($ch));
 			curl_close($ch);
-			exit;
+            return false;
 
 		} else {
 			// Log the entire HTTP response if debug is switched on.
@@ -165,13 +173,15 @@ class BaseIPN {
 			
 			// Inspect IPN 
 
-			if (strpos($res, "VERIFIED") !== false) {
+            $response = trim((string) $res);
+
+			if ($response === 'VERIFIED') {
 
 				$verified = true;
 				
 				if(DEBUG) COM_errorLog("PAYPAL-IPN: Paypal response is Verified - IPN:".  $req);
 				
-			} else if (strpos($res, "INVALID") !== false) {
+			} else if ($response === 'INVALID') {
 				$verified = false;
 				// log for manual investigation
 				// Add business logic here which deals with invalid IPN messages
@@ -217,7 +227,9 @@ class BaseIPN {
         }
 
         //Check if IPN already exists
-		$id = DB_getItem($_TABLES['paypal_ipnlog'], 'id', "txn_id='{$in['txn_id']}'");
+        $txnId = isset($in['txn_id']) ? (string) $in['txn_id'] : '';
+        $safeTxnId = DB_escapeString($txnId);
+		$id = DB_getItem($_TABLES['paypal_ipnlog'], 'id', "txn_id='{$safeTxnId}'");
 		
 		if ( $id == '') {
 		    // Alert admin of a possible charset issue
@@ -229,13 +241,11 @@ class BaseIPN {
 			// Log to database
 			$input_arr = array();
 			//grabs the $_POST variables and adds slashes
-			foreach ($in as $key => $input_arr) {
-				//$input_arr = utf8_decode($input_arr);
-				$in[$key] = addslashes($input_arr);
-			}
-			$sql = "INSERT INTO {$_TABLES['paypal_ipnlog']} SET ip_addr = '{$_SERVER['REMOTE_ADDR']}', "
-				 . "time = NOW(), verified = $verified, txn_id = '{$in['txn_id']}', "
-				 . "ipn_data = '" . serialize($in) . '\'';
+            $ipAddress = isset($_SERVER['REMOTE_ADDR']) ? DB_escapeString($_SERVER['REMOTE_ADDR']) : '';
+            $serialized = DB_escapeString(serialize($in));
+			$sql = "INSERT INTO {$_TABLES['paypal_ipnlog']} SET ip_addr = '{$ipAddress}', "
+				 . "time = NOW(), verified = " . (int) $verified . ", txn_id = '{$safeTxnId}', "
+				 . "ipn_data = '{$serialized}'";
 			
 			DB_query($sql);
 			
@@ -257,7 +267,11 @@ class BaseIPN {
         
 		global $_PAY_CONF;
 
-        if ( ($receiver_email == $_PAY_CONF['receiverEmailAddr']) || $business == $_PAY_CONF['receiverEmailAddr'] ) {
+        $expected = strtolower(trim((string) $_PAY_CONF['receiverEmailAddr']));
+        $receiver = strtolower(trim((string) $receiver_email));
+        $business = strtolower(trim((string) $business));
+
+        if ($expected !== '' && ($receiver === $expected || $business === $expected)) {
 		    if(DEBUG) COM_errorLog('PAYPAL-IPN: Email ok');
 		    return true;
 		} else {
@@ -276,6 +290,10 @@ class BaseIPN {
         global $_TABLES;
 
         // Count purchases with txn_id, if > 0
+        $txn_id = (string) $txn_id;
+        if ($txn_id === '') {
+            return false;
+        }
         $count = DB_count($_TABLES['paypal_purchases'], 'txn_id', $txn_id);
         if ($count > 0) {
 		    if(DEBUG) COM_errorLog('PAYPAL-IPN: Txn is not unique');
