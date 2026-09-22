@@ -139,6 +139,7 @@ $LANG_PAYPAL_1 = array(
 	'email'                   => 'Email',
 	'existing_categories'     => 'Existing categories are',
 	'details'                 => 'Read more',
+	'title_display'           => 'Display details',
 	'payment_method'          => 'Choose your method of payment', //Todo implement other gateway then this will be "Choose your method of payment"
 	'checkout_step_1'         => 'Step 1.<br>Review your selection',
     'checkout_step_2' 	  	  => 'Step 2.<br>Provide your information',
