@@ -84,7 +84,11 @@ function PAYPAL_getSubscriptionForm($subscription = array())
         'save_button' => $LANG_PAYPAL_1['save_button'],
         'delete_button' => $LANG_PAYPAL_1['delete_button'],
         'required_field' => $LANG_PAYPAL_1['required_field'],
-        'delete_available' => !empty($subscription['id']) ? '1' : '',
+        'delete_button_html' => !empty($subscription['id'])
+            ? '<button type="submit" name="mode" value="delete" class="paypal-danger">'
+                . htmlspecialchars($LANG_PAYPAL_1['delete_button'], ENT_QUOTES, 'UTF-8')
+                . '</button>'
+            : '',
     ));
 
     $productOptions = '';
