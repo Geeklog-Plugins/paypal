@@ -131,12 +131,12 @@ function plugin_getheadercode_paypal()
             );
             $_SCRIPTS->setJavaScriptFile(
                 'paypal_cart',
-                '/' . $_PAY_CONF['paypal_folder'] . '/js/jcart.js'
+                '/' . $_PAY_CONF['paypal_folder'] . '/js/jcart_170.js'
             );
         }
     }
 	
-	$_SCRIPTS->setCSSFile('paypal_css', '/' . $_PAY_CONF['paypal_folder'] . '/css/paypal_160.css');
+	$_SCRIPTS->setCSSFile('paypal_css', '/' . $_PAY_CONF['paypal_folder'] . '/css/paypal_170.css');
     
     if (stripos(COM_getCurrentURL(), 'admin/plugins/paypal/') !== FALSE ) $_SCRIPTS->setCSSFile('paypal_datepicker_css', '/jquery/datepicker/datepicker.css');
  
