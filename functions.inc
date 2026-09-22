@@ -2623,13 +2623,28 @@ function PAYPAL_handlePurchase( $products, $quantity, $data, $names, $prices, $r
 	for ($i = 1; $i < count($products) +1; $i++) {
 		
 		if (DEBUG) COM_errorLog('PAYPAL: Product ID ' . $products[$i]);
-		// grab relevant product data from product table to insert into purchase table.
-		$realid = COM_sanitizeID(explode("|", $products[$i]));
-		
-		$sql = "SELECT * FROM {$_TABLES['paypal_products']} "
-			 . "WHERE id = {$realid[0]}";
-		$res = DB_query($sql);
-		$A = DB_fetchArray($res);
+        // Resolve the product and optional attributes using the common parser.
+        $parsedItem = PAYPAL_parseItemIdentifier($products[$i]);
+        $productId = (int) $parsedItem['product_id'];
+
+        if ($productId <= 0) {
+            if (DEBUG) {
+                COM_errorLog('PAYPAL: invalid product identifier ' . $products[$i]);
+            }
+            continue;
+        }
+
+        $sql = "SELECT * FROM {$_TABLES['paypal_products']} "
+             . "WHERE id = {$productId}";
+        $res = DB_query($sql);
+        $A = DB_fetchArray($res);
+
+        if (!is_array($A) || empty($A['id'])) {
+            if (DEBUG) {
+                COM_errorLog('PAYPAL: product not found ' . $productId);
+            }
+            continue;
+        }
 		
 		if (DEBUG) COM_errorLog('PAYPAL: Type ' . $A['type']);
 		
