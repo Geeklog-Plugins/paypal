@@ -52,7 +52,7 @@ $cart =& $_SESSION['jcart'];
 
 $updateCart = !empty($_POST['jcart_update_cart']);
 $emptyCart = !empty($_POST['jcart_empty']);
-$checkoutPage = isset($_POST['jcart_checkout_page']) ? $_POST['jcart_checkout_page'] : $_PAY_CONF['site_url'] . '/checkout.php';
+$checkoutPage = $_PAY_CONF['site_url'] . '/checkout.php';
 $payBy = isset($_POST['pay_by']) ? $_POST['pay_by'] : '';
 $shipping = isset($_POST['shipping']) && is_numeric($_POST['shipping']) ? $_POST['shipping'] : '0.00';
 
@@ -111,23 +111,71 @@ else
 	///////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////
 
-	$valid_prices = true;
+    $valid_prices = true;
+    $validatedItems = array();
 
-	foreach ($cart->get_contents() as $item)
-		{
-		$realid = COM_sanitizeID(explode("|", $item['id']));
-	    $item_id	= $realid[0];
-		$item_price	= $item['price'];
-        $A = DB_fetchArray(DB_query("SELECT * FROM {$_TABLES['paypal_products']} WHERE id = '{$item_id}' LIMIT 1"));
-		$price = $A['price'];
-		if ($A['discount_a'] != '' && $A['discount_a'] != 0) {
-    	    $price = number_format($A['price'] - $A['discount_a'], 2, '.', '');
-    	}
-    	if ($A['discount_p'] != '' && $A['discount_p'] != 0) {
-    		$price = number_format($A['price'] - ($A['price'] * ($A['discount_p']/100)), 2, '.', '');
-		}
-        if ($item_price <> $price || !SEC_hasAccess2($A) || $A['active'] != '1') $valid_prices = false;
-		}
+    foreach ($cart->get_contents() as $item) {
+        $parsed = PAYPAL_parseItemIdentifier($item['id']);
+        $productId = (int) $parsed['product_id'];
+        $quantity = isset($item['qty']) ? (int) $item['qty'] : 0;
+
+        if ($productId <= 0 || $quantity <= 0) {
+            $valid_prices = false;
+            break;
+        }
+
+        $res = DB_query(
+            "SELECT * FROM {$_TABLES['paypal_products']} "
+            . "WHERE id = {$productId} LIMIT 1"
+        );
+        $product = DB_fetchArray($res);
+
+        if (!is_array($product)
+            || empty($product['id'])
+            || (int) $product['active'] !== 1
+            || SEC_hasAccess2($product) < 2) {
+            $valid_prices = false;
+            break;
+        }
+
+        $unitPrice = (float) PAYPAL_productPrice($product);
+        $attributeNames = array();
+
+        if (!empty($parsed['attributes'])) {
+            $attributeIds = array_map('intval', $parsed['attributes']);
+            $idList = implode(',', $attributeIds);
+
+            $attributeResult = DB_query(
+                "SELECT at.at_id, at.at_name, at.at_price "
+                . "FROM {$_TABLES['paypal_product_attribute']} pa "
+                . "INNER JOIN {$_TABLES['paypal_attributes']} at "
+                . "ON at.at_id = pa.pa_aid "
+                . "WHERE pa.pa_pid = {$productId} "
+                . "AND at.at_enabled = 1 "
+                . "AND at.at_id IN ({$idList})"
+            );
+
+            $validAttributeCount = 0;
+            while ($attribute = DB_fetchArray($attributeResult)) {
+                $unitPrice += (float) $attribute['at_price'];
+                $attributeNames[] = $attribute['at_name'];
+                ++$validAttributeCount;
+            }
+
+            if ($validAttributeCount !== count($attributeIds)) {
+                $valid_prices = false;
+                break;
+            }
+        }
+
+        $validatedItems[] = array(
+            'id' => $item['id'],
+            'name' => $product['name']
+                . (!empty($attributeNames) ? ' - ' . implode(', ', $attributeNames) : ''),
+            'price' => number_format($unitPrice, 2, '.', ''),
+            'qty' => $quantity,
+        );
+    }
 
 	///////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////
@@ -150,17 +198,13 @@ else
 				// PAYPAL COUNT STARTS AT ONE INSTEAD OF ZERO
 				$paypal_count = 1;
 				$items_query_string = '';
-				foreach ($cart->get_contents() as $item)
-					{
-					// BUILD THE QUERY STRING
-					$items_query_string .= '&item_number_' . $paypal_count . '=' . $item['id'];
-					$items_query_string .= '&item_name_' . $paypal_count . '=' . urlencode($item['name']);
-					$items_query_string .= '&amount_' . $paypal_count . '=' . $item['price'];
-					$items_query_string .= '&quantity_' . $paypal_count . '=' . $item['qty'];
-
-					// INCREMENT THE COUNTER
-					++$paypal_count;
-					}
+                foreach ($validatedItems as $item) {
+                    $items_query_string .= '&item_number_' . $paypal_count . '=' . rawurlencode($item['id']);
+                    $items_query_string .= '&item_name_' . $paypal_count . '=' . rawurlencode($item['name']);
+                    $items_query_string .= '&amount_' . $paypal_count . '=' . rawurlencode($item['price']);
+                    $items_query_string .= '&quantity_' . $paypal_count . '=' . (int) $item['qty'];
+                    ++$paypal_count;
+                }
 				
 				$items_query_string .= '&currency_code=' . $_PAY_CONF['currency'];
 				$items_query_string .= '&cancel_return=' . urlencode($_PAY_CONF['site_url'] . '/index.php?mode=cancel');
@@ -194,7 +238,13 @@ else
 				}
 							 
 				// REDIRECT TO PAYPAL WITH MERCHANT ID AND CART CONTENTS
-				header( 'Location: https://' . $_PAY_CONF['paypalURL'] . '/cgi-bin/webscr?cmd=_cart&upload=1&business=' . $jcart['paypal_id'] . $items_query_string);
+				header(
+                    'Location: https://' . $_PAY_CONF['paypalURL']
+                    . '/cgi-bin/webscr?cmd=_cart&upload=1&business='
+                    . rawurlencode($_PAY_CONF['receiverEmailAddr'])
+                    . $items_query_string
+                );
+                exit;
 			}
 		}
 	}
