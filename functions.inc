@@ -675,6 +675,7 @@ function paypal_admin_menu() {
 	$menu->set_var('recurring_payments', $LANG_PAYPAL_1['recurring_payments']);
 	$menu->set_var('downloads_history', $LANG_PAYPAL_1['downloads']);
     $menu->set_var('view_IPN_log', $LANG_PAYPAL_1['IPN_logs']);
+    $menu->set_var('help', $LANG_PAYPAL_1['help']);
     /**
      * @todo add support for pending transaction, not fully implemented
      */
