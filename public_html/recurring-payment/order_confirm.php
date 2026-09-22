@@ -49,8 +49,7 @@ paypal_filterVars($vars, $_REQUEST);
 
 //Main
 
-$display .= PAYPAL_siteHeader();
-$display .= paypal_user_menu();
+$display = paypal_user_menu();
 
 require_once ($_CONF['path'] . 'plugins/paypal/proversion/paypalfunctions.php');
 	
@@ -109,8 +108,6 @@ else
 
 
 
-$display .= PAYPAL_siteFooter();
-
-COM_output($display);
+COM_output(PAYPAL_createHTMLDocument($display));
 		
 ?>
