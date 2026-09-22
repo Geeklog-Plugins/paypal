@@ -44,6 +44,7 @@ paypal_access_check('paypal.user');
 $vars = array('msg' => 'text',
               'mode' => 'alpha',
 			  'uid'  => 'number',
+              'user_id' => 'number',
               'name' => 'text',
               'street1' => 'text',
 			  'street2' => 'text',
