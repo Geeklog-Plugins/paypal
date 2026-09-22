@@ -292,6 +292,12 @@ class jcart {
 		// JCART ARRAY HOLDS USER CONFIG SETTINGS
 		extract($jcart);
 
+        $error_message = '';
+        $src = '';
+        $disable_paypal_checkout = '';
+        $shippers_radio = '';
+        $skip = 0;
+
 		// ASSIGN USER CONFIG VALUES AS POST VAR LITERAL INDICES
 		// INDICES ARE THE HTML NAME ATTRIBUTES FROM THE USERS ADD-TO-CART FORM
         $item_id = isset($_POST[$item_id]) ? $_POST[$item_id] : '';
@@ -434,7 +440,6 @@ class jcart {
 						</ul>';
 			$cart->set_var('steps', $steps);
 		} else if (isset($_REQUEST['pay_by']) && $_REQUEST['pay_by'] == 'check' || PAYBYCHECK == true) {
-		    PAYBYCHECK == true;
 			$steps = '<ul id="ULcheckoutProcedure">
 			                <li>' . $LANG_PAYPAL_1['checkout_step_1'] . '</li>
 							<li id="LIactiveStep">' . $LANG_PAYPAL_1['checkout_step_2'] . '</li>
@@ -523,6 +528,7 @@ class jcart {
 		
 		// IF THIS IS THE CHECKOUT HIDE THE CART CHECKOUT BUTTON
 		if ($is_checkout !== true && (!isset($_REQUEST['pay_by']) || $_REQUEST['pay_by'] != 'check')) {
+            $src = '';
 			if ($button['checkout']) {
     			$input_type = 'image';
 				$src = ' src="' . $button['checkout'] . '" alt="' . $text['checkout_button'] . '" title="" ';
@@ -537,8 +543,10 @@ class jcart {
 		//Update and empty button
 		if ($block == 0) {
 		    $retval .= "\t\t\t<div class='jcart-hide'>\n";
+            $src = '';
 		    if ($button['update']) { $input_type = 'image'; $src = ' src="' . $button['update'] . '" alt="' . $text['update_button'] . '" title="" ';	}
 		    $retval .= "\t\t\t\t<input type='" . $input_type . "' " . $src ."name='jcart_update_cart' value='" . $text['update_button'] . "' class='jcart-button' />\n";
+            $src = '';
 		    if ($button['empty']) { $input_type = 'image'; $src = ' src="' . $button['empty'] . '" alt="' . $text['empty_button'] . '" title="" ';	}
 		    $retval .= "\t\t\t\t<input type='" . $input_type . "' " . $src ."name='jcart_empty' value='" . $text['empty_button'] . "' class='jcart-button' />\n";
 		    $retval .= "\t\t\t</div>\n";
@@ -579,6 +587,7 @@ class jcart {
 				if (DB_numRows($res) > 0) {
 				    $i = 0;
 				    while ($A = DB_fetchArray($res)) {
+                        $skip = 0;
 					    if (isset($_GET['shipping']) && $_GET['shipping'] !== '' && $_GET['shipping'] == $A['shipping_amt']) {
 						    $checked = ' checked';
 							$skip = 0;
@@ -614,6 +623,7 @@ class jcart {
 			$retval .= "\t\t\t<input type='hidden' id='jcart-checkout-page' name='jcart_checkout_page' value='" . $protocol . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . "' />\n";
 
             // PAYPAL CHECKOUT BUTTON
+            $src = '';
 			if ($button['paypal_checkout'])	{ 
                 $input_type = 'image';
                 $src = ' src="' . $button['paypal_checkout'] . '" alt="' . $text['checkout_paypal_button'] . '" title="" '; 
