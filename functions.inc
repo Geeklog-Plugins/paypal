@@ -2546,20 +2546,25 @@ function PAYPAL_getStockId($item_number)
 	$stock_id = '';
     $attributes = '';
 	
-	if(is_array($item_number)) {
+	if (is_array($item_number)) {
 	    foreach ($item_number as $item) {
-			$realid = explode("|", $item);
-			$prod_id = $realid[0];
-			$item_id = DB_getItem($_TABLES['paypal_products'], 'item_id', "id='{$prod_id}'");
-			$atts = explode(",", isset($realid[1]) ? $realid[1] : '');
+            $parsedItem = PAYPAL_parseItemIdentifier($item);
+            $prod_id = (int) $parsedItem['product_id'];
+			$item_id = DB_getItem($_TABLES['paypal_products'], 'item_id', "id={$prod_id}");
 			$attributes = '';
-			foreach ($atts as $att) {
-			    if ($att == '') {
-					$code = '';
-				} else {
-					$code = DB_getItem($_TABLES['paypal_attributes'], 'at_code', "at_id={$att}");
-				}
-				$attributes = $attributes . $code;
+
+			foreach ($parsedItem['attributes'] as $att) {
+                $att = (int) $att;
+                if ($att <= 0) {
+                    continue;
+                }
+
+                $code = DB_getItem(
+                    $_TABLES['paypal_attributes'],
+                    'at_code',
+                    "at_id={$att}"
+                );
+				$attributes .= $code;
 			}
 			$stock_id[] = $item_id . $attributes;
 		}
