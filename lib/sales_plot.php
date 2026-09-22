@@ -1,29 +1,58 @@
 <?php
 
-function PAYPAL_plot()
+function PAYPAL_plot($period = '12m')
 {
     global $_CONF, $_PAY_CONF, $_TABLES, $LANG_PAYPAL_1;
 
-    $nowMonth = (int) date('n');
-    $nowYear = (int) date('Y');
+    $periods = array(
+        '1m' => array('months' => 1, 'label' => '1 ' . $LANG_PAYPAL_1['sales_month']),
+        '3m' => array('months' => 3, 'label' => '3 ' . $LANG_PAYPAL_1['sales_months']),
+        '6m' => array('months' => 6, 'label' => '6 ' . $LANG_PAYPAL_1['sales_months']),
+        '9m' => array('months' => 9, 'label' => '9 ' . $LANG_PAYPAL_1['sales_months']),
+        '12m' => array('months' => 12, 'label' => '12 ' . $LANG_PAYPAL_1['sales_months']),
+        '2y' => array('months' => 24, 'label' => '2 ' . $LANG_PAYPAL_1['sales_years']),
+        '3y' => array('months' => 36, 'label' => '3 ' . $LANG_PAYPAL_1['sales_years']),
+        '5y' => array('months' => 60, 'label' => '5 ' . $LANG_PAYPAL_1['sales_years']),
+        '10y' => array('months' => 120, 'label' => '10 ' . $LANG_PAYPAL_1['sales_years']),
+        '20y' => array('months' => 240, 'label' => '20 ' . $LANG_PAYPAL_1['sales_years']),
+    );
+
+    if (!isset($periods[$period])) {
+        $period = '12m';
+    }
+
+    $months = $periods[$period]['months'];
+    $aggregateByYear = ($months >= 60);
     $plots = array();
-    $totalMonth = 0.0;
-    $totalYear = 0.0;
     $totalPeriod = 0.0;
 
-    for ($i = 11; $i >= 0; --$i) {
-        $timestamp = strtotime('-' . $i . ' months');
-        $key = date('Y-m-01', $timestamp);
-        $plots[$key] = 0.0;
+    if ($aggregateByYear) {
+        $startTimestamp = strtotime('-' . ($months - 1) . ' months', strtotime(date('Y-m-01')));
+        $startYear = (int) date('Y', $startTimestamp);
+        $endYear = (int) date('Y');
+
+        for ($year = $startYear; $year <= $endYear; ++$year) {
+            $plots[(string) $year] = 0.0;
+        }
+    } else {
+        for ($i = $months - 1; $i >= 0; --$i) {
+            $timestamp = strtotime('-' . $i . ' months', strtotime(date('Y-m-01')));
+            $plots[date('Y-m', $timestamp)] = 0.0;
+        }
     }
+
+    $startDate = date(
+        'Y-m-01',
+        strtotime('-' . ($months - 1) . ' months', strtotime(date('Y-m-01')))
+    );
+    $safeStartDate = DB_escapeString($startDate);
 
     $sql = "SELECT p.purchase_date, i.ipn_data
         FROM {$_TABLES['paypal_purchases']} AS p
         LEFT JOIN {$_TABLES['paypal_ipnlog']} AS i
             ON p.txn_id = i.txn_id
         WHERE p.status = 'complete'
-          AND p.purchase_date >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
-        GROUP BY p.txn_id, p.purchase_date, i.ipn_data
+          AND p.purchase_date >= '{$safeStartDate}'
         ORDER BY p.purchase_date";
 
     $result = DB_query($sql);
@@ -48,31 +77,21 @@ function PAYPAL_plot()
             continue;
         }
 
-        $key = date('Y-m-01', $timestamp);
+        $key = $aggregateByYear ? date('Y', $timestamp) : date('Y-m', $timestamp);
+
         if (isset($plots[$key])) {
             $plots[$key] += $gross;
+            $totalPeriod += $gross;
         }
-
-        $year = (int) date('Y', $timestamp);
-        $month = (int) date('n', $timestamp);
-
-        if ($year === $nowYear) {
-            $totalYear += $gross;
-            if ($month === $nowMonth) {
-                $totalMonth += $gross;
-            }
-        }
-
-        $totalPeriod += $gross;
     }
 
     $max = !empty($plots) ? max($plots) : 0.0;
     $chartWidth = 960;
-    $chartHeight = 260;
-    $paddingLeft = 55;
+    $chartHeight = 280;
+    $paddingLeft = 60;
     $paddingRight = 20;
     $paddingTop = 20;
-    $paddingBottom = 45;
+    $paddingBottom = 55;
     $plotWidth = $chartWidth - $paddingLeft - $paddingRight;
     $plotHeight = $chartHeight - $paddingTop - $paddingBottom;
 
@@ -81,39 +100,46 @@ function PAYPAL_plot()
     $labels = '';
     $index = 0;
 
-    foreach ($plots as $date => $amount) {
+    // Keep labels readable when displaying 24 or 36 monthly data points.
+    $labelEvery = 1;
+    if (!$aggregateByYear && $count > 18) {
+        $labelEvery = 3;
+    } elseif ($aggregateByYear && $count > 12) {
+        $labelEvery = 2;
+    }
+
+    foreach ($plots as $key => $amount) {
         $x = $paddingLeft;
         if ($count > 1) {
             $x += ($plotWidth / ($count - 1)) * $index;
         }
 
-        if ($max > 0) {
-            $y = $paddingTop + $plotHeight - (($amount / $max) * $plotHeight);
-        } else {
-            // No sales: draw a visible flat zero line on the x axis.
-            $y = $paddingTop + $plotHeight;
-        }
+        $y = $max > 0
+            ? $paddingTop + $plotHeight - (($amount / $max) * $plotHeight)
+            : $paddingTop + $plotHeight;
 
         $points[] = round($x, 2) . ',' . round($y, 2);
 
-        $label = date('Y-m', strtotime($date));
-        $labels .= '<text x="' . round($x, 2) . '" y="' . ($chartHeight - 18)
-            . '" text-anchor="middle" class="paypal-sales-axis-label">'
-            . htmlspecialchars($label, ENT_QUOTES, 'UTF-8')
-            . '</text>';
+        if (($index % $labelEvery) === 0 || $index === ($count - 1)) {
+            $label = $aggregateByYear ? $key : $key;
+            $labels .= '<text x="' . round($x, 2) . '" y="' . ($chartHeight - 20)
+                . '" text-anchor="middle" class="paypal-sales-axis-label">'
+                . htmlspecialchars($label, ENT_QUOTES, 'UTF-8')
+                . '</text>';
+        }
 
         ++$index;
     }
 
-    $axisMax = $max > 0 ? $max : 0;
     $axisMaxLabel = number_format(
-        $axisMax,
+        $max,
         $_CONF['decimal_count'],
         $_CONF['decimal_separator'],
         $_CONF['thousand_separator']
     );
 
-    $svg = '<div class="paypal-sales-chart" role="img" aria-label="Sales history">'
+    $svg = '<div class="paypal-sales-chart" role="img" aria-label="'
+        . htmlspecialchars($LANG_PAYPAL_1['sales_history'], ENT_QUOTES, 'UTF-8') . '">'
         . '<svg viewBox="0 0 ' . $chartWidth . ' ' . $chartHeight . '" preserveAspectRatio="none">'
         . '<line x1="' . $paddingLeft . '" y1="' . $paddingTop . '" x2="' . $paddingLeft
         . '" y2="' . ($paddingTop + $plotHeight) . '" class="paypal-sales-axis"></line>'
@@ -123,22 +149,36 @@ function PAYPAL_plot()
         . '<text x="5" y="' . ($paddingTop + 5) . '" class="paypal-sales-axis-value">'
         . htmlspecialchars($axisMaxLabel . ' ' . $_PAY_CONF['currency'], ENT_QUOTES, 'UTF-8')
         . '</text>'
-        . '<text x="15" y="' . ($paddingTop + $plotHeight) . '" class="paypal-sales-axis-value">0</text>'
+        . '<text x="20" y="' . ($paddingTop + $plotHeight) . '" class="paypal-sales-axis-value">0</text>'
         . '<polyline points="' . implode(' ', $points) . '" class="paypal-sales-line"></polyline>'
         . $labels
         . '</svg>'
         . '</div>';
 
+    $selector = '<form class="paypal-sales-period" method="get" action="">'
+        . '<label for="paypal-sales-period">' . htmlspecialchars($LANG_PAYPAL_1['sales_period'], ENT_QUOTES, 'UTF-8') . '</label> '
+        . '<select id="paypal-sales-period" name="period" onchange="this.form.submit()">';
+
+    foreach ($periods as $value => $definition) {
+        $selector .= '<option value="' . $value . '"'
+            . ($value === $period ? ' selected' : '') . '>'
+            . htmlspecialchars($definition['label'], ENT_QUOTES, 'UTF-8')
+            . '</option>';
+    }
+
+    $selector .= '</select><noscript> <button type="submit">'
+        . htmlspecialchars($LANG_PAYPAL_1['apply'], ENT_QUOTES, 'UTF-8')
+        . '</button></noscript></form>';
+
     $summary = '<p>'
         . $LANG_PAYPAL_1['period_stat'] . ' ' . $_PAY_CONF['currency'] . ' '
-        . number_format($totalPeriod, $_CONF['decimal_count'], $_CONF['decimal_separator'], $_CONF['thousand_separator'])
-        . '&nbsp;&nbsp;|&nbsp;&nbsp;'
-        . $LANG_PAYPAL_1['year_stat'] . ' ' . $_PAY_CONF['currency'] . ' '
-        . number_format($totalYear, $_CONF['decimal_count'], $_CONF['decimal_separator'], $_CONF['thousand_separator'])
-        . '&nbsp;&nbsp;|&nbsp;&nbsp;'
-        . $LANG_PAYPAL_1['month_stat'] . ' ' . $_PAY_CONF['currency'] . ' '
-        . number_format($totalMonth, $_CONF['decimal_count'], $_CONF['decimal_separator'], $_CONF['thousand_separator'])
+        . number_format(
+            $totalPeriod,
+            $_CONF['decimal_count'],
+            $_CONF['decimal_separator'],
+            $_CONF['thousand_separator']
+        )
         . '</p>';
 
-    return $summary . $svg;
+    return $selector . $summary . $svg;
 }
