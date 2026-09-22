@@ -150,6 +150,27 @@ function plugin_getheadercode_paypal()
 }
 
 /**
+ * Return the PayPal storefront entry for Geeklog's main menu.
+ *
+ * @return array
+ */
+function plugin_getmenuitems_paypal()
+{
+    global $_PAY_CONF, $LANG_PAYPAL_1;
+
+    if (!empty($_PAY_CONF['hide_paypal_menu'])) {
+        return array();
+    }
+
+    $label = isset($_PAY_CONF['menulabel']) ? trim((string) $_PAY_CONF['menulabel']) : '';
+    if ($label === '') {
+        $label = $LANG_PAYPAL_1['store'];
+    }
+
+    return array($label => $_PAY_CONF['site_url'] . '/index.php');
+}
+
+/**
 * Return plugin entry for the Admins Only block
 *
 * @return array Array containing (plugin name, plugin admin url, # of plugin items or '')
@@ -236,13 +257,44 @@ function plugin_pluginstatechange_paypal($type, $status)
  */
 function PAYPAL_createHTMLDocument($content, $pagetitle = '')
 {
+    global $_PAY_CONF;
+
     $options = array();
 
     if ($pagetitle !== '') {
         $options['pagetitle'] = $pagetitle;
     }
 
+    $displayBlocks = isset($_PAY_CONF['display_blocks'])
+        ? (int) $_PAY_CONF['display_blocks']
+        : 3;
+
+    $options['custom'] = array('PAYPAL_renderConfiguredBlocks', $displayBlocks);
+    $options['rightblock'] = ($displayBlocks === 2 || $displayBlocks === 3);
+
     return COM_createHTMLDocument($content, $options);
+}
+
+/**
+ * Render only the block columns enabled by the PayPal display setting.
+ *
+ * Values: 0 none, 1 left, 2 right, 3 left and right.
+ *
+ * @param int    $displayBlocks
+ * @param string $side
+ * @return string
+ */
+function PAYPAL_renderConfiguredBlocks($displayBlocks, $side)
+{
+    $displayBlocks = (int) $displayBlocks;
+
+    if (($side === 'left' && ($displayBlocks === 1 || $displayBlocks === 3))
+        || ($side === 'right' && ($displayBlocks === 2 || $displayBlocks === 3))
+    ) {
+        return COM_showBlocks($side);
+    }
+
+    return '';
 }
 
 /**
@@ -2829,9 +2881,13 @@ function PAYPAL_handlePurchase( $products, $quantity, $data, $names, $prices, $r
 		}
 		$products_list .= '<p>' . $LANG_PAYPAL_1['total_row_label'] . ' ' . number_format($ipn['mc_gross'], $_CONF['decimal_count'], $_CONF['decimal_separator'], $_CONF['thousand_separator']) . ' ' . $_PAY_CONF['currency'] . '</p>';
 			
-		// Send the purchaser a confirmation email (if set to do so in config.php)
-		
-		if ($_PAY_CONF['purchase_email_user'] ) {
+        // Build the purchaser/receiver message once, then honor the user/anonymous
+        // email settings independently.
+        $isAnonymousPurchase = ((int) $user_id === 1);
+        $sendPurchaserEmail = $isAnonymousPurchase
+            ? !empty($_PAY_CONF['purchase_email_anon'])
+            : !empty($_PAY_CONF['purchase_email_user']);
+
 			
 			// setup templates
 			$message = COM_newTemplate($_CONF['path'] . 'plugins/paypal/templates/email');
@@ -2887,12 +2943,23 @@ function PAYPAL_handlePurchase( $products, $quantity, $data, $names, $prices, $r
 
 			$message->set_var('send_check', $LANG_PAYPAL_EMAIL['send_check']);
 			$text = $message->parse('output', 'message');
-			COM_mail($ipn['payer_email'], $subject, $text,
-						 $_PAY_CONF['receiverEmailAddr'], true);
+            if ($sendPurchaserEmail && !empty($ipn['payer_email'])) {
+                COM_mail(
+                    $ipn['payer_email'],
+                    $subject,
+                    $text,
+                    $_PAY_CONF['receiverEmailAddr'],
+                    true
+                );
 
-			if (DEBUG) COM_errorLog('PAYPAL: Email was sent to ' . $ipn['payer_email'] . ' | Subject: ' .  $subject . ' | Message: ' . $text);
-		}
-		
+                if (DEBUG) {
+                    COM_errorLog(
+                        'PAYPAL: Email was sent to ' . $ipn['payer_email']
+                        . ' | Subject: ' . $subject
+                    );
+                }
+            }
+
 		//Send email to receiver
 		COM_mail($_PAY_CONF['receiverEmailAddr'], $subject, $subject . ' >> ' . $text, '', true);
 
@@ -2904,7 +2971,9 @@ function PAYPAL_handlePurchase( $products, $quantity, $data, $names, $prices, $r
     			$retval .= '<p>&nbsp;</p><p>' . $LANG_PAYPAL_EMAIL['send_check'] . '</p>';
 	    		$retval .= '<blockquote><strong>' . $shop_informations . $shop_informations_bottom . '</strong></blockquote>';
 			}
-			if ($_PAY_CONF['purchase_email_user'] ) $retval .= '<p>' . $LANG_PAYPAL_1['confirm_by_email'] . '</p>';
+            if ($sendPurchaserEmail) {
+                $retval .= '<p>' . $LANG_PAYPAL_1['confirm_by_email'] . '</p>';
+            }
 			
 			return $retval;
 		} else {
