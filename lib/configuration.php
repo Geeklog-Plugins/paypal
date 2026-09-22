@@ -1,6 +1,6 @@
 <?php
 
-if (isset($_SERVER['PHP_SELF']) && strpos(strtolower($_SERVER['PHP_SELF']), 'configuration.php') !== false) {
+if (!isset($GLOBALS['_CONF'])) {
     die('This file can not be used on its own.');
 }
 
