@@ -158,7 +158,7 @@ function plugin_postinstall_paypal($pi_name)
     $allUsersGroup = (int) DB_getItem($_TABLES['groups'], 'grp_id', "grp_name = 'All Users'");
 
     $grp_assign['Paypal User'] = $loggedInGroup > 0 ? array($loggedInGroup) : array();
-    $grp_assign['Paypal Viewer'] = $allUsersGroup > 0 ? array($allUsersGroup) : array()
+    $grp_assign['Paypal Viewer'] = $allUsersGroup > 0 ? array($allUsersGroup) : array();
 	
      // Assign created paypal groups to other (logical) groups
     foreach ($grp_assign as $group => $grparray) {
