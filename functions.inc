@@ -887,7 +887,9 @@ function PAYPAL_displayCart ($block = 0)
 	include_once ($_CONF['path'] . 'plugins/paypal/paypal.php');
 	
     // Start session
-    session_start();
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
+    }
 	
     // Initialize jcart after session start
     $cart =& $_SESSION["jcart"];
