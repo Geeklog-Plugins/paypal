@@ -153,7 +153,7 @@ $_PAY_DEFAULT['products_col'] = 3;
  */
 $_PAY_DEFAULT['order'] = 'name';
 
-$_PAY_DEFAULT['view_memberships'] = 0;
+$_PAY_DEFAULT['view_membership'] = 0;
 $_PAY_DEFAULT['view_review'] = 0;
 $_PAY_DEFAULT['display_2nd_buttons'] = 0;
 
