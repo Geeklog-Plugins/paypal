@@ -110,7 +110,7 @@ paypal_filterVars($vars, $_REQUEST);
  */
 function PAYPAL_getProductForm($product = array(), $type = 'product') {
 
-    global $_CONF, $_PAY_CONF, $LANG_PAYPAL_1, $LANG_PAYPAL_ADMIN, $LANG_PAYPAL_PRO, $_TABLES, $LANG24, $LANG_ADMIN, $LANG_ACCESS, $_USER, $_GROUPS, $_SCRIPTS;
+    global $_CONF, $_PAY_CONF, $LANG_PAYPAL_1, $LANG_PAYPAL_ADMIN, $_TABLES, $LANG24, $LANG_ADMIN, $LANG_ACCESS, $_USER, $_GROUPS, $_SCRIPTS;
 
 	//PHP 5.4 set all $product[key] 
 	PAYPAL_setAllKeys($product, array('type', 'name', 'id', 'category', 'cat_id', 'short_description', 'description', 'item_id', 'price', 'price_ref', 'discount_a', 'discount_p', 'logged', 'hidden', 'active', 'show_in_blocks', 'customisable', 'product_type', 'file', 'weight', 'shipping_type', 'expiration', 'duration', 'duration_type', 'duration_recurrent', 'duration_type_recurrent', 'add_to_group', 'add_to_group_recurrent', 'perm_owner', 'owner_id', 'group_id', 'perm_group', 'perm_members', 'perm_anon'));
@@ -406,7 +406,7 @@ function PAYPAL_getProductForm($product = array(), $type = 'product') {
         $template->set_var('add_attributes', PAYPALPRO_displayAttributesToAdd($product['id']));
     } else {
         $template->set_var('attributes', '');
-        $template->set_var('add_attributes', $LANG_PAYPAL_PRO['add_attributes']);
+        $template->set_var('add_attributes', $LANG_PAYPAL_1['add_attributes']);
     }
 
 	//images
