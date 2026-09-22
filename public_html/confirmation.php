@@ -41,7 +41,10 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 // INITIALIZE JCART AFTER SESSION START
-$cart =& $_SESSION['jcart']; 
+$cart =& $_SESSION['jcart'];
+if (!is_object($cart)) {
+    $cart = new jcart();
+}
 
 // take user back to the homepage if the plugin is not active
 if (!in_array('paypal', $_PLUGINS) || COM_isAnonUser() || ($cart->itemcount) < 1) {
@@ -53,6 +56,7 @@ if (!in_array('paypal', $_PLUGINS) || COM_isAnonUser() || ($cart->itemcount) < 1
 paypal_access_check('paypal.user');
 
 $vars = array('msg' => 'text',
+              'mode' => 'alpha',
               'shipping' => 'text'
               );
 paypal_filterVars($vars, $_REQUEST);
@@ -81,10 +85,12 @@ if ($valid_prices !== true) {
 
 //Main
 
+$display = '';
+$data = array();
+
 // EMPTY THE CART
 $cart->empty_cart();
 
-$display .= PAYPAL_siteHeader();
 $display .= paypal_user_menu();
 
 switch ($_REQUEST['mode']) {
@@ -102,10 +108,8 @@ switch ($_REQUEST['mode']) {
 					</div></div>';
 
 		$display .= PAYPAL_handlePurchase($items, $quantities, $data, $namesfromcart, $item_price);
-		
-        $display .= PAYPAL_siteFooter();
 }
 
-COM_output($display);
+COM_output(PAYPAL_createHTMLDocument($display));
 
 ?>
