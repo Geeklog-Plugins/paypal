@@ -118,6 +118,7 @@ $_PAY_DEFAULT['purchase_email_user']        = true;
 $_PAY_DEFAULT['purchase_email_user_attach'] = true;
 $_PAY_DEFAULT['purchase_email_anon']        = true;
 $_PAY_DEFAULT['purchase_email_anon_attach'] = true;
+$_PAY_DEFAULT['enable_buy_now'] = 0;
 
 /**
  * Number of products to display per page.  0 indicates that all products should
@@ -203,6 +204,8 @@ function plugin_initconfig_paypal()
                 'select', 0, 0, 3, 51, true, 'paypal');
 		$c->add('purchase_email_anon_attach', $_PAY_DEFAULT['purchase_email_anon_attach'],
                 'select', 0, 0, 3, 53, true, 'paypal');
+        $c->add('enable_buy_now', $_PAY_DEFAULT['enable_buy_now'],
+                'select', 0, 0, 3, 63, true, 'paypal');
 		$c->add('enable_pay_by_paypal', 1,
                 'select', 0, 0, 3, 65, true, 'paypal');
 		$c->add('enable_pay_by_ckeck', 0,
