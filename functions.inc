@@ -97,7 +97,7 @@ require_once ($_CONF['path'] . 'plugins/paypal/storage.php');
  /**
 *Include plugin files
 */
-require_once $_CONF['path'] . 'plugins/paypal/proversion/proversion.php';
+require_once $_CONF['path'] . 'plugins/paypal/lib/features.php';
 
 // +---------------------------------------------------------------------------+
 // | Geeklog Plugin API Implementation                                         |
@@ -1981,7 +1981,7 @@ function plugin_runScheduledTask_paypal ()
                 // Send and update subscription expiration notification
 				$level = $A['notification']+1;
 	            if ($level > 3) $level = 3;
-				PAYPALPRO_notifyExpiration($A);
+				PAYPAL_notifyExpiration($A);
 		    	//Remove user from group if needed
 	    		if ($A['notification'] == 2) PAYPAL_removeFromGroup ($A['add_to_group'], $A['user_id']);
 				DB_query("UPDATE {$_TABLES['paypal_subscriptions']} 
@@ -1992,7 +1992,7 @@ function plugin_runScheduledTask_paypal ()
     }
 	
 	//check paypal profile recurring payments
-    require_once $_CONF['path'] . 'plugins/paypal/proversion/paypalfunctions.php';
+    require_once $_CONF['path'] . 'plugins/paypal/lib/paypal_nvp.php';
 
     // List and refresh recurring payment profiles.
     $res = DB_query("SELECT * FROM {$_TABLES['paypal_recurrent']} WHERE status ='Active' OR status ='ActiveProfile'");
