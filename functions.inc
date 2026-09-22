@@ -171,12 +171,80 @@ require_once $_CONF['path'] . 'plugins/paypal/lib/features.php';
 // | Geeklog Plugin API Implementation                                         |
 // +---------------------------------------------------------------------------+
 
+/**
+ * Return contextual help for Geeklog's configuration manager.
+ *
+ * @param string $id Configuration option name
+ * @return string
+ */
+function plugin_getconfigtooltip_paypal($id)
+{
+    global $LANG_PAYPAL_TOOLTIPS;
+
+    return isset($LANG_PAYPAL_TOOLTIPS[$id])
+        ? $LANG_PAYPAL_TOOLTIPS[$id]
+        : '';
+}
+
+/**
+ * Build a cache-busted PayPal stylesheet link.
+ *
+ * @param string $file Stylesheet filename
+ * @return string
+ */
+function PAYPAL_stylesheetLink($file)
+{
+    global $_CONF, $_PAY_CONF;
+
+    $cssPath = rtrim($_CONF['path_html'], '/\\')
+        . '/' . trim($_PAY_CONF['paypal_folder'], '/\\')
+        . '/css/' . basename($file);
+
+    $version = '1.7.0';
+    if (is_file($cssPath)) {
+        clearstatcache(true, $cssPath);
+        $modified = @filemtime($cssPath);
+        if ($modified !== false && $modified > 0) {
+            $version .= '-' . (int) $modified;
+        }
+    }
+
+    return '<link rel="stylesheet" type="text/css" href="'
+        . htmlspecialchars(
+            rtrim($_CONF['site_url'], '/')
+            . '/' . trim($_PAY_CONF['paypal_folder'], '/')
+            . '/css/' . basename($file),
+            ENT_QUOTES,
+            'UTF-8'
+        )
+        . '?v=' . rawurlencode($version) . '">' . "\n";
+}
+
 function plugin_getheadercode_paypal()
 {
     global $_CONF, $_PAY_CONF, $_SCRIPTS, $jcart;
 
     $retval = '';
     $currentUrl = COM_getCurrentURL();
+    $requestPath = '';
+    if (!empty($_SERVER['REQUEST_URI'])) {
+        $parsedPath = parse_url((string) $_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        $requestPath = is_string($parsedPath) ? $parsedPath : '';
+    }
+    if ($requestPath === '' && !empty($_SERVER['SCRIPT_NAME'])) {
+        $requestPath = (string) $_SERVER['SCRIPT_NAME'];
+    }
+    $requestPath = str_replace('\\', '/', $requestPath);
+
+    $isPayPalAdmin = strpos($requestPath, '/admin/plugins/paypal/') !== false;
+    $configGroup = isset($_POST['conf_group'])
+        ? (string) $_POST['conf_group']
+        : (isset($_GET['conf_group']) ? (string) $_GET['conf_group'] : '');
+    $isPayPalConfig = strpos($requestPath, '/admin/configuration.php') !== false
+        && $configGroup === 'paypal';
+    $isPublicPayPal = !$isPayPalAdmin
+        && !$isPayPalConfig
+        && strpos($requestPath, '/' . trim($_PAY_CONF['paypal_folder'], '/') . '/') !== false;
 
     $_SCRIPTS->setJavaScriptLibrary('jquery');
 
@@ -218,17 +286,22 @@ function plugin_getheadercode_paypal()
             );
     }
 
-    $paypalCssPath = $_CONF['path_html'] . $_PAY_CONF['paypal_folder'] . '/css/paypal-1.7.0.css';
-    $paypalCssVersion = file_exists($paypalCssPath) ? filemtime($paypalCssPath) : '1.7.0';
-    $_SCRIPTS->setCSSFile(
-        'paypal_css',
-        '/' . $_PAY_CONF['paypal_folder'] . '/css/paypal-1.7.0.css?v=' . rawurlencode($paypalCssVersion)
-    );
-
-    if (stripos($currentUrl, 'admin/plugins/paypal/') !== false) {
-        $_SCRIPTS->setCSSFile('paypal_datepicker_css', '/jquery/datepicker/datepicker.css');
+    if ($isPublicPayPal || $isPayPalAdmin || $isPayPalConfig
+        || $cartBlockEnabled || $dynamicCartEnabled
+    ) {
+        $retval .= PAYPAL_stylesheetLink('paypal-1.7.0.css');
     }
- 
+
+    if ($isPayPalAdmin) {
+        $retval .= '<link rel="stylesheet" type="text/css" href="'
+            . htmlspecialchars(
+                rtrim($_CONF['site_url'], '/') . '/jquery/datepicker/datepicker.css',
+                ENT_QUOTES,
+                'UTF-8'
+            )
+            . '">' . "\n";
+    }
+
     return $retval;
 }
 
