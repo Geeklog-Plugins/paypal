@@ -640,7 +640,7 @@ $cart->set_var('empty', '<strong>' . $text['empty_message'] . '</strong>');
 					$retval .= "\t\t\t<p><input type='" . $input_type . "' " . $src ."id='jcart-paypal-checkout' name='jcart_paypal_checkout' value='" .
 						$text['checkout_paypal_button'] . "'" . $disable_paypal_checkout . " /></p>\n";	
 				}
-				if ($is_checkout == true  && $block == 0 && ($this->itemcount > 0) && $_PAY_CONF['enable_pay_by_ckeck'] == 1) {
+				if ($is_checkout == true  && $block == 0 && ($this->itemcount > 0) && $_PAY_CONF['enable_pay_by_check'] == 1) {
 					if (!COM_isAnonUser()) {
 							$js = 'function payby ( selectedtype )';
 							$js .= '{';
