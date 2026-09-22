@@ -204,11 +204,20 @@ function PAYPAL_ipnlog_single($id, $txn_id) {
     $res = DB_query($sql);
     $A = DB_fetchArray($res);
 
+    if (!is_array($A) || empty($A)) {
+        return COM_showMessageText($LANG_PAYPAL_1['ipnlog_empty'], $LANG_PAYPAL_1['IPN_logs']);
+    }
+
+    $display = '';
+    $errors = '';
+    $errmsg = '';
+    $input_ipn = 0;
+
 	// Start Display
     $display .= COM_startBlock($LANG_PAYPAL_1['ipn_history'] . " (#{$A['id']})");
 
     // Create ipnlog template
-    $ipnlog = new Template($_CONF['path'] . 'plugins/paypal/templates');
+    $ipnlog = COM_newTemplate($_CONF['path'] . 'plugins/paypal/templates');
     $ipnlog->set_file(array('ipnlog' => 'ipnlog_detail.thtml'));
     $ipnlog->set_var('site_url', $_CONF['site_url']);
     $ipnlog->set_var('IPN_log', $LANG_PAYPAL_1['IPN_log']);
@@ -224,23 +233,35 @@ function PAYPAL_ipnlog_single($id, $txn_id) {
 	$ipnlog->set_var('txn_id', $A['txn_id']);
 	
 	// Allow all serialized data to be available to the template
-	$ipn ='';
-	if ($A['ipn_data'] != '') {
+	$ipn = array('payment_status' => '');
+	if (!empty($A['ipn_data'])) {
 
 		//Diagnotic
 		PAYPAL_check_serialization( $A['ipn_data'], $errmsg );
-		//Serialize fixer
-		$out = preg_replace('!s:(\d+):"(.*?)";!se', "'s:'.strlen('$2').':\"$2\";'", $A['ipn_data'] ); 
+        // Serialized-data length fixer compatible with PHP 7+.
+        $out = preg_replace_callback(
+            '!s:(\\d+):"(.*?)";!s',
+            function ($matches) {
+                return 's:' . strlen($matches[2]) . ':"' . $matches[2] . '";';
+            },
+            $A['ipn_data']
+        );
 		
 		PAYPAL_check_serialization( $out, $errmsg );
-        if (!$ipn = unserialize($out)) {
-		    $ipn = repairSerializedArray($A['ipn_data']) ;
+        $decodedIpn = @unserialize($out);
+        if (!is_array($decodedIpn)) {
+		    $ipn = repairSerializedArray($A['ipn_data']);
 			$errmsg = 'IPN ' . $A['txn_id'] . ' is not complete';
 			$input_ipn = 1;
-		}
-		
-		if (!is_array($ipn)) {
-            $ipn = array();
+		} else {
+            $ipn = $decodedIpn;
+        }
+
+        if (!is_array($ipn)) {
+            $ipn = array('payment_status' => '');
+        }
+        if (!isset($ipn['payment_status'])) {
+            $ipn['payment_status'] = '';
         }
         foreach ($ipn as $name => $value) {
             $ipnlog->set_var($name, $value);
@@ -256,7 +277,7 @@ function PAYPAL_ipnlog_single($id, $txn_id) {
     } else {
         $txt = $LANG_PAYPAL_1['false'] . ' | Payment status: ' . strtolower($ipn['payment_status']);
 		//Update IPN and handle purchase
-		if (strtolower($ipn['payment_status']) == ('complete' || 'completed')) $txt .= ' >> <a class="paypal_handle_purchase" ipn="' . $A['txn_id'] . '" href="">' . $LANG_PAYPAL_1['handle_purchase'] . '</a>';
+		if (in_array(strtolower($ipn['payment_status']), array('complete', 'completed'), true)) $txt .= ' >> <a class="paypal_handle_purchase" ipn="' . $A['txn_id'] . '" href="">' . $LANG_PAYPAL_1['handle_purchase'] . '</a>';
 		$ipnlog->set_var('verified', $txt );
     }
     
