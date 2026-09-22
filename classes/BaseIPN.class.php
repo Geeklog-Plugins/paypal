@@ -72,136 +72,81 @@ class BaseIPN {
      * @param array $in Array containing POST variables of transaction
      * @return boolean true if result successfully validated, false otherwise
      */
-    function Verify($in) 
-	{
-        global $_CONF, $_PAY_CONF;
+    function Verify($in)
+    {
+        global $_PAY_CONF;
 
-		// CONFIG: Enable debug mode. This means we'll log requests into 'error.log'
-		// Especially useful if you encounter network errors or other intermittent problems with IPN (validation).
-		
-		if(DEBUG) COM_errorLog("PAYPAL-IPN: Verify starts");
-
-		// Read POST data
-		// reading posted data directly from $_POST causes serialization
-		// issues with array data in POST. Reading raw POST data from input stream instead.
-
-        $raw_post_data = file_get_contents('php://input');
-        if (!is_string($raw_post_data) || $raw_post_data === '') {
-            return false;
+        if (DEBUG) {
+            COM_errorLog('PAYPAL-IPN: verification start');
         }
 
-		$raw_post_array = explode('&', $raw_post_data);
-		$myPost = array();
-        $get_magic_quotes_exists = false;
-        $verified = false;
-		foreach ($raw_post_array as $keyval) {
-				$keyval = explode ('=', $keyval);
-				if (count($keyval) == 2)
-						$myPost[$keyval[0]] = urldecode($keyval[1]);
-		}
-		// read the post from PayPal system and add 'cmd'
-		$req = 'cmd=_notify-validate';
-		if(function_exists('get_magic_quotes_gpc')) {
-				$get_magic_quotes_exists = true;
-				if(DEBUG) COM_errorLog("PAYPAL-IPN: get_magic_quotes_gpc exists");
-		}
-		foreach ($myPost as $key => $value) {
-				if($get_magic_quotes_exists == true && get_magic_quotes_gpc() == 1) {
-						$value = rawurlencode(stripslashes($value));
-				} else {
-						$value = rawurlencode($value);
-				}
-				$req .= "&$key=$value";
-		}
-
-		// Post IPN data back to PayPal to validate the IPN data is genuine
-		// Without this step anyone can fake IPN data
+        $rawPostData = file_get_contents('php://input');
+        if (!is_string($rawPostData) || $rawPostData === '') {
+            if (DEBUG) {
+                COM_errorLog('PAYPAL-IPN: empty request body');
+            }
+            return false;
+        }
 
         $sandbox = isset($_PAY_CONF['paypalURL'])
-            && trim($_PAY_CONF['paypalURL']) === 'www.sandbox.paypal.com';
-        $paypal_url = $sandbox
+            && stripos((string) $_PAY_CONF['paypalURL'], 'sandbox') !== false;
+
+        $paypalUrl = $sandbox
             ? 'https://ipnpb.sandbox.paypal.com/cgi-bin/webscr'
             : 'https://ipnpb.paypal.com/cgi-bin/webscr';
-		if(DEBUG) COM_errorLog("PAYPAL-IPN: $paypal_url");
 
-		$ch = curl_init($paypal_url);
-		if ($ch == FALSE) {
-				COM_errorLog("PAYPAL-IPN: IPN result -- Curl init failed");
-				return FALSE;
-		}
+        $requestBody = 'cmd=_notify-validate&' . $rawPostData;
 
-		curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
-		curl_setopt($ch, CURLOPT_POST, 1);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $req);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 1);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-		curl_setopt($ch, CURLOPT_FORBID_REUSE, 1);
-
-		if (DEBUG) {
-            curl_setopt($ch, CURLINFO_HEADER_OUT, 1);
+        $ch = curl_init($paypalUrl);
+        if ($ch === false) {
+            COM_errorLog('PAYPAL-IPN: cURL initialization failed');
+            return false;
         }
 
-		// CONFIG: Optional proxy configuration
-		//curl_setopt($ch, CURLOPT_PROXY, $proxy);
-		//curl_setopt($ch, CURLOPT_HTTPPROXYTUNNEL, 1);
-
-		// Set TCP timeout to 30 seconds
-		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $requestBody);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+        curl_setopt($ch, CURLOPT_FORBID_REUSE, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
         curl_setopt($ch, CURLOPT_TIMEOUT, 20);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             'Connection: Close',
-            'User-Agent: Geeklog-PayPal/1.7.0 IPN-Verification'
+            'User-Agent: Geeklog-PayPal/1.7.0 IPN-Verification',
+            'Content-Type: application/x-www-form-urlencoded',
         ));
 
-		// CONFIG: Please download 'cacert.pem' from "http://curl.haxx.se/docs/caextract.html" and set the directory path
-		// of the certificate as shown below. Ensure the file is readable by the webserver.
-		// This is mandatory for some environments.
+        $response = curl_exec($ch);
 
-		//$cert = __DIR__ . "./cacert.pem";
-		//curl_setopt($ch, CURLOPT_CAINFO, $cert);
-
-        $res = curl_exec($ch);
-        $verified = false;
-
-		if (curl_errno($ch) != 0) {
-		    // cURL error
-			if(DEBUG) COM_errorLog("PAYPAL-IPN: Can't connect to PayPal to validate IPN message: " . curl_error($ch));
-			curl_close($ch);
+        if ($response === false) {
+            if (DEBUG) {
+                COM_errorLog(
+                    'PAYPAL-IPN: verification request failed: ' . curl_error($ch)
+                );
+            }
+            curl_close($ch);
             return false;
+        }
 
-		} else {
-			// Log the entire HTTP response if debug is switched on.
-			if(DEBUG) {
-				COM_errorLog("PAYPAL-IPN: Validation request sent to " . $paypal_url);
-				COM_errorLog("PAYPAL-IPN: HTTP verification response: " . trim((string) $res));
-			}
-			
-			// Inspect IPN 
+        $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
 
-            $response = trim((string) $res);
+        if ($httpCode !== 200) {
+            if (DEBUG) {
+                COM_errorLog('PAYPAL-IPN: verification HTTP status ' . $httpCode);
+            }
+            return false;
+        }
 
-			if ($response === 'VERIFIED') {
+        $response = trim((string) $response);
 
-				$verified = true;
-				
-				if(DEBUG) COM_errorLog("PAYPAL-IPN: Paypal response is Verified - IPN:".  $req);
-				
-			} else if ($response === 'INVALID') {
-				$verified = false;
-				// log for manual investigation
-				// Add business logic here which deals with invalid IPN messages
-				if(DEBUG) COM_errorLog("PAYPAL-IPN: PayPal response is INVALID");
-			} else {
-			   if (DEBUG) COM_errorLog("PAYPAL-IPN: Unexpected PayPal verification response: " . $response);
-			}
+        if (DEBUG) {
+            COM_errorLog('PAYPAL-IPN: verification response ' . $response);
+        }
 
-			curl_close($ch);
-		}
-        
-		if(DEBUG) COM_errorLog("PAYPAL-IPN: Verify finish");
-		
-		return $verified;
+        return $response === 'VERIFIED';
     }
 
     /**
