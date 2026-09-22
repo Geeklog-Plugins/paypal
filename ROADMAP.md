@@ -111,5 +111,5 @@ requests:
 
 ## Integrated extended features
 
-- Integrated the former Pro-version feature set into the standard plugin: product attributes, attribute types, manual subscriptions, expiration notifications, recurring-payment NVP helpers, and sales statistics.
+- Integrated the extended feature set directly into the standard plugin: product attributes, attribute types, manual subscriptions, expiration notifications, recurring-payment NVP helpers, and sales statistics.
 The `PAYPALPRO_*` function names are retained only as an internal compatibility contract; no separate Pro package is required.
