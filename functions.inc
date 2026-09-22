@@ -964,7 +964,12 @@ function plugin_enablestatechange_paypal ($enable)
 function PAYPAL_displayProducts ($pid = '', $autotag=0, $category = '', $column = '')
 {
     global $_CONF, $_PAY_CONF, $LANG_PAYPAL_1, $LANG_PAYPAL_CART, $_TABLES, $_USER;
-	
+
+    $retval = '';
+    $p_retval = '';
+    $field = '';
+    $category_link = '';
+
     // Get products from database
     $sql = "SELECT p.id,p.type,p.item_id,p.name,p.short_description,p.price,p.product_type, p.logged, p.hidden,
             i.pi_filename,  p.owner_id, p.group_id, p.perm_owner, p.perm_group, p.perm_members, p.perm_anon,
@@ -977,8 +982,11 @@ function PAYPAL_displayProducts ($pid = '', $autotag=0, $category = '', $column 
     $sql_index = $sql  . ' WHERE p.active=1 ';
     
 	//Clean input
-	(is_numeric($_REQUEST['page'])) ? $page = $_REQUEST['page'] : $page = 1;
-	(in_array($_REQUEST['type'],$_PAY_CONF['types'])) ? $type = $_REQUEST['type'] : $type = '';
+    $page = (isset($_REQUEST['page']) && is_numeric($_REQUEST['page']))
+        ? (int) $_REQUEST['page']
+        : 1;
+    $requestedType = isset($_REQUEST['type']) ? $_REQUEST['type'] : '';
+    $type = array_key_exists($requestedType, $_PAY_CONF['types']) ? $requestedType : '';
 	
     // If applicable, limit by category
     if ( $category > 0 ) {
@@ -1921,7 +1929,7 @@ function PAYPAL_getListField_paypal_subscriptions($fieldname, $fieldvalue, $A, $
 			
 		case "purchase_date":
             $date = COM_getUserDateTimeFormat($A['purchase_date']);
-			$retval = strftime( $_CONF['dateonly'], $date[1] );
+			$retval = $date[0];
 			//$retval = $date[0];
             break;
 			
