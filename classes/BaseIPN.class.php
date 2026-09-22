@@ -282,7 +282,7 @@ class BaseIPN {
      * @param string $currency Currency of funds in payment_gross
      * @return boolean true if funds are sufficient, false otherwise
      */
-    function isSufficientFunds($ids, $quantity, $payment_gross, $currency)
+    function isSufficientFunds($ids, $quantity, $payment_gross, $currency, $shippingAmount = 0.0)
     {
         global $_PAY_CONF, $_TABLES;
 
@@ -297,6 +297,7 @@ class BaseIPN {
         }
 
         $expected = 0.0;
+        $shippingItems = array();
 
         foreach ($ids as $index => $rawId) {
             $parsed = PAYPAL_parseItemIdentifier($rawId);
@@ -344,7 +345,24 @@ class BaseIPN {
             }
 
             $expected += $unitPrice * $qty;
+            $shippingItems[] = array('id' => $rawId, 'qty' => $qty);
         }
+
+        $shippingAmount = round((float) $shippingAmount, 2);
+        $shippingContext = PAYPAL_getCartShippingContext($shippingItems);
+
+        if (!PAYPAL_isAllowedShippingAmount(
+            $shippingAmount,
+            $shippingContext['weight'],
+            $shippingContext['categories']
+        )) {
+            if (DEBUG) {
+                COM_errorLog('PAYPAL-IPN: Invalid shipping amount ' . $shippingAmount);
+            }
+            return false;
+        }
+
+        $expected += $shippingAmount;
 
         // Allow only a one-cent rounding tolerance.
         $paid = round((float) $payment_gross, 2);
@@ -411,6 +429,8 @@ class BaseIPN {
             'item_number' => '',
             'item_name' => '',
             'custom' => 0,
+            'mc_shipping' => 0,
+            'mc_handling' => 0,
         );
 		
         if (!$this->Verify($in)) {
@@ -455,7 +475,14 @@ class BaseIPN {
                         $payment_gross = $in['mc_gross'];
                         $currency      = $in['mc_currency'];
                     }
-                    if ($this->isSufficientFunds($ids, $quantity, $payment_gross, $currency)) {
+                    $shippingAmount = (float) $in['mc_shipping'] + (float) $in['mc_handling'];
+                    if ($this->isSufficientFunds(
+                        $ids,
+                        $quantity,
+                        $payment_gross,
+                        $currency,
+                        $shippingAmount
+                    )) {
                         $this->handlePurchase($ids, $quantity, $in, $name);
                     } else {
                         $this->handleFailure(PAYPAL_FAILURE_FUNDS, "($logId) Insufficient funds for purchase");
@@ -494,7 +521,14 @@ class BaseIPN {
                     $currency      = $in['mc_currency'];
                 }
                 
-				if ($this->isSufficientFunds($ids, $quantity, $payment_gross, $currency)) {
+                $shippingAmount = (float) $in['mc_shipping'] + (float) $in['mc_handling'];
+				if ($this->isSufficientFunds(
+                    $ids,
+                    $quantity,
+                    $payment_gross,
+                    $currency,
+                    $shippingAmount
+                )) {
                     $this->handlePurchase($ids, $quantity, $in, $names);
                 } else {
                     $this->handleFailure(PAYPAL_FAILURE_FUNDS, "($logId) Insufficient/incorrect funds for purchase");
