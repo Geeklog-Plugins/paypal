@@ -53,9 +53,9 @@ function plugin_autoinstall_paypal($pi_name)
     $info = array(
         'pi_name'         => $pi_name,
         'pi_display_name' => $pi_display_name,
-        'pi_version'      => '1.6.2',
-        'pi_gl_version'   => '1.8.0',
-        'pi_homepage'     => 'http://www.geeklog.fr'
+        'pi_version'      => '1.7.0',
+        'pi_gl_version'   => '2.1.1',
+        'pi_homepage'     => 'https://github.com/Geeklog-Plugins/paypal'
     );
 
     $groups = array(
@@ -169,15 +169,16 @@ function plugin_postinstall_paypal($pi_name)
         }
     }
 	
-    /* This code is for statistics ONLY */
-    $message =  'Completed paypal plugin install: ' .date('m d Y',time()) . "   AT " . date('H:i', time()) . "\n";
-    $message .= 'Site: ' . $_CONF['site_url'] . ' and Sitename: ' . $_CONF['site_name'] . "\n";
-    $pi_version = DB_getItem($_TABLES['plugins'], 'pi_version', "pi_name = 'paypal'");
-    COM_mail("ben@geeklog.fr","$pi_name Version:$pi_version Install successfull",$message);
-	
-	// Create paypal_downloads.log file
-	$paypalDownload = fopen($_CONF['path_log'] . 'paypal_downloads.log', 'w') or die("can't create file paypal_downloads.log file");
-    fclose($paypalDownload);
+    // Create the plugin download log without making installation fatal.
+    $paypalLog = rtrim($_CONF['path_log'], "/\\") . DIRECTORY_SEPARATOR . 'paypal_downloads.log';
+    if (!file_exists($paypalLog)) {
+        $paypalDownload = @fopen($paypalLog, 'a');
+        if ($paypalDownload === false) {
+            COM_errorLog('PayPal: unable to create download log at ' . $paypalLog);
+        } else {
+            fclose($paypalDownload);
+        }
+    }
 
 	return true;
 }
