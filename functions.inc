@@ -141,47 +141,7 @@ function plugin_getheadercode_paypal()
 }
 
 
-if (!function_exists('plugin_autouninstall_paypal')) {
-    function plugin_autouninstall_paypal()
-    {
-        return array(
-            'tables' => array(
-                'paypal_ipnlog',
-                'paypal_downloads',
-                'paypal_products',
-                'paypal_purchases',
-                'paypal_images',
-                'paypal_categories',
-                'paypal_subscriptions',
-                'paypal_users',
-                'paypal_attributes',
-                'paypal_attribute_type',
-                'paypal_product_attribute',
-                'paypal_stock',
-                'paypal_delivery',
-                'paypal_stock_movements',
-                'paypal_providers',
-                'paypal_shipper_service',
-                'paypal_shipping_to',
-                'paypal_shipping_cost',
-                'paypal_recurrent'
-            ),
-            'groups' => array(
-                'Paypal Admin',
-                'Paypal User',
-                'Paypal Viewer'
-            ),
-            'features' => array(
-                'paypal.admin',
-                'paypal.user',
-                'paypal.viewer'
-            ),
-            'php_blocks' => array(),
-            'vars' => array()
-        );
-    }
-}
-
+require_once $_CONF['path'] . 'plugins/paypal/uninstall.php';
 
 /**
 * Returns the item(s) for this plugin that should appear on the main menu
@@ -395,61 +355,6 @@ function plugin_pluginstatechange_paypal($type, $status)
             break;
     }
 
-}
-
-/**
-* Automatic uninstall function for plugins
-*
-* This code is automatically uninstalling the plugin.
-* It passes an array to the core code function that removes
-* tables, groups, features and php blocks from the tables.
-* Additionally, this code can perform special actions that cannot be
-* foreseen by the core code (interactions with other plugins for example)
-*
-* @return   array   Plugin information
-*
-*/
-function plugin_autouninstall_paypal()
-{
-    global $_PAY_CONF;
-	
-    $out = array (
-        /* give the name of the tables, without $_TABLES[] */
-        'tables' => array('paypal_ipnlog',
-		'paypal_downloads',
-		'paypal_products',
-		'paypal_purchases',
-		'paypal_images',
-		'paypal_categories',
-		'paypal_subscriptions',
-		'paypal_users',
-		'paypal_attributes',
-		'paypal_attribute_type',
-		'paypal_product_attribute',
-		'paypal_stock',
-		'paypal_delivery',
-		'paypal_stock_movements',
-		'paypal_providers',
-		'paypal_shipper_service',
-		'paypal_shipping_to',
-		'paypal_shipping_cost',
-		'paypal_recurrent'), 
-
-        /* give the full name of the group, as in the db */
-        'groups' => array('Paypal Admin', 'Paypal User', 'Paypal Viewer'),
-        /* give the full name of the feature, as in the db */
-        'features' => array('paypal.admin', 'paypal.user', 'paypal.viewer'),
-        /* give the full name of the block, including 'phpblock_', etc */
-        'php_blocks' => array('phpblock_paypal_cart','phpblock_paypal_randomBlock'),
-        /* give all vars with their name */
-        'vars' => array()
-    );
-	
-	if (file_exists($_PAY_CONF['logfile'])) {
-        @unlink($_PAY_CONF['logfile']);
-	}
-
-    return $out;
 }
 
 /**
