@@ -173,7 +173,7 @@ function PAYPAL_listProducts()
 */
 function PAYPAL_getListField_paypal($fieldname, $fieldvalue, $A, $icon_arr)
 {
-    global $_CONF, $LANG_ADMIN, $LANG_STATIC, $_TABLES, $_PAY_CONF;
+    global $_CONF, $LANG_ADMIN, $LANG_STATIC, $_TABLES, $_PAY_CONF, $LANG_PAYPAL_1;
 
     switch($fieldname) {
         case "edit":
