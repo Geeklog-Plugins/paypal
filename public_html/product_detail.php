@@ -685,7 +685,7 @@ if ($A['customisable'] != 0 && !function_exists('PAYPALPRO_displayAttributes') )
 
 $display .= PAYPAL_siteHeader($A['name'] . ' - '  . $A['cat_name']);
 
-if (SEC_hasRights('paypal.user', 'paypal.admin')) {
+if (SEC_hasRights('paypal.user,paypal.admin', 'OR')) {
     $display .= paypal_user_menu();
 } else {
     $display .= paypal_viewer_menu();
