@@ -142,7 +142,7 @@ function PAYPALPRO_displayCustomAttributes($productId)
             && is_file($_PAY_CONF['path_at_images'] . $A['at_image'])) {
             $size = (int) $_PAY_CONF['attribute_thumbnail_size'];
             $imageUrl = $_PAY_CONF['images_at_url'] . rawurlencode($A['at_image']);
-            $retval .= '<div class="attribute_thumbnail"><a class="lightbox" href="'
+            $retval .= '<div class="attribute_thumbnail"><a class="paypal-image-link" href="'
                 . $imageUrl . '"><img src="' . $imageUrl . '" width="' . $size
                 . '" alt="' . htmlspecialchars($A['at_name'], ENT_QUOTES, 'UTF-8') . '"></a></div>';
         }
