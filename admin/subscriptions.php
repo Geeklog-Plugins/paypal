@@ -197,7 +197,7 @@ $_SCRIPTS->setJavaScript($js, true);
 
 switch ($_REQUEST['mode']) {
     case 'new':
-        $display .= PAYPALPRO_newSubscription();
+        $display .= PAYPAL_newSubscription();
         break;
 		
 	case 'edit':
