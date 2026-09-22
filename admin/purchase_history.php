@@ -407,8 +407,7 @@ if ($paypalMode == 'edit' && SEC_checkToken()) {
 
 //Main
 
-$display = COM_siteHeader('none');
-$display .= paypal_admin_menu();
+$display = paypal_admin_menu();
 
 $display .= COM_startBlock($LANG_PAYPAL_1['sales_history']);
 
@@ -418,7 +417,5 @@ if(function_exists('PAYPAL_plot')) $display .= PAYPAL_plot();
 $display .= PAYPAL_listTransactions();
 $display .= COM_endBlock();
 
-$display .= COM_siteFooter();
-
-COM_output($display);
+COM_output(PAYPAL_createHTMLDocument($display, $LANG_PAYPAL_1['sales_history']));
 ?>
