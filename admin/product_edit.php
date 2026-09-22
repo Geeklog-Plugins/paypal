@@ -400,6 +400,7 @@ function PAYPAL_getProductForm($product = array(), $type = 'product') {
 	$template->set_var('lang_images', $LANG_PAYPAL_1['product_images']);
 	$fileinputs = '';
     $saved_images = '';
+    $icount = 0;
     if ($_PAY_CONF['max_images_per_products'] > 0) {
 	    if ($product['id'] != '') {
             $icount = DB_count($_TABLES['paypal_images'],'pi_pid', $product['id']);
