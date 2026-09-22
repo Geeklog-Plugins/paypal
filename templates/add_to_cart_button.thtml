@@ -1,7 +1,8 @@
 {# begin {templatelocation} #}
 <div class="button_add_to_cart">
-  <form method="post" action="#" class="jcart">
-    <button type="submit" name="submit">{add_to_cart}</button>
+  <form method="post" action="{site_url}/checkout.php" class="jcart">
+    <button type="submit">{add_to_cart}</button>
+    <input type="hidden" name="submit" value="1">
     <input type="hidden" name="add" value="1">
     <input type="hidden" name="item_name" value="{name_button}">
     <input type="hidden" name="item_number" value="{id}">
