@@ -55,6 +55,22 @@ jobs:
           test -d build/paypal/templates
           test -d build/paypal/sql
 
+          # Geeklog 2.2.2 validates every archive basename with:
+          #   /^[0-9a-zA-Z_.-]+$/
+          # and also rejects names starting/ending with "." or containing "..".
+          INVALID_NAMES="$(
+            find build/paypal -mindepth 1 -printf '%f\n' \
+              | awk '
+                  /^\./ || /\.$/ || /\.\./ || /[^0-9A-Za-z_.-]/ { print }
+                '
+          )"
+
+          if [ -n "${INVALID_NAMES}" ]; then
+            echo "Error: archive contains filenames rejected by Geeklog 2.2.2:" >&2
+            printf '%s\n' "${INVALID_NAMES}" >&2
+            exit 1
+          fi
+
           rm -f "dist/${ARCHIVE}"
           (
             cd build
