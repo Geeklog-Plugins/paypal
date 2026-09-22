@@ -575,7 +575,7 @@ class BaseIPN {
                      . "product_name = '{$safeProductName}', "
                      . "quantity = {$itemQuantity}, user_id = {$userId}, "
                      . "txn_id = '{$safeTxnId}', "
-                     . "purchase_date = NOW(), status = 'complete'"
+                     . "purchase_date = NOW(), status = 'complete'";
 
                 /**
                  * @todo implemente physical item vs. download, reflected in 'status'
