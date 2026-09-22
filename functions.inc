@@ -361,14 +361,14 @@ function paypal_viewer_menu() {
 	$type = COM_newTemplate($_CONF['path'] . 'plugins/paypal/templates/menus');
 	$type->set_file(array('table' => 'types.thtml'));
 	if ($nb_products > 0) {
-		$types .= +1;
+		$types++;
 		$type->set_var('products', '<a href="' . $_PAY_CONF['site_url'] . '/index.php?type=product">' . $LANG_PAYPAL_1['product_list_label'] . '</a>');
 	} else {
 		$type->set_var('products', '');
 	}
 	if ($nb_subscriptions > 0) {
 		if ($types > 0) {
-			 $separator = ' | ';
+			 $separator = '';
 		}
 		$type->set_var('memberships', $separator . '<a href="' . $_PAY_CONF['site_url'] . '/index.php?type=subscription">' . $LANG_PAYPAL_1['memberships'] . '</a>');
 	} else {
@@ -431,14 +431,14 @@ function paypal_user_menu() {
 	$type = COM_newTemplate($_CONF['path'] . 'plugins/paypal/templates/menus');
 	$type->set_file(array('table' => 'types.thtml'));
 	if ($nb_products > 0) {
-		$types .= +1;
+		$types++;
 		$type->set_var('products', '<a href="' . $_PAY_CONF['site_url'] . '/index.php?type=product">' . $LANG_PAYPAL_1['product_list_label'] . '</a>');
 	} else {
 		$type->set_var('products', '');
 	}
 	if ($nb_subscriptions > 0) {
 		if ($types > 0) {
-			 $separator = ' | ';
+			 $separator = '';
 		}
 		$type->set_var('memberships', $separator . '<a href="' . $_PAY_CONF['site_url'] . '/index.php?type=subscription">' . $LANG_PAYPAL_1['memberships'] . '</a>');
 	} else {
