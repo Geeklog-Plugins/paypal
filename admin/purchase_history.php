@@ -135,67 +135,108 @@ function PAYPAL_listTransactions()
 function PAYPAL_getListField_paypal_transactions($fieldname, $fieldvalue, $A, $icon_arr)
 {
     global $_CONF, $_PAY_CONF, $LANG_PAYPAL_1;
-	
+
+    $serialized = isset($A['ipn_data']) ? $A['ipn_data'] : '';
     $out = preg_replace_callback(
         '!s:(\\d+):"(.*?)";!s',
         function ($matches) {
             return 's:' . strlen($matches[2]) . ':"' . $matches[2] . '";';
         },
-        $A['ipn_data']
+        $serialized
     );
+
     $ipn = @unserialize($out);
-	if (!is_array($ipn)) {
+    if (!is_array($ipn)) {
         $ipn = array();
     }
 
-    switch($fieldname) {
-        case "id":
-            $retval = $A['id'];
-            break;
-		case "user_id":
-            
-			if ($A['user_id'] >= 2) {
-			    $retval = '<a href="' . $_CONF['site_url'] . '/users.php?mode=profile&uid=' . $A['user_id'] . '">' . $A['username'] .'</a>';
-			} else {
-			    $retval = $A['username'];
-			}
-			
-			if ($ipn['address_name'] != '') {
-			    $retval .= ' | ' . $ipn['address_name'];
-			} else if ($ipn['first_name'] != '' || $ipn['last_name'] != ''){
-			    $retval .= ' | ' . $ipn['first_name'] . ' ' . $ipn['last_name'];
-            }			
-            break;
-		case "time":
-            $date = COM_getUserDateTimeFormat($A['time']);
-			$retval = $date[0];
-            break;
-		case "txnid":
-            $retval = '<a href="' . $_CONF['site_url'] . '/admin/plugins/paypal/ipnlog.php?view=ipnlog&op=single&txn_id=' . $fieldvalue . '">' . $fieldvalue . '</a>';
-            break;
-		case "status":
-            if ($A['status'] == 'pending') {
-			    $retval = '<a href="' . $_PAY_CONF['site_url'] . '/transaction.php?type=purchase&amp;id=' .
-				$A['id'] . '" title="'. $LANG_PAYPAL_1['see_transaction'] . '">' . $LANG_PAYPAL_1[$A['status']] .'</a>';
-			} else {
-    			$retval =  $LANG_PAYPAL_1[$A['status']];
-			}
-			break;
-		case "mc_gross":
-		    if ($ipn['mc_gross'] == 0 || $ipn['mc_gross'] == '') {
-			    $retval = '<div style="text-align:right;">' . number_format($ipn['mc_gross'], $_CONF['decimal_count'], $_CONF['decimal_separator'], $_CONF['thousand_separator']) . '</div>';
-			} else {
-    			$retval = '<div style="text-align:right;"><a href="' . $_PAY_CONF['site_url'] . '/transaction.php?type=purchase&amp;id=' . $A['id'] . '" title="'. $LANG_PAYPAL_1['see_transaction'] . '">' . number_format($ipn['mc_gross'], $_CONF['decimal_count'], $_CONF['decimal_separator'], $_CONF['thousand_separator']) .'</a></div>';
-			}
+    $addressName = isset($ipn['address_name']) ? $ipn['address_name'] : '';
+    $firstName = isset($ipn['first_name']) ? $ipn['first_name'] : '';
+    $lastName = isset($ipn['last_name']) ? $ipn['last_name'] : '';
+    $gross = isset($ipn['mc_gross']) && is_numeric($ipn['mc_gross'])
+        ? (float) $ipn['mc_gross']
+        : 0.0;
 
-            $_SESSION['gross_total'] = $_SESSION['gross_total'] + $ipn['mc_gross'];
-			
-			break;
+    switch ($fieldname) {
+        case 'id':
+            $retval = isset($A['id']) ? $A['id'] : '';
+            break;
+
+        case 'user_id':
+            $userId = isset($A['user_id']) ? (int) $A['user_id'] : 0;
+            $username = isset($A['username']) ? $A['username'] : '';
+
+            if ($userId >= 2) {
+                $retval = '<a href="' . $_CONF['site_url'] . '/users.php?mode=profile&amp;uid='
+                    . $userId . '">' . htmlspecialchars($username, ENT_QUOTES, 'UTF-8') . '</a>';
+            } else {
+                $retval = htmlspecialchars($username, ENT_QUOTES, 'UTF-8');
+            }
+
+            if ($addressName !== '') {
+                $retval .= ' | ' . htmlspecialchars($addressName, ENT_QUOTES, 'UTF-8');
+            } elseif ($firstName !== '' || $lastName !== '') {
+                $retval .= ' | ' . htmlspecialchars(trim($firstName . ' ' . $lastName), ENT_QUOTES, 'UTF-8');
+            }
+            break;
+
+        case 'time':
+            if (!empty($A['time'])) {
+                $date = COM_getUserDateTimeFormat($A['time']);
+                $retval = $date[0];
+            } else {
+                $retval = '';
+            }
+            break;
+
+        case 'txnid':
+            $txnId = (string) $fieldvalue;
+            $retval = '<a href="' . $_CONF['site_admin_url']
+                . '/plugins/paypal/ipnlog.php?view=ipnlog&amp;op=single&amp;txn_id='
+                . rawurlencode($txnId) . '">' . htmlspecialchars($txnId, ENT_QUOTES, 'UTF-8') . '</a>';
+            break;
+
+        case 'status':
+            $status = isset($A['status']) ? $A['status'] : '';
+            $statusLabel = isset($LANG_PAYPAL_1[$status]) ? $LANG_PAYPAL_1[$status] : $status;
+
+            if ($status === 'pending' && !empty($A['id'])) {
+                $retval = '<a href="' . $_PAY_CONF['site_url']
+                    . '/transaction.php?type=purchase&amp;id=' . (int) $A['id']
+                    . '" title="' . $LANG_PAYPAL_1['see_transaction'] . '">'
+                    . htmlspecialchars($statusLabel, ENT_QUOTES, 'UTF-8') . '</a>';
+            } else {
+                $retval = htmlspecialchars($statusLabel, ENT_QUOTES, 'UTF-8');
+            }
+            break;
+
+        case 'mc_gross':
+            $formattedGross = number_format(
+                $gross,
+                $_CONF['decimal_count'],
+                $_CONF['decimal_separator'],
+                $_CONF['thousand_separator']
+            );
+
+            if ($gross != 0.0 && !empty($A['id'])) {
+                $retval = '<div style="text-align:right;"><a href="' . $_PAY_CONF['site_url']
+                    . '/transaction.php?type=purchase&amp;id=' . (int) $A['id']
+                    . '" title="' . $LANG_PAYPAL_1['see_transaction'] . '">'
+                    . $formattedGross . '</a></div>';
+            } else {
+                $retval = '<div style="text-align:right;">' . $formattedGross . '</div>';
+            }
+
+            $_SESSION['gross_total'] = (isset($_SESSION['gross_total'])
+                ? (float) $_SESSION['gross_total']
+                : 0.0) + $gross;
+            break;
 
         default:
-            $retval = stripslashes($fieldvalue);
+            $retval = stripslashes((string) $fieldvalue);
             break;
     }
+
     return $retval;
 }
 
