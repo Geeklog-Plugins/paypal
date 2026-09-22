@@ -797,12 +797,19 @@ function phpblock_paypal_displayProducts($A = array(), $args = array())
 *
 *   @return                 HTML for the block
 */
-function phpblock_paypal_cart ()
+function phpblock_paypal_cart()
 {
-    $retval = '<small>' . PAYPAL_displayCart(1) . '</small>';
-    if (CART_EMPTY) return;
+    global $_SESSION;
 
-    return $retval;
+    if (!isset($_SESSION['jcart']) || !is_object($_SESSION['jcart'])) {
+        return '';
+    }
+
+    if (method_exists($_SESSION['jcart'], 'is_empty') && $_SESSION['jcart']->is_empty()) {
+        return '';
+    }
+
+    return '<div class="paypal-cart-block">' . PAYPAL_displayCart(1) . '</div>';
 }
 
 /**
