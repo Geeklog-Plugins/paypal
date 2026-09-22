@@ -745,3 +745,8 @@
 .paypal-cart-summary__footer:has(#jcart-checkout:only-child) {
   display: none;
 }
+
+
+.paypal-cart-dynamic-block--empty {
+  display: none !important;
+}
