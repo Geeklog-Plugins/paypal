@@ -306,6 +306,8 @@ function PAYPAL_getCategoryForm( $category = array() ) {
 
     $template = COM_newTemplate($_CONF['path'] . 'plugins/paypal/templates');
     $template->set_file(array('category' => 'category_form.thtml'));
+    $template->set_var('gltoken_name', CSRF_TOKEN);
+    $template->set_var('gltoken', SEC_createToken());
 	if (is_numeric($category['cat_id'])) {
         $template->set_var( array (
 		                    'cat_id' => '<input type="hidden" name="cat_id" value="' . $category['cat_id'] .'" />',
@@ -345,7 +347,7 @@ function PAYPAL_getCategoryForm( $category = array() ) {
 						'lang_permissions_msg' => $LANG_ACCESS['permmsg'],
 						'lang_accessrights'  => $LANG_ACCESS['accessrights'],
 						'lang_owner'         => $LANG_ACCESS['owner'],
-						'owner_name'         => ($creation) ? COM_getDisplayName($_USERS['uid']) : COM_getDisplayName($category['owner_id']),
+						'owner_name'         => ($creation) ? COM_getDisplayName($_USER['uid']) : COM_getDisplayName($category['owner_id']),
 						'owner_id'           => $category['owner_id'],
 						'admin_url'          => $_CONF['site_admin_url'],
 						'description'        => $category['description'],
@@ -375,8 +377,12 @@ function PAYPAL_getCategoryForm( $category = array() ) {
 	//Image
 	$cat_image = $_PAY_CONF['path_cat_images'] . $category['image'];
 	if (is_file($cat_image)) {
-		$template->set_var('cat_image','<p>' . $LANG_PAYPAL_ADMIN['image_replace'] . '<p><p><img src="' . $_PAY_CONF['site_url'] . '/timthumb.php?src='
-		. $_PAY_CONF['images_cat_url'] . $category['image'] . '&amp;w=150&amp;q=70&amp;zc=1" class="cat_image" alt="" /></p>');
+        $template->set_var(
+            'cat_image',
+            '<p>' . $LANG_PAYPAL_ADMIN['image_replace'] . '</p><p><img src="'
+            . $_PAY_CONF['images_cat_url'] . rawurlencode($category['image'])
+            . '" class="cat_image" style="max-width:150px;height:auto" alt=""></p>'
+        );
 	} else {
 		$template->set_var('cat_image', '');
 	}
@@ -648,6 +654,8 @@ function PAYPAL_getShipperForm( $shipper = array() ) {
 
     $template = COM_newTemplate($_CONF['path'] . 'plugins/paypal/templates');
     $template->set_file(array('shipper' => 'shipper_form.thtml'));
+    $template->set_var('gltoken_name', CSRF_TOKEN);
+    $template->set_var('gltoken', SEC_createToken());
 	if (is_numeric($shipper['shipper_service_id'])) {
         $template->set_var( array (
 		                    'shipper_id' => '<input type="hidden" name="shipper_service_id" value="' . $shipper['shipper_service_id'] .'" />',
@@ -781,6 +789,8 @@ function PAYPAL_getShippingToForm( $shipping_to = array() ) {
 
     $template = COM_newTemplate($_CONF['path'] . 'plugins/paypal/templates');
     $template->set_file(array('shipping_to' => 'shipping_to_form.thtml'));
+    $template->set_var('gltoken_name', CSRF_TOKEN);
+    $template->set_var('gltoken', SEC_createToken());
 	if (is_numeric($shipping_to['shipping_to_id'])) {
         $template->set_var( array (
 		                    'shipping_to_id' => '<input type="hidden" name="shipping_to_id" value="' . $shipping_to['shipping_to_id'] .'" />',
@@ -902,6 +912,8 @@ function PAYPAL_getShippingCostForm( $shipping_cost = array() ) {
 
     $template = COM_newTemplate($_CONF['path'] . 'plugins/paypal/templates');
     $template->set_file(array('shipping_cost' => 'shipping_cost_form.thtml'));
+    $template->set_var('gltoken_name', CSRF_TOKEN);
+    $template->set_var('gltoken', SEC_createToken());
 	if (is_numeric($shipping_cost['shipping_id'])) {
         $template->set_var( array (
 		                    'shipping_id' => '<input type="hidden" name="shipping_id" value="' . $shipping_cost['shipping_id'] .'" />',
@@ -1049,8 +1061,23 @@ PAYPAL_ensureStorageDirectories(true);
 
 //Check if picture folder is writable
 if ( !file_exists($_PAY_CONF['path_images']) || !is_writable($_PAY_CONF['path_images']) ) {
-    $display .= COM_showMessageText( '>> '. $_PAY_CONF['path_images'] . '<p>' . $LANG_PAYPAL_1['image_not_writable'] . '</p>');
+    $display .= COM_showMessageText('>> ' . $_PAY_CONF['path_images'] . '<p>' . $LANG_PAYPAL_1['image_not_writable'] . '</p>');
 } else {
+    $mutatingOps = array(
+        'save', 'delete',
+        'save_shipper', 'delete_shipper',
+        'save_shipping_to', 'delete_shipping_to',
+        'save_shipping_cost', 'delete_shipping_cost',
+        'move'
+    );
+
+    if (in_array($_REQUEST['op'], $mutatingOps, true)
+        && ($_SERVER['REQUEST_METHOD'] !== 'POST' || !SEC_checkToken())) {
+        $display .= COM_showMessageText($LANG_PAYPAL_1['access_denied'], $LANG_PAYPAL_1['error']);
+        COM_output(PAYPAL_createHTMLDocument($display));
+        exit;
+    }
+
     switch ($_REQUEST['mode']) {
 	    case 'categories':
 			switch ($_REQUEST['op']) {
