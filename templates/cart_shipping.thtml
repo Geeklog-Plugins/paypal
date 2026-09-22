@@ -1,7 +1,7 @@
 {# begin {templatelocation} #}
 
 		<div id="shipping_cart">
-        <h2>{choose_shipping}</h2>
+        <p class="paypal-form-row">{choose_shipping}</p>
         {shipping_radio_buttons}
 		</div>
 
