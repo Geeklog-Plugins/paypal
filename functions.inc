@@ -893,8 +893,10 @@ function PAYPAL_displayCart ($block = 0)
     }
 	
     // Initialize jcart after session start
-    $cart =& $_SESSION["jcart"];
-    if(!is_object($cart)) $cart = new jcart();
+    if (!isset($_SESSION['jcart']) || !is_object($_SESSION['jcart'])) {
+        $_SESSION['jcart'] = new jcart();
+    }
+    $cart =& $_SESSION['jcart'];
 	$retval = $cart->display_cart($jcart,$block);
 	
     return $retval;
@@ -1935,7 +1937,7 @@ function PAYPAL_getListField_paypal_subscriptions($fieldname, $fieldvalue, $A, $
 			
 		case "expiration":
 			$date = COM_getUserDateTimeFormat($A['expiration']);
-			$retval = strftime( $_CONF['dateonly'], $date[1] );
+			$retval = $date[0];
             break;
 			
 		case "add_to_group":
@@ -2346,7 +2348,22 @@ function plugin_profileblocksdisplay_paypal ($uid)
 function PAYPAL_getDetailsForm ($details, $url, $button, $shipping = 0)
 {
     global $_CONF, $_PAY_CONF, $LANG_PAYPAL_1, $_TABLES;
-	
+
+    $details = array_merge(array(
+        'user_id' => '',
+        'user_name' => '',
+        'user_street1' => '',
+        'user_street2' => '',
+        'user_postal' => '',
+        'user_city' => '',
+        'user_country' => '',
+        'user_phone1' => '',
+        'user_phone2' => '',
+        'user_fax' => '',
+        'user_contact' => '',
+        'user_proid' => '',
+    ), is_array($details) ? $details : array());
+
 	//Display form
 	$retval = '';
 	if ($url == '') return $retval;
@@ -2356,7 +2373,7 @@ function PAYPAL_getDetailsForm ($details, $url, $button, $shipping = 0)
     $template->set_var('validation_url', $url);
 	$template->set_var('xhtml', XHTML);
     $template->set_var('uid', '<input type="hidden" name="user_id" value="' . $details['user_id'] .'" />');
-	if ($_REQUEST['pay_by'] == 'check') {
+	if (isset($_REQUEST['pay_by']) && $_REQUEST['pay_by'] == 'check') {
     	$template->set_var('operation', '<input type="hidden" name="pay_by" value="check" /><input type="hidden" name="shipping" value="' . $shipping . '" />');
 	} else {
 	    $template->set_var('operation', '');
@@ -2514,7 +2531,8 @@ function PAYPAL_Breadcrumbs($id)
 
 function PAYPAL_realId ($ids)
 {
-   
+    $realids = '';
+
 	if (is_array($ids)) {
 	    $realids = array();
 	    foreach ($ids as $id) {
@@ -2524,7 +2542,7 @@ function PAYPAL_realId ($ids)
 				if ( DEBUG ) COM_errorLog('PAYPAL: Real id for item is: ' . $realid[0]);
 			} else {
 				$realids[] = $id;
-				if ( DEBUG ) COM_errorLog('PAYPAL: Real id for item is: ' . $id);
+				if ( DEBUG ) COM_errorLog('PAYPAL: Real id for item is: ' . $ids);
 			}
 		}
 	} else if ($ids != '') {
@@ -2558,15 +2576,16 @@ function PAYPAL_productPrice ($product)
 function PAYPAL_getStockId($item_number)
 {
     global $_TABLES;
-	
+
 	$stock_id = '';
+    $attributes = '';
 	
 	if(is_array($item_number)) {
 	    foreach ($item_number as $item) {
 			$realid = explode("|", $item);
 			$prod_id = $realid[0];
 			$item_id = DB_getItem($_TABLES['paypal_products'], 'item_id', "id='{$prod_id}'");
-			$atts = explode(",", $realid[1]);
+			$atts = explode(",", isset($realid[1]) ? $realid[1] : '');
 			$attributes = '';
 			foreach ($atts as $att) {
 			    if ($att == '') {
@@ -2688,8 +2707,13 @@ function PAYPAL_handlePurchase( $products, $quantity, $data, $names, $prices, $r
 	global $_TABLES, $_CONF, $_PAY_CONF, $LANG_PAYPAL_1, $LANG_PAYPAL_EMAIL, $_USER, $LANG_confignames;
 
 	if (DEBUG) COM_errorLog('PAYPAL: Handle purchase start');
-	// initialize file and names arrays
+	// initialize runtime state
 	$files = array();
+    $namelist = array();
+    $ipn = array('mc_gross' => 0.0);
+    $shipping = isset($_REQUEST['shipping']) && is_numeric($_REQUEST['shipping'])
+        ? (float) $_REQUEST['shipping']
+        : 0.0;
 	if ($user_id == 0) $user_id = $_USER['uid'];
 	
 	//get information for user table
@@ -2765,7 +2789,7 @@ function PAYPAL_handlePurchase( $products, $quantity, $data, $names, $prices, $r
 		//continue to build our ipn data  
 		$ipn['txn_type'] = $txn_type;
 		$ipn['order_date'] = date('H:i:s M d, Y T'); //13:49:40 Jul 06, 2011 PDT
-		$ipn['mc_gross'] = number_format($ipn['mc_gross'] + $_REQUEST['shipping'], 2, '.', '');
+		$ipn['mc_gross'] = number_format($ipn['mc_gross'] + $shipping, 2, '.', '');
 		$ipn['mc_currency'] = $_PAY_CONF['currency'];
 		$ipn['custom'] = $user_id;
 		$ipn['address_name'] = $informations['user_name'];
@@ -2784,7 +2808,7 @@ function PAYPAL_handlePurchase( $products, $quantity, $data, $names, $prices, $r
 		$ipn['charset'] = '';
 		$ipn['first_name'] = '';
 		$ipn['mc_fee'] = '';
-		$ipn['mc_handling'] = $_REQUEST['shipping'];
+		$ipn['mc_handling'] = $shipping;
 		$ipn['address_country_code'] = '';
 		$ipn['notify_version'] = '';
 		$ipn['payer_status'] = '';
