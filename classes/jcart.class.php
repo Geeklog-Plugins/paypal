@@ -435,18 +435,20 @@ class jcart {
 		
 		if ($is_checkout == true)
 		{
-			$steps = '<ul id="ULcheckoutProcedure">
-			                <li id="LIactiveStep">' . $LANG_PAYPAL_1['checkout_step_1'] . '</li>
-							<li>' . $LANG_PAYPAL_1['checkout_step_2'] . '</li>
-							<li>' . $LANG_PAYPAL_1['checkout_step_3'] . '</li>
-						</ul>';
+            $steps = '<ol id="ULcheckoutProcedure" class="paypal-checkout-steps">'
+                . '<li id="LIactiveStep" class="paypal-checkout-step is-active" aria-current="step">'
+                . $LANG_PAYPAL_1['checkout_step_1'] . '</li>'
+                . '<li class="paypal-checkout-step">' . $LANG_PAYPAL_1['checkout_step_2'] . '</li>'
+                . '<li class="paypal-checkout-step">' . $LANG_PAYPAL_1['checkout_step_3'] . '</li>'
+                . '</ol>';
 			$cart->set_var('steps', $steps);
 		} else if (isset($_REQUEST['pay_by']) && $_REQUEST['pay_by'] == 'check' || PAYBYCHECK == true) {
-			$steps = '<ul id="ULcheckoutProcedure">
-			                <li>' . $LANG_PAYPAL_1['checkout_step_1'] . '</li>
-							<li id="LIactiveStep">' . $LANG_PAYPAL_1['checkout_step_2'] . '</li>
-							<li>' . $LANG_PAYPAL_1['checkout_step_3'] . '</li>
-						</ul>';
+            $steps = '<ol id="ULcheckoutProcedure" class="paypal-checkout-steps">'
+                . '<li class="paypal-checkout-step is-complete">' . $LANG_PAYPAL_1['checkout_step_1'] . '</li>'
+                . '<li id="LIactiveStep" class="paypal-checkout-step is-active" aria-current="step">'
+                . $LANG_PAYPAL_1['checkout_step_2'] . '</li>'
+                . '<li class="paypal-checkout-step">' . $LANG_PAYPAL_1['checkout_step_3'] . '</li>'
+                . '</ol>';
 			$cart->set_var('steps', $steps);
 		} else {
 			$cart->set_var('steps', '');
