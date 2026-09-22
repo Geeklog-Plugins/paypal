@@ -54,4 +54,4 @@ The shared modernization conventions used by this work are maintained in the
 
 ## Integrated extended features
 
-PayPal 1.7.0 includes the functionality that was historically distributed as a separate Pro version. Product attributes, attribute types, manual subscriptions, subscription expiration notifications, recurring-payment helpers, and sales statistics are bundled with the plugin. No separate Pro package is required.
+PayPal 1.7.0 includes the functionality that was historically distributed as a separate extended features. Product attributes, attribute types, manual subscriptions, subscription expiration notifications, recurring-payment helpers, and sales statistics are bundled with the plugin. No separate Pro package is required.
