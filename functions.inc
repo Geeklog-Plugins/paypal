@@ -173,7 +173,7 @@ require_once $_CONF['path'] . 'plugins/paypal/lib/features.php';
 
 function plugin_getheadercode_paypal()
 {
-    global $_PAY_CONF, $_SCRIPTS, $jcart;
+    global $_CONF, $_PAY_CONF, $_SCRIPTS, $jcart;
 
     $retval = '';
     $currentUrl = COM_getCurrentURL();
@@ -218,7 +218,12 @@ function plugin_getheadercode_paypal()
             );
     }
 
-    $_SCRIPTS->setCSSFile('paypal_css', '/' . $_PAY_CONF['paypal_folder'] . '/css/paypal-1.7.0.css');
+    $paypalCssPath = $_CONF['path_html'] . $_PAY_CONF['paypal_folder'] . '/css/paypal-1.7.0.css';
+    $paypalCssVersion = file_exists($paypalCssPath) ? filemtime($paypalCssPath) : '1.7.0';
+    $_SCRIPTS->setCSSFile(
+        'paypal_css',
+        '/' . $_PAY_CONF['paypal_folder'] . '/css/paypal-1.7.0.css?v=' . rawurlencode($paypalCssVersion)
+    );
 
     if (stripos($currentUrl, 'admin/plugins/paypal/') !== false) {
         $_SCRIPTS->setCSSFile('paypal_datepicker_css', '/jquery/datepicker/datepicker.css');
