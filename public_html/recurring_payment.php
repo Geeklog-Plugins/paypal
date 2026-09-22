@@ -49,9 +49,7 @@ paypal_filterVars($vars, $_REQUEST);
 
 //Main
 
-$display .= PAYPAL_siteHeader();
-
-$display .= paypal_user_menu();
+$display = paypal_user_menu();
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
@@ -132,8 +130,6 @@ else
 	$display .= "Error Severity Code: " . $ErrorSeverityCode;
 }
 
-$display .= PAYPAL_siteFooter();
-
-COM_output($display);
+COM_output(PAYPAL_createHTMLDocument($display));
 
 ?>
