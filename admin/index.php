@@ -389,14 +389,15 @@ function PAYPAL_saveCatImage ($category, $files, $cat_id) {
 	
     $args = $category;
 
-    // Handle Magic GPC Garbage:
-    while (list($key, $value) = each($args)) {
+    // Normalize submitted values without using each(), removed in PHP 8.
+    foreach ($args as $key => $value) {
         if (!is_array($value)) {
             $args[$key] = COM_stripslashes($value);
         } else {
-            while (list($subkey, $subvalue) = each($value)) {
+            foreach ($value as $subkey => $subvalue) {
                 $value[$subkey] = COM_stripslashes($subvalue);
             }
+            $args[$key] = $value;
         }
     }
 
