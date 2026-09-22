@@ -128,6 +128,8 @@ function PAYPAL_getAttributeTypeForm($attributeType = array())
 
     $retval = COM_startBlock($title);
     $template = COM_newTemplate($_CONF['path'] . 'plugins/paypal/templates');
+    $template->set_var('gltoken_name', CSRF_TOKEN);
+    $template->set_var('gltoken', SEC_createToken());
     $template->set_file(array('type' => 'attribute_type_form.thtml'));
 
     $typeId = (int) $attributeType['at_tid'];
