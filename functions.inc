@@ -961,15 +961,76 @@ function paypal_genButton($type, $vars) {
  */
 function PAYPAL_getCart()
 {
+    static $cart = null;
+
     if (session_status() !== PHP_SESSION_ACTIVE) {
         session_start();
     }
 
-    if (!isset($_SESSION['jcart']) || !($_SESSION['jcart'] instanceof jcart)) {
-        $_SESSION['jcart'] = new jcart();
+    if ($cart instanceof jcart) {
+        return $cart;
     }
 
-    return $_SESSION['jcart'];
+    $cart = new jcart();
+
+    if (isset($_SESSION['paypal_cart']) && is_array($_SESSION['paypal_cart'])) {
+        $state = $_SESSION['paypal_cart'];
+
+        $cart->total = isset($state['total']) ? (float) $state['total'] : 0;
+        $cart->itemcount = isset($state['itemcount']) ? (int) $state['itemcount'] : 0;
+        $cart->totalweight = isset($state['totalweight']) ? (float) $state['totalweight'] : 0;
+        $cart->items = isset($state['items']) && is_array($state['items'])
+            ? $state['items'] : array();
+        $cart->itemprices = isset($state['itemprices']) && is_array($state['itemprices'])
+            ? $state['itemprices'] : array();
+        $cart->itemqtys = isset($state['itemqtys']) && is_array($state['itemqtys'])
+            ? $state['itemqtys'] : array();
+        $cart->itemname = isset($state['itemname']) && is_array($state['itemname'])
+            ? $state['itemname'] : array();
+        $cart->itemweights = isset($state['itemweights']) && is_array($state['itemweights'])
+            ? $state['itemweights'] : array();
+
+        // Recalculate derived values instead of trusting stale session totals.
+        $cart->_update_total();
+        $cart->_update_totalweight();
+    } elseif (isset($_SESSION['jcart']) && ($_SESSION['jcart'] instanceof jcart)) {
+        // One-time migration for sessions created by older PayPal code.
+        $cart = $_SESSION['jcart'];
+    }
+
+    // Never keep a serialized jcart object in the session. Geeklog may start
+    // the next request before the jcart class has been loaded.
+    unset($_SESSION['jcart']);
+
+    return $cart;
+}
+
+/**
+ * Persist the cart using session-safe scalar and array values only.
+ *
+ * @param jcart $cart
+ * @return void
+ */
+function PAYPAL_saveCart($cart)
+{
+    if (!($cart instanceof jcart)) {
+        return;
+    }
+
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
+    }
+
+    $_SESSION['paypal_cart'] = array(
+        'total' => (float) $cart->total,
+        'itemcount' => (int) $cart->itemcount,
+        'totalweight' => (float) $cart->totalweight,
+        'items' => is_array($cart->items) ? $cart->items : array(),
+        'itemprices' => is_array($cart->itemprices) ? $cart->itemprices : array(),
+        'itemqtys' => is_array($cart->itemqtys) ? $cart->itemqtys : array(),
+        'itemname' => is_array($cart->itemname) ? $cart->itemname : array(),
+        'itemweights' => is_array($cart->itemweights) ? $cart->itemweights : array(),
+    );
 }
 
 /**
@@ -983,8 +1044,10 @@ function PAYPAL_displayCart($block = 0)
     global $jcart;
 
     $cart = PAYPAL_getCart();
+    $html = $cart->display_cart($jcart, $block);
+    PAYPAL_saveCart($cart);
 
-    return $cart->display_cart($jcart, $block);
+    return $html;
 }
 
 /**
