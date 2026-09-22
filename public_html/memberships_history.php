@@ -51,6 +51,9 @@ if (!in_array('paypal', $_PLUGINS)) {
 /* Ensure sufficient privs to read this page */
 paypal_access_check();
 
+$vars = array('msg' => 'text');
+paypal_filterVars($vars, $_REQUEST);
+
 if ( $_PAY_CONF['view_membership'] != '1' && !SEC_hasRights('paypal.admin') ) {
     echo COM_refresh($_PAY_CONF['site_url'] . '/index.php');
     exit;
