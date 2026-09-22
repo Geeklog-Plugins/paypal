@@ -173,6 +173,8 @@ function PAYPAL_getAttributeForm($attribute = array())
 
     $retval = COM_startBlock($title);
     $template = COM_newTemplate($_CONF['path'] . 'plugins/paypal/templates');
+    $template->set_var('gltoken_name', CSRF_TOKEN);
+    $template->set_var('gltoken', SEC_createToken());
     $template->set_file(array('attribute' => 'attribute_form.thtml'));
 
     $attributeId = (int) $attribute['at_id'];
