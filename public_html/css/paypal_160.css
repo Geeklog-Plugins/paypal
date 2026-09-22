@@ -358,3 +358,28 @@ height: 10px !important;}
   padding:3px;
   margin-bottom:2px;
 }
+
+
+/* Sales history chart */
+.paypal-sales-chart {
+  margin: 15px 0;
+}
+.paypal-sales-row {
+  display: grid;
+  grid-template-columns: 75px 1fr 110px;
+  gap: 10px;
+  align-items: center;
+  margin: 6px 0;
+}
+.paypal-sales-label,
+.paypal-sales-value {
+  font-size: 0.9em;
+}
+.paypal-sales-track {
+  background: #eee;
+  min-height: 14px;
+}
+.paypal-sales-bar {
+  background: currentColor;
+  min-height: 14px;
+}
