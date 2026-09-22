@@ -55,7 +55,11 @@ $vars = array('msg'                         => 'text',
 			  'at_tid'                      => 'number',
 			  'parent_id'                   => 'number',
 			  'category'                    => 'text',
-			  'at_name'                     => 'text',
+              'at_name'                     => 'text',
+              'at_code'                     => 'text',
+              'at_enabled'                  => 'number',
+              'at_price'                    => 'text',
+              'where'                       => 'alpha',
 			  'type'                        => 'text',
 			  'description'                 => 'html',
 			  'image'                       => 'text',
@@ -1146,15 +1150,14 @@ if ( !file_exists($_PAY_CONF['path_images']) || !is_writable($_PAY_CONF['path_im
 		break;
 		
 		case 'attributes':
-			if ( !file_exists($_PAY_CONF['path_at_images']) && function_exists('PAYPALPRO_attributes') || !is_writable($_PAY_CONF['path_at_images']) 
-			&& function_exists('PAYPALPRO_attributes') ) {
+            if (!file_exists($_PAY_CONF['path_at_images']) || !is_writable($_PAY_CONF['path_at_images'])) {
 				$display .= COM_showMessageText( '>> '. $_PAY_CONF['path_at_images'] . '<p>' . $LANG_PAYPAL_1['image_not_writable'] . '</p>');
 			}
-			if(function_exists('PAYPALPRO_attributes')) $display .= PAYPALPRO_attributes();
+            $display .= PAYPALPRO_attributes();
 			break;
 		
 		case 'attributetypes':
-			if(function_exists('PAYPALPRO_attributeTypes')) $display .= PAYPALPRO_attributeTypes();
+            $display .= PAYPALPRO_attributeTypes();
 			break;
 			
 		case 'shipping':
@@ -1363,9 +1366,9 @@ if ( !file_exists($_PAY_CONF['path_images']) || !is_writable($_PAY_CONF['path_im
 			 
 			$display .= '<div style="clear:both;">&nbsp;</div>' . COM_startBlock($LANG_PAYPAL_1['products_list']);
 			
-			if(function_exists('PAYPALPRO_attributesMenu')) $attributesmenu = PAYPALPRO_attributesMenu();
-			if(function_exists('PAYPALPRO_attributeTypesMenu')) $attributetypesmenu = PAYPALPRO_attributeTypesMenu();
-			if(function_exists('PAYPALPRO_notifyExpiration')) $new_recurrent = '<a href="' . $_CONF['site_url'] . '/admin/plugins/paypal/product_edit.php?type=recurrent">' 
+            $attributesmenu = PAYPALPRO_attributesMenu();
+            $attributetypesmenu = PAYPALPRO_attributeTypesMenu();
+            $new_recurrent = '<a href="' . $_CONF['site_url'] . '/admin/plugins/paypal/product_edit.php?type=recurrent">' 
 			. $LANG_PAYPAL_1['new_recurrent'] . ' </a> | ';
 			
 			$display .= '<p>' . $LANG_PAYPAL_1['you_can'] . '<a href="' . $_CONF['site_url'] . '/admin/plugins/paypal/product_edit.php?type=product">' 
@@ -1382,10 +1385,6 @@ if ( !file_exists($_PAY_CONF['path_images']) || !is_writable($_PAY_CONF['path_im
 			
 			break;
 		}
-	
-	if (!function_exists('PAYPALPRO_newSubscription')) {
-        $display .= '<p>' . $LANG_PAYPAL_PRO['pro_feature'] . '</p>';
-    } 
 }
 
 COM_output(PAYPAL_createHTMLDocument($display, $LANG_PAYPAL_ADMIN['products']));
