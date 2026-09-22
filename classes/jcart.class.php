@@ -155,21 +155,21 @@ class jcart {
 	function update_cart()
 		{
 		// POST VALUE IS AN ARRAY OF ALL ITEM IDs IN THE CART
-		if (is_array($_POST['jcart_item_ids']))
+		if (isset($_POST['jcart_item_ids']) && is_array($_POST['jcart_item_ids']))
 			{
 			// TREAT VALUES AS A STRING FOR VALIDATION
 			$item_ids = implode($_POST['jcart_item_ids']);
 			}
 
 		// POST VALUE IS AN ARRAY OF ALL ITEM QUANTITIES IN THE CART
-		if (is_array($_POST['jcart_item_qty']))
+		if (isset($_POST['jcart_item_qty']) && is_array($_POST['jcart_item_qty']))
 			{
 			// TREAT VALUES AS A STRING FOR VALIDATION
 			$item_qtys = implode($_POST['jcart_item_qty']);
 			}
 
 		// IF NO ITEM IDs, THE CART IS EMPTY
-		if ($_POST['jcart_item_id'])
+		if (!empty($_POST['jcart_item_id']))
 			{
 			// IF THE ITEM QTY IS AN INTEGER, OR ZERO, OR EMPTY
 			// UPDATE THE ITEM
@@ -179,10 +179,10 @@ class jcart {
 				$count = 0;
 
 				// FOR EACH ITEM IN THE CART
-				foreach ($_POST['jcart_item_id'] as $item_id)
+				foreach ((array) $_POST['jcart_item_id'] as $item_id)
 					{
 					// GET THE ITEM QTY AND DOUBLE-CHECK THAT THE VALUE IS AN INTEGER
-					$update_item_qty = intval($_POST['jcart_item_qty'][$count]);
+					$update_item_qty = intval(isset($_POST['jcart_item_qty'][$count]) ? $_POST['jcart_item_qty'][$count] : 0);
 
 					if($update_item_qty < 1)
 						{
@@ -201,7 +201,7 @@ class jcart {
 				}
 			}
 		// IF NO ITEMS IN THE CART, RETURN TRUE TO PREVENT UNNECSSARY ERROR MESSAGE
-		else if (!$_POST['jcart_item_id'])
+		else if (empty($_POST['jcart_item_id']))
 			{
 			return true;
 			}
@@ -294,15 +294,16 @@ class jcart {
 
 		// ASSIGN USER CONFIG VALUES AS POST VAR LITERAL INDICES
 		// INDICES ARE THE HTML NAME ATTRIBUTES FROM THE USERS ADD-TO-CART FORM
-		$item_id = $_POST[$item_id];
-		$item_qty = $_POST[$item_qty];
-		$item_price = $_POST[$item_price];
-		//Todo if block==1 shorten name
-		$item_name = $_POST[$item_name];
-		$item_weight = $_POST[$item_weight];
+        $item_id = isset($_POST[$item_id]) ? $_POST[$item_id] : '';
+        $item_qty = isset($_POST[$item_qty]) ? $_POST[$item_qty] : '';
+        $item_price = isset($_POST[$item_price]) ? $_POST[$item_price] : '';
+        //Todo if block==1 shorten name
+        $item_name = isset($_POST[$item_name]) ? $_POST[$item_name] : '';
+        $item_weight = isset($_POST[$item_weight]) ? $_POST[$item_weight] : '';
+        $itemAddRequested = !empty($_POST[$item_add]);
 
 		// ADD AN ITEM
-		if ($_POST[$item_add])
+		if ($itemAddRequested)
 			{
 			$item_added = $this->add_item($item_id, $item_qty, $item_price, $item_name, $item_weight);
 			// IF NOT TRUE THE ADD ITEM FUNCTION RETURNS THE ERROR TYPE
@@ -323,9 +324,9 @@ class jcart {
 
 		// UPDATE A SINGLE ITEM
 		// CHECKING POST VALUE AGAINST $text ARRAY FAILS?? HAVE TO CHECK AGAINST $jcart ARRAY
-		if ($_POST['jcart_update_item'] == $jcart['text']['update_button'])
+		if (isset($_POST['jcart_update_item']) && $_POST['jcart_update_item'] == $jcart['text']['update_button'])
 			{
-			$item_updated = $this->update_item($_POST['item_id'], $_POST['item_qty']);
+			$item_updated = $this->update_item(isset($_POST['item_id']) ? $_POST['item_id'] : '', isset($_POST['item_qty']) ? $_POST['item_qty'] : '');
 			if ($item_updated !== true)
 				{
 				$error_message = $text['quantity_error'];
@@ -333,7 +334,7 @@ class jcart {
 			}
 
 		// UPDATE ALL ITEMS IN THE CART
-		if($_POST['jcart_update_cart'] || $_POST['jcart_checkout'])
+		if (!empty($_POST['jcart_update_cart']) || !empty($_POST['jcart_checkout']))
 			{
 			$cart_updated = $this->update_cart();
 			if ($cart_updated !== true)
@@ -343,13 +344,13 @@ class jcart {
 			}
 
 		// REMOVE AN ITEM
-		if($_GET['jcart_remove'] && !$_POST[$item_add] && !$_POST['jcart_update_cart'] && !$_POST['jcart_check_out'])
+		if (!empty($_GET['jcart_remove']) && !$itemAddRequested && empty($_POST['jcart_update_cart']) && empty($_POST['jcart_check_out']))
 			{
 			$this->del_item($_GET['jcart_remove']);
 			}
 
 		// EMPTY THE CART
-		if($_POST['jcart_empty'])
+		if (!empty($_POST['jcart_empty']))
 			{
 			$this->empty_cart();
 			}
@@ -368,7 +369,7 @@ class jcart {
 		// WE FIRST CHECK THE REQUEST URI AGAINST THE USER CONFIG CHECKOUT (SET WHEN THE VISITOR FIRST CLICKS CHECKOUT)
 		// WE ALSO CHECK FOR THE REQUEST VAR SENT FROM HIDDEN INPUT SENT BY AJAX REQUEST (SET WHEN VISITOR HAS JAVASCRIPT ENABLED AND UPDATES AN ITEM QTY)
 		$is_checkout = strpos($_SERVER['REQUEST_URI'], $form_action);
-		if ($is_checkout !== false || $_REQUEST['jcart_is_checkout'] == 'true')
+		if ($is_checkout !== false || isset($_REQUEST['jcart_is_checkout']) && $_REQUEST['jcart_is_checkout'] == 'true')
 			{
 			$is_checkout = true;
 			}
@@ -394,7 +395,7 @@ class jcart {
 		// IF THIS ERROR IS TRUE THE VISITOR UPDATED THE CART FROM THE CHECKOUT PAGE USING AN INVALID PRICE FORMAT
 		// PASSED AS A SESSION VAR SINCE THE CHECKOUT PAGE USES A HEADER REDIRECT
 		// IF PASSED VIA GET THE QUERY STRING STAYS SET EVEN AFTER SUBSEQUENT POST REQUESTS
-		if ($_SESSION['quantity_error'] == true) {
+		if (!empty($_SESSION['quantity_error'])) {
 			$error_message = $text['quantity_error'];
 			unset($_SESSION['quantity_error']);
 		}
@@ -406,7 +407,7 @@ class jcart {
 
 		// DISPLAY THE CART HEADER
 		$cart = COM_newTemplate($_CONF['path'] . 'plugins/paypal/templates');
-		if ($_REQUEST['pay_by'] == 'check' && $block == 0) {
+		if (isset($_REQUEST['pay_by']) && $_REQUEST['pay_by'] == 'check' && $block == 0) {
 		    $cart->set_file(array('cart_start'   => 'cart_start_check.thtml',
                                   'cart_item'    => 'cart_item_check.thtml',
 								  'cart_empty'   => 'cart_empty.thtml',
@@ -432,7 +433,7 @@ class jcart {
 							<li>' . $LANG_PAYPAL_1['checkout_step_3'] . '</li>
 						</ul>';
 			$cart->set_var('steps', $steps);
-		} else if ($_REQUEST['pay_by'] == 'check' || PAYBYCHECK == true) {
+		} else if (isset($_REQUEST['pay_by']) && $_REQUEST['pay_by'] == 'check' || PAYBYCHECK == true) {
 		    PAYBYCHECK == true;
 			$steps = '<ul id="ULcheckoutProcedure">
 			                <li>' . $LANG_PAYPAL_1['checkout_step_1'] . '</li>
@@ -444,21 +445,21 @@ class jcart {
 			$cart->set_var('steps', '');
 		}
 		
-		if ($_REQUEST['pay_by'] == 'check' && $block == 0) {
+		if (isset($_REQUEST['pay_by']) && $_REQUEST['pay_by'] == 'check' && $block == 0) {
 			// Get details to edit and display the form on informations.php page
 			if (!COM_isAnonUser()) {
 				$sql = "SELECT * FROM {$_TABLES['paypal_users']} WHERE user_id = {$_USER['uid']}";
 				$res = DB_query($sql);
 				$A = DB_fetchArray($res);
 				if ($A['user_id'] == '' && SEC_hasRights('paypal.admin')) {
-					$A['user_id'] = $_REQUEST['uid'];
+					$A['user_id'] = isset($_REQUEST['uid']) ? (int) $_REQUEST['uid'] : 0;
 				}
 				if ($A['user_id'] == '') {
 					$A['user_id'] = $_USER['uid'];
 				}
 				$informations = '<h2>' . $LANG_PAYPAL_1['review_details'] . '</h2>'; 
 				$informations .= '<p>' . $LANG_PAYPAL_1['confirm_order_check'] . '</p>';
-				$informations .= '<div style="margin:25px;">' . PAYPAL_getDetailsForm($A, $_PAY_CONF['site_url'] . '/details.php?mode=save', $LANG_PAYPAL_1['confirm_order_button'], $_GET['shipping']) . '</div>';
+				$informations .= '<div style="margin:25px;">' . PAYPAL_getDetailsForm($A, $_PAY_CONF['site_url'] . '/details.php?mode=save', $LANG_PAYPAL_1['confirm_order_button'], (isset($_GET['shipping']) ? $_GET['shipping'] : '')) . '</div>';
 				$cart->set_var('informations', $informations);
 			}	
 		}
@@ -521,7 +522,7 @@ class jcart {
 		. ' ' . $text['currency_symbol'] . '</strong>');
 		
 		// IF THIS IS THE CHECKOUT HIDE THE CART CHECKOUT BUTTON
-		if ($is_checkout !== true && $_REQUEST['pay_by'] != 'check') {
+		if ($is_checkout !== true && (!isset($_REQUEST['pay_by']) || $_REQUEST['pay_by'] != 'check')) {
 			if ($button['checkout']) {
     			$input_type = 'image';
 				$src = ' src="' . $button['checkout'] . '" alt="' . $text['checkout_button'] . '" title="" ';
@@ -547,7 +548,7 @@ class jcart {
 		$retval .= "\t\t\t</table>\n\n";
 		
 		// IF THIS IS THE CHECKOUT DISPLAY THE PAYPAL CHECKOUT BUTTON AND SHIPPING RATE
-		if ( ($is_checkout == true  && $block == 0 && ($this->itemcount > 0)) || $_REQUEST['pay_by'] == 'check' && $block == 0) {
+		if ( ($is_checkout == true  && $block == 0 && ($this->itemcount > 0)) || isset($_REQUEST['pay_by']) && $_REQUEST['pay_by'] == 'check' && $block == 0) {
 			// HIDDEN INPUT ALLOWS US TO DETERMINE IF WE'RE ON THE CHECKOUT PAGE
 			// WE NORMALLY CHECK AGAINST REQUEST URI BUT AJAX UPDATE SETS VALUE TO jcart-relay.php
 			$retval .= "\t\t\t<input type='hidden' id='jcart-is-checkout' name='jcart_is_checkout' value='true' />\n";
@@ -578,10 +579,10 @@ class jcart {
 				if (DB_numRows($res) > 0) {
 				    $i = 0;
 				    while ($A = DB_fetchArray($res)) {
-					    if ($_GET['shipping'] != '' && $_GET['shipping'] == $A['shipping_amt'] ) {
+					    if (isset($_GET['shipping']) && $_GET['shipping'] !== '' && $_GET['shipping'] == $A['shipping_amt']) {
 						    $checked = ' checked';
 							$skip = 0;
-						} else if ($_GET['shipping'] != '') {
+						} else if (isset($_GET['shipping']) && $_GET['shipping'] !== '') {
 						    $checked = '';
 							$skip = 1; 
 						} else if ($i == 0) {
@@ -617,7 +618,7 @@ class jcart {
                 $input_type = 'image';
                 $src = ' src="' . $button['paypal_checkout'] . '" alt="' . $text['checkout_paypal_button'] . '" title="" '; 
             }
-			if ($_REQUEST['pay_by'] != 'check') {
+			if ((!isset($_REQUEST['pay_by']) || $_REQUEST['pay_by'] != 'check')) {
 				$retval .= '<h2 align="center">' . $LANG_PAYPAL_1['payment_method'] . '</h2>';
 				if ($_PAY_CONF['enable_pay_by_paypal']) {
 					$retval .= "\t\t\t<p><input type='" . $input_type . "' " . $src ."id='jcart-paypal-checkout' name='jcart_paypal_checkout' value='" .
@@ -642,9 +643,9 @@ class jcart {
 		$retval .= "\t</form>\n";
 
 		// IF UPDATING AN ITEM, FOCUS ON ITS QTY INPUT AFTER THE CART IS LOADED (DOESN'T SEEM TO WORK IN IE7)
-		if ($_POST['jcart_update_item'])
+		if (!empty($_POST['jcart_update_item']))
 			{
-			$retval .= "\t" . '<script type="text/javascript">jQuery(function(){jQuery("#jcart-item-id-' . $_POST['item_id'] . '").focus()});</script>' . "\n";
+			$retval .= "\t" . '<script type="text/javascript">jQuery(function(){jQuery("#jcart-item-id-' . (isset($_POST['item_id']) ? $_POST['item_id'] : '') . '").focus()});</script>' . "\n";
 			}
 		
         $retval .= "\t<div class=\"jcart_footer\">\n";
