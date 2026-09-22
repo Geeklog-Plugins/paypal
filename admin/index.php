@@ -1388,13 +1388,18 @@ if ( !file_exists($_PAY_CONF['path_images']) || !is_writable($_PAY_CONF['path_im
 			
 		default :
             $display .= '<div class="paypal-admin-quick-links">'
-                . '<a class="paypal-admin-button paypal-admin-button-primary" href="'
+                . '<form class="paypal-admin-config-form" method="post" action="'
                 . htmlspecialchars(
-                    $_CONF['site_admin_url'] . '/configuration.php?conf_group=paypal',
+                    $_CONF['site_admin_url'] . '/configuration.php',
                     ENT_QUOTES,
                     'UTF-8'
                 )
-                . '">' . htmlspecialchars($LANG_PAYPAL_1['configuration'], ENT_QUOTES, 'UTF-8') . '</a>'
+                . '">'
+                . '<input type="hidden" name="conf_group" value="paypal">'
+                . '<button class="paypal-admin-button paypal-admin-button-primary" type="submit">'
+                . htmlspecialchars($LANG_PAYPAL_1['configuration'], ENT_QUOTES, 'UTF-8')
+                . '</button>'
+                . '</form>'
                 . '<a class="paypal-admin-button" href="'
                 . htmlspecialchars(
                     $_CONF['site_admin_url'] . '/plugins/paypal/help.php',
