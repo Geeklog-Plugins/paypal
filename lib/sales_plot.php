@@ -2,7 +2,7 @@
 
 function PAYPAL_plot()
 {
-    global $_SCRIPTS, $_CONF, $_PAY_CONF, $_TABLES, $LANG_PAYPAL_1;
+    global $_CONF, $_PAY_CONF, $_TABLES, $LANG_PAYPAL_1;
 
     $nowMonth = (int) date('n');
     $nowYear = (int) date('Y');
@@ -66,30 +66,27 @@ function PAYPAL_plot()
         $totalPeriod += $gross;
     }
 
-    $series = array();
+    $max = !empty($plots) ? max($plots) : 0.0;
+    $bars = '';
+
     foreach ($plots as $date => $amount) {
-        $series[] = array($date, round($amount, 2));
+        $width = $max > 0 ? (int) round(($amount / $max) * 100) : 0;
+        $label = date('Y-m', strtotime($date));
+        $value = number_format(
+            $amount,
+            $_CONF['decimal_count'],
+            $_CONF['decimal_separator'],
+            $_CONF['thousand_separator']
+        );
+
+        $bars .= '<div class="paypal-sales-row">'
+            . '<div class="paypal-sales-label">' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</div>'
+            . '<div class="paypal-sales-track"><div class="paypal-sales-bar" style="width:' . $width . '%"></div></div>'
+            . '<div class="paypal-sales-value">' . $value . ' ' . htmlspecialchars($_PAY_CONF['currency'], ENT_QUOTES, 'UTF-8') . '</div>'
+            . '</div>';
     }
 
-    $json = json_encode($series);
-    if ($json === false) {
-        $json = '[]';
-    }
-
-    $js = "jQuery(function () {
-        jQuery.jqplot('chartdiv', [" . $json . "], {
-            axes: {
-                xaxis: {
-                    renderer: jQuery.jqplot.DateAxisRenderer,
-                    tickInterval: '1 month',
-                    tickOptions: {formatString: '%Y/%#m'}
-                }
-            }
-        });
-    });";
-    $_SCRIPTS->setJavaScript($js, true);
-
-    return '<p>'
+    $summary = '<p>'
         . $LANG_PAYPAL_1['period_stat'] . ' ' . $_PAY_CONF['currency'] . ' '
         . number_format($totalPeriod, $_CONF['decimal_count'], $_CONF['decimal_separator'], $_CONF['thousand_separator'])
         . '&nbsp;&nbsp;|&nbsp;&nbsp;'
@@ -98,5 +95,7 @@ function PAYPAL_plot()
         . '&nbsp;&nbsp;|&nbsp;&nbsp;'
         . $LANG_PAYPAL_1['month_stat'] . ' ' . $_PAY_CONF['currency'] . ' '
         . number_format($totalMonth, $_CONF['decimal_count'], $_CONF['decimal_separator'], $_CONF['thousand_separator'])
-        . '</p><div style="background:#fff;padding:15px"><div id="chartdiv" style="height:200px;width:100%"></div></div>';
+        . '</p>';
+
+    return $summary . '<div class="paypal-sales-chart">' . $bars . '</div>';
 }
