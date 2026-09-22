@@ -102,11 +102,11 @@ switch ($_REQUEST['mode']) {
         //Display cart
         $display .= '<div id="cart">
 		             <div id="jcart">
-                        <ul id="ULcheckoutProcedure">
-			                <li>' . $LANG_PAYPAL_1['checkout_step_1'] . '</li>
-							<li>' . $LANG_PAYPAL_1['checkout_step_2'] . '</li>
-							<li id="LIactiveStep">' . $LANG_PAYPAL_1['checkout_step_3'] . '</li>
-						</ul>
+                        <ol id="ULcheckoutProcedure" class="paypal-checkout-steps">
+                            <li class="paypal-checkout-step is-complete">' . $LANG_PAYPAL_1['checkout_step_1'] . '</li>
+                            <li class="paypal-checkout-step is-complete">' . $LANG_PAYPAL_1['checkout_step_2'] . '</li>
+                            <li id="LIactiveStep" class="paypal-checkout-step is-active" aria-current="step">' . $LANG_PAYPAL_1['checkout_step_3'] . '</li>
+                        </ol>
 					</div></div>';
 
 		$display .= PAYPAL_handlePurchase($items, $quantities, $data, $namesfromcart, $item_price);
