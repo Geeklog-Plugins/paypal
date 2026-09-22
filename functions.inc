@@ -272,6 +272,9 @@ function plugin_getBlocks_paypal($side, $topic = '')
     );
     $cartSide = !empty($_PAY_CONF['cart_block_isleft']) ? 'left' : 'right';
     if (!$legacyCart && !empty($_PAY_CONF['cart_block_enabled']) && $side === $cartSide) {
+        $cart = PAYPAL_getCart();
+        $cartIsEmpty = $cart->is_empty();
+
         $blocks[] = array(
             'name' => 'paypal_cart',
             'type' => 'dynamic',
@@ -280,7 +283,11 @@ function plugin_getBlocks_paypal($side, $topic = '')
             'blockorder' => isset($_PAY_CONF['cart_block_order']) ? (int) $_PAY_CONF['cart_block_order'] : 50,
             'content' => phpblock_paypal_cart(),
             'allow_autotags' => false,
-            'help' => ''
+            'help' => '',
+            'css_id' => 'paypal-cart-dynamic-block',
+            'css_classes' => $cartIsEmpty
+                ? 'paypal-cart-dynamic-block paypal-cart-dynamic-block--empty'
+                : 'paypal-cart-dynamic-block'
         );
     }
 
@@ -332,6 +339,8 @@ function plugin_getBlocksConfig_paypal($side, $topic = '')
             'blockorder' => isset($_PAY_CONF['cart_block_order']) ? (int) $_PAY_CONF['cart_block_order'] : 50,
             'allow_autotags' => false,
             'help' => '',
+            'css_id' => 'paypal-cart-dynamic-block',
+            'css_classes' => 'paypal-cart-dynamic-block',
             'enable' => empty($_PAY_CONF['cart_block_enabled']) ? 0 : 1,
             'topic_option' => 'all',
             'topic' => array(),
