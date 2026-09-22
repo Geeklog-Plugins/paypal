@@ -209,8 +209,17 @@ if ($purchase_status == 'complete' || $purchase_status == '') {
 } else {
     $transaction->set_var('paid_on', $LANG_PAYPAL_1['order_on'] . ' ' . $purchase_date[0]);
 	if (SEC_hasRights('paypal.admin') && $A['status'] == 'pending') {
-	    $transaction->set_var('edit', '<p><a href="' . $_CONF['site_url'] . '/admin/plugins/paypal/purchase_history.php?mode=edit&amp;txn_id=' . 
-		$ipn['txn_id'] . '" onclick="return confirm(\'' . $LANG_PAYPAL_1['confirm_edit_status'] .'\');">>> ' . $LANG_PAYPAL_1['validate_order'] . '</a></p>');
+        $safeTxnId = htmlspecialchars((string) $ipn['txn_id'], ENT_QUOTES, 'UTF-8');
+        $transaction->set_var(
+            'edit',
+            '<form method="post" action="' . $_CONF['site_admin_url'] . '/plugins/paypal/purchase_history.php" '
+            . 'onsubmit="return confirm(\'' . addslashes($LANG_PAYPAL_1['confirm_edit_status']) . '\');">'
+            . '<input type="hidden" name="mode" value="edit"' . XHTML . '>'
+            . '<input type="hidden" name="txn_id" value="' . $safeTxnId . '"' . XHTML . '>'
+            . '<input type="hidden" name="' . CSRF_TOKEN . '" value="' . SEC_createToken() . '"' . XHTML . '>'
+            . '<button type="submit">&gt;&gt; ' . $LANG_PAYPAL_1['validate_order'] . '</button>'
+            . '</form>'
+        );
 	}
 }
 
