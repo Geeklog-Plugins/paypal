@@ -401,16 +401,13 @@ function PAYPAL_getProductForm($product = array(), $type = 'product') {
         $template->set_var('customisable_no', ' selected');
     }
 	
-	if(function_exists('PAYPALPRO_displayAttributes') && $product['id'] != '') {
-	    $template->set_var('attributes', PAYPALPRO_displayAttributes($product['id']));
-		$template->set_var('add_attributes', PAYPALPRO_displayAttributesToAdd($product['id']));
-	} else if(function_exists('PAYPALPRO_displayAttributes')) {
-	   $template->set_var('attributes', '');
-	   $template->set_var('add_attributes', $LANG_PAYPAL_PRO['add_attributes']);
-	}  else {
-	   $template->set_var('attributes', '<p>' . $LANG_PAYPAL_PRO['pro_feature'] . '</p>');
-	   $template->set_var('add_attributes', '');
-	}
+    if (!empty($product['id'])) {
+        $template->set_var('attributes', PAYPALPRO_displayAttributes($product['id']));
+        $template->set_var('add_attributes', PAYPALPRO_displayAttributesToAdd($product['id']));
+    } else {
+        $template->set_var('attributes', '');
+        $template->set_var('add_attributes', $LANG_PAYPAL_PRO['add_attributes']);
+    }
 
 	//images
 	$template->set_var('lang_images', $LANG_PAYPAL_1['product_images']);
