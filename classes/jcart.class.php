@@ -614,18 +614,50 @@ $categories = array();
 							$checked = '';
 						}
 						if ( ( (count($categories) == 1 && in_array($A['shipper_service_exclude_cat'], $categories)) || $A['shipper_service_exclude_cat'] == 0 || count($categories) == 0 ) && $skip == 0 ) {
-    					    $shippers_radio .= '<p><input type="radio" name="shipping" value="' . $A['shipping_amt'] . '"' . $checked . ' /> '  . $A['shipping_to_name'] . ' | ' . $A['shipper_service_name'] .  ' - ' . $A['shipper_service_service'] .  '<span style="text-align:right; font-weight:bold; display:block; float:right;">+ ' . $A['shipping_amt'] .
-	    					' ' . $_PAY_CONF['currency'] . '</span></p>' . LB;
+                            $shippingLabel = trim(
+                                $A['shipping_to_name'] . ' | '
+                                . $A['shipper_service_name'] . ' - '
+                                . $A['shipper_service_service']
+                            );
+                            $shippers_radio .= '<label class="paypal-shipping-option">'
+                                . '<span class="paypal-shipping-option__choice">'
+                                . '<input type="radio" name="shipping" value="'
+                                . htmlspecialchars($A['shipping_amt'], ENT_QUOTES, 'UTF-8')
+                                . '"' . $checked . '> '
+                                . htmlspecialchars($shippingLabel, ENT_QUOTES, 'UTF-8')
+                                . '</span>'
+                                . '<span class="paypal-shipping-option__price">+ '
+                                . number_format(
+                                    (float) $A['shipping_amt'],
+                                    $_CONF['decimal_count'],
+                                    $_CONF['decimal_separator'],
+                                    $_CONF['thousand_separator']
+                                )
+                                . ' ' . htmlspecialchars($_PAY_CONF['currency'], ENT_QUOTES, 'UTF-8')
+                                . '</span></label>' . LB;
 							$i++;
 						}
 				    }
 				} else {
-				     $shippers_radio = '<p><input type="radio" name="shipping" value="0.00" checked /> ' . $LANG_PAYPAL_CART['free_shipping'] . '<span style="text-align:right; font-weight:bold; display:block; float:right;">+ 0.00 ' . $_PAY_CONF['currency'] . '</span></p>';
+                     $shippers_radio = '<label class="paypal-shipping-option">'
+                        . '<span class="paypal-shipping-option__choice">'
+                        . '<input type="radio" name="shipping" value="0.00" checked> '
+                        . htmlspecialchars($LANG_PAYPAL_CART['free_shipping'], ENT_QUOTES, 'UTF-8')
+                        . '</span>'
+                        . '<span class="paypal-shipping-option__price">+ 0.00 '
+                        . htmlspecialchars($_PAY_CONF['currency'], ENT_QUOTES, 'UTF-8')
+                        . '</span></label>';
 				}
 
 			} else {
-			    $shippers_radio = '<p><input type="radio" name="shipping" value="0.00" checked /> ' . $LANG_PAYPAL_CART['free_shipping'] .
-				'<span style="text-align:right; font-weight:bold; display:block; float:right;">+ 0.00 ' . $_PAY_CONF['currency'] . '</span></p>';
+                $shippers_radio = '<label class="paypal-shipping-option">'
+                    . '<span class="paypal-shipping-option__choice">'
+                    . '<input type="radio" name="shipping" value="0.00" checked> '
+                    . htmlspecialchars($LANG_PAYPAL_CART['free_shipping'], ENT_QUOTES, 'UTF-8')
+                    . '</span>'
+                    . '<span class="paypal-shipping-option__price">+ 0.00 '
+                    . htmlspecialchars($_PAY_CONF['currency'], ENT_QUOTES, 'UTF-8')
+                    . '</span></label>';
 			}
 			
 			$shipping->set_var('shipping_radio_buttons', $shippers_radio);
@@ -676,7 +708,11 @@ $categories = array();
 		
 		//CONTINUE SHOPPING
         if ($is_checkout == true  && $block == 0) {
-            $retval .= '<hr style="margin-top:20px;"><p style="margin-top:10px;"><< <a class="jcart_footer" href="' . $_PAY_CONF['site_url'] . '/index.php">' . $LANG_PAYPAL_CART['continue_shopping'] . '</a></p>';
+            $retval .= '<div class="paypal-checkout-footer">'
+                . '<a class="paypal-secondary-action paypal-continue-shopping" href="'
+                . $_PAY_CONF['site_url'] . '/index.php">'
+                . '&#8592; ' . $LANG_PAYPAL_CART['continue_shopping']
+                . '</a></div>';
         }
 		
 		$retval .= "\t</div></div>\n";
