@@ -159,6 +159,14 @@ $_PAY_DEFAULT['view_review'] = 0;
 $_PAY_DEFAULT['display_2nd_buttons'] = 0;
 $_PAY_DEFAULT['categoryHeading'] = 'Categories';
 
+// Dynamic Geeklog blocks, aligned with the Videos plugin block API.
+$_PAY_DEFAULT['cart_block_enabled'] = 1;
+$_PAY_DEFAULT['cart_block_isleft'] = 0;
+$_PAY_DEFAULT['cart_block_order'] = 50;
+$_PAY_DEFAULT['random_block_enabled'] = 1;
+$_PAY_DEFAULT['random_block_isleft'] = 0;
+$_PAY_DEFAULT['random_block_order'] = 60;
+
 /**
 * Initialize paypal plugin configuration
 *
@@ -242,6 +250,18 @@ function plugin_initconfig_paypal()
                 'select', 1, 8, 3, 35, true, 'paypal');
 		$c->add('display_blocks', '3','select', 1, 8, 24, 45, true, 'paypal');
 		$c->add('display_item_id', '0','select', 1, 8, 3, 55, true, 'paypal');
+        $c->add('cart_block_enabled', $_PAY_DEFAULT['cart_block_enabled'],
+                'select', 1, 8, 3, 60, true, 'paypal');
+        $c->add('cart_block_isleft', $_PAY_DEFAULT['cart_block_isleft'],
+                'select', 1, 8, 3, 61, true, 'paypal');
+        $c->add('cart_block_order', $_PAY_DEFAULT['cart_block_order'],
+                'text', 1, 8, 0, 62, true, 'paypal');
+        $c->add('random_block_enabled', $_PAY_DEFAULT['random_block_enabled'],
+                'select', 1, 8, 3, 65, true, 'paypal');
+        $c->add('random_block_isleft', $_PAY_DEFAULT['random_block_isleft'],
+                'select', 1, 8, 3, 66, true, 'paypal');
+        $c->add('random_block_order', $_PAY_DEFAULT['random_block_order'],
+                'text', 1, 8, 0, 67, true, 'paypal');
 		
 		//images
         $c->add('fs_images', NULL, 'fieldset', 1, 9, NULL, 0, true, 'paypal');
