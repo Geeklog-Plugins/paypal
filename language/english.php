@@ -133,9 +133,6 @@ $LANG_PAYPAL_1 = array(
 	'total'                   => 'Total',
 	'ipn_data'                => 'IPN Data',
 	'info_picture'            => 'Enlarge image',
-	'online'                  => 'online',
-	'plugin_conf'             => 'The paypal plugin configuration is also',
-	'plugin_doc'              => 'Install, upgrade and usage documentation for paypal plugin are',
 	'products_list'           => 'Products list',
 	'create_product'          => 'create a new product',
     'you_can'                 => 'You can ',
@@ -234,7 +231,7 @@ $LANG_PAYPAL_1 = array(
 	'edit_user_details'       => 'Edit user details',
 	'editing_user_details'    => 'Editing user details',
 	'membership_informations' => 'Membership informations',
-    'install_jquery'          => 'To allow your site users to display the products images in a lightbox, you need to install the jQuery plugin for Geeklog.',
+    'add_attributes'          => 'Save your product first, then you can add attributes to this product. You need to create at least one attribute before you can add it.',
     'see_members_list'        => 'See public member list',
     'details_save_success'    => 'Your details were saved',
     'details_save_fail'       => 'Sorry I can\'t save your details. Can you try to submit it one more time.',
@@ -446,10 +443,6 @@ $LANG_PAYPAL_EMAIL = array(
 	'order_confirmation'          => 'Order confirmation',
 	'thank_you_order'             => 'Thanks you for your order of:',
 	'send_check'                  => 'To complete your purchase, send your payment to the following address:',
-);
-
-$LANG_PAYPAL_PRO = array (
-    'add_attributes' => 'Save your product first, then you can add attributes to this product. You need to create at least one attribute before you can add it.',
 );
 
 $LANG_PAYPAL_LOGIN = array(
