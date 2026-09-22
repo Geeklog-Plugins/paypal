@@ -288,13 +288,20 @@ function hash_call($methodName, $nvpStr)
 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $endpoint);
+    curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $request);
+    curl_setopt($ch, CURLOPT_FORBID_REUSE, true);
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 15);
     curl_setopt($ch, CURLOPT_TIMEOUT, 45);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        'Connection: Close',
+        'Content-Type: application/x-www-form-urlencoded',
+        'User-Agent: Geeklog-PayPal/1.7.0 NVP',
+    ));
 
     if ($USE_PROXY) {
         curl_setopt($ch, CURLOPT_PROXY, $PROXY_HOST . ':' . $PROXY_PORT);
@@ -313,7 +320,16 @@ function hash_call($methodName, $nvpStr)
         return array('ACK' => 'Failure', 'L_LONGMESSAGE0' => $_SESSION['curl_error_msg']);
     }
 
+    $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
+
+    if ($httpCode !== 200) {
+        COM_errorLog('PayPal NVP HTTP status ' . $httpCode);
+        return array(
+            'ACK' => 'Failure',
+            'L_LONGMESSAGE0' => 'Unexpected response from PayPal.',
+        );
+    }
 
     return deformatNVP($response);
 }
