@@ -193,7 +193,8 @@ function PAYPAL_getListField_paypal_transactions($fieldname, $fieldvalue, $A, $i
     return $retval;
 }
 
-if ($_REQUEST['mode'] == 'edit') {
+$paypalMode = isset($_REQUEST['mode']) ? COM_applyFilter($_REQUEST['mode']) : '';
+if ($paypalMode == 'edit') {
 	//update ipn
 	$sql = "SELECT * FROM {$_TABLES['paypal_ipnlog']} WHERE txn_id = '{$_REQUEST['txn_id']}'";
 	$res = DB_query($sql);
@@ -205,7 +206,9 @@ if ($_REQUEST['mode'] == 'edit') {
 		$out = preg_replace('!s:(\d+):"(.*?)";!se', "'s:'.strlen('$2').':\"$2\";'", $A['ipn_data'] ); 
 		$ipn = unserialize($out);
 	}
-	if ($ipn['payment_status'] != 'pending') break;
+	if (!is_array($ipn) || !isset($ipn['payment_status']) || $ipn['payment_status'] != 'pending') {
+        return;
+    }
 	
 	if ($ipn['quantity1'] != '') {
 	    //multi products
