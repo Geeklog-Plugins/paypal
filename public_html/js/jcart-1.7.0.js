@@ -19,8 +19,11 @@
     }
 
     function refreshCartBlock(data) {
-        $('div[name="jcart_block"]').html(data);
-        $('.jcart-hide').remove();
+        var $block = $('#paypal-cart-block');
+        if ($block.length) {
+            $block.html(data);
+            $('.jcart-hide').remove();
+        }
     }
 
     function postCart(payload) {
