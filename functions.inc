@@ -783,17 +783,12 @@ function PAYPAL_displayCart ($block = 0)
 *
 *   @return                 HTML for the block
 */
-function phpblock_paypal_displayProducts ($A = array(), $args = array())
+function phpblock_paypal_displayProducts($A = array(), $args = array())
 {
-	global $_SCRIPTS;
-    
-    $_SCRIPTS->setJavaScriptFile('paypal_cart', '/' . $_PAY_CONF['paypal_folder'] . '/js/jcart-javascript.php');
-    
-    if (!is_numeric($args[0])) $args[0] = '';
-	if (!is_numeric($args[1])) $args[1] = '';
-	$retval = PAYPAL_displayProducts($pid = '', 2, $args[0], $args[1]);
+    $category = isset($args[0]) && is_numeric($args[0]) ? (int) $args[0] : '';
+    $columns = isset($args[1]) && is_numeric($args[1]) ? (int) $args[1] : '';
 
-    return $retval;
+    return PAYPAL_displayProducts('', 2, $category, $columns);
 }
 
 /**
