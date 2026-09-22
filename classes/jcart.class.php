@@ -675,25 +675,41 @@ $categories = array();
                 $src = ' src="' . $button['paypal_checkout'] . '" alt="' . $text['checkout_paypal_button'] . '" title="" '; 
             }
 			if ((!isset($_REQUEST['pay_by']) || $_REQUEST['pay_by'] != 'check')) {
-				$retval .= '<h2 align="center">' . $LANG_PAYPAL_1['payment_method'] . '</h2>';
+                $retval .= '<section class="paypal-checkout-section paypal-payment-methods">'
+                    . '<h2 class="paypal-checkout-section__title">'
+                    . $LANG_PAYPAL_1['payment_method'] . '</h2>';
+
 				if ($_PAY_CONF['enable_pay_by_paypal']) {
-					$retval .= "\t\t\t<p><input type='" . $input_type . "' " . $src ."id='jcart-paypal-checkout' name='jcart_paypal_checkout' value='" .
-						$text['checkout_paypal_button'] . "'" . $disable_paypal_checkout . " /></p>\n";	
+                    $retval .= '<div class="paypal-payment-option paypal-payment-option--paypal">'
+                        . '<input type="' . $input_type . '" ' . $src
+                        . 'id="jcart-paypal-checkout" name="jcart_paypal_checkout" value="'
+                        . $text['checkout_paypal_button'] . '"'
+                        . $disable_paypal_checkout . '>'
+                        . '</div>';
 				}
-				if ($is_checkout == true  && $block == 0 && ($this->itemcount > 0) && $_PAY_CONF['enable_pay_by_check'] == 1) {
+
+				if ($is_checkout == true
+                    && $block == 0
+                    && ($this->itemcount > 0)
+                    && $_PAY_CONF['enable_pay_by_check'] == 1
+                ) {
 					if (!COM_isAnonUser()) {
 							$js = 'function payby ( selectedtype )';
 							$js .= '{';
 							$js .= '  document.jcart.pay_by.value = selectedtype ;';
 							$js .= '  document.jcart.submit() ;';
 							$js .= '}';
-							
 							$_SCRIPTS->setJavaScript($js, true);
 
-							$retval .= '<input type="hidden" name="pay_by" />';
-							$retval .= '<p>&nbsp;</p><p align="center"><a class="jcart_footer"  href="javascript:payby(\'check\')">' . $LANG_PAYPAL_CART['payment_check'] . '</a></p><p>&nbsp;</p>';
+							$retval .= '<input type="hidden" name="pay_by">';
+                            $retval .= '<div class="paypal-payment-option">'
+                                . '<a class="paypal-secondary-action" href="javascript:payby(\'check\')">'
+                                . $LANG_PAYPAL_CART['payment_check']
+                                . '</a></div>';
 					}
 				}
+
+                $retval .= '</section>';
 			}
 		}
 		$retval .= "\t</form>\n";
