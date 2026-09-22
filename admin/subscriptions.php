@@ -72,6 +72,8 @@ function PAYPAL_getSubscriptionForm ($subscription = array())
 	$template = new Template($_CONF['path'] . 'plugins/paypal/templates');
     $template->set_file(array('subscription' => 'subscription_form.thtml'));
     $template->set_var('site_url', $_CONF['site_url']);
+    $template->set_var('gltoken_name', CSRF_TOKEN);
+    $template->set_var('gltoken', SEC_createToken());
 	$template->set_var('xhtml', XHTML);
     $template->set_var('id', '<input type="hidden" name="id" value="' . $subscription['id'] .'" />');
 
@@ -213,6 +215,11 @@ switch ($_REQUEST['mode']) {
         break;
 		
 	case 'save':
+        if (!SEC_checkToken()) {
+            $display .= COM_showMessageText($LANG_PAYPAL_1['access_denied'], $LANG_PAYPAL_1['error']);
+            break;
+        }
+
         if (empty($_REQUEST['user_id']) || empty($_REQUEST['purchase_date']) ||empty($_REQUEST['expiration']) ||
                 empty($_REQUEST['add_to_group'])) {
             $display .= COM_startBlock($LANG_PAYPAL_1['error']);
@@ -246,8 +253,9 @@ switch ($_REQUEST['mode']) {
 		    
 			// Creation
 			
-			$prod_id = $_REQUEST['product_id'];
-			$products[1] = $_REQUEST['product_id'];
+            $data = array();
+			$prod_id = (int) $_REQUEST['product_id'];
+			$products[1] = (int) $_REQUEST['product_id'];
 			$quantity[1] = 1;
 			$product_name = DB_getItem($_TABLES['paypal_products'],'name',"id=$prod_id");
 			$names[1] = $product_name;
@@ -287,7 +295,12 @@ switch ($_REQUEST['mode']) {
         break;
 		
 	case 'delete':
-	    DB_delete($_TABLES['paypal_subscriptions'], 'id', $_REQUEST['id']);
+        if (!SEC_checkToken()) {
+            $display .= COM_showMessageText($LANG_PAYPAL_1['access_denied'], $LANG_PAYPAL_1['error']);
+            break;
+        }
+
+	    DB_delete($_TABLES['paypal_subscriptions'], 'id', (int) $_REQUEST['id']);
         if (DB_affectedRows('') == 1) {
             $msg = $LANG_PAYPAL_1['deletion_succes'];
 			//remove user from group
