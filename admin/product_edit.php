@@ -672,13 +672,11 @@ function PAYPAL_saveImage ($product, $FILES, $pid) {
 				));
 		
 		if (!$upload->setPath($_PAY_CONF['path_images'])) {
-			$output = COM_siteHeader ('menu', $LANG24[30]);
-			$output .= COM_startBlock ($LANG24[30], '', COM_getBlockTemplate ('_msg_block', 'header'));
+			$output = COM_startBlock ($LANG24[30], '', COM_getBlockTemplate ('_msg_block', 'header'));
 			$output .= $upload->printErrors (false);
 			$output .= COM_endBlock (COM_getBlockTemplate ('_msg_block', 'footer'));
-			$output .= COM_siteFooter ();
-			echo $output;
-			exit;
+			echo PAYPAL_createHTMLDocument($output, $LANG24[30]);
+            exit;
 		}
 
 		// NOTE: if $_CONF['path_to_mogrify'] is set, the call below will
@@ -706,14 +704,12 @@ function PAYPAL_saveImage ($product, $FILES, $pid) {
 		$upload->uploadFiles();
 
 		if ($upload->areErrors()) {
-			$retval = COM_siteHeader('menu', $LANG24[30]);
-			$retval .= COM_startBlock ($LANG24[30], '',
+			$retval = COM_startBlock ($LANG24[30], '',
 						COM_getBlockTemplate ('_msg_block', 'header'));
 			$retval .= $upload->printErrors(false);
 			$retval .= COM_endBlock(COM_getBlockTemplate ('_msg_block', 'footer'));
-			$retval .= COM_siteFooter();
-			echo $retval;
-			exit;
+			echo PAYPAL_createHTMLDocument($retval, $LANG24[30]);
+            exit;
 		}
 
 		reset($filenames);
