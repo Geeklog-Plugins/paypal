@@ -51,9 +51,12 @@ if (! in_array('paypal', $_PLUGINS)) {
 /* Ensure sufficient privs to read this page */
 paypal_access_check();
 
+$vars = array('msg' => 'text');
+paypal_filterVars($vars, $_REQUEST);
+
 //Main
 
-$display = PAYPAL_siteHeader($_PAY_CONF['seo_shop_title']);
+$display = '';
 if (SEC_hasRights('paypal.user,paypal.admin', 'OR')) {
     $display .= paypal_user_menu();
 } else {
@@ -64,8 +67,6 @@ if (!empty($_REQUEST['msg'])) $display .= COM_showMessageText( stripslashes($_RE
 
 $display .= '<div id="login">' . SEC_loginRequiredForm() . '</div>';
 
-$display .= PAYPAL_siteFooter();
-
-COM_output($display);
+COM_output(PAYPAL_createHTMLDocument($display, $_PAY_CONF['seo_shop_title']));
 
 ?>
