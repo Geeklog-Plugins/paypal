@@ -370,7 +370,7 @@ function plugin_getBlocks_paypal($side, $topic = '')
             'onleft' => $cartSide === 'left' ? 1 : 0,
             'title' => isset($LANG_PAYPAL_1['cart']) ? $LANG_PAYPAL_1['cart'] : 'Cart',
             'blockorder' => isset($_PAY_CONF['cart_block_order']) ? (int) $_PAY_CONF['cart_block_order'] : 50,
-            'content' => phpblock_paypal_cart(),
+            'content' => phpblock_paypal_cart(true),
             'allow_autotags' => false,
             'help' => '',
             'css_id' => 'paypal-cart-dynamic-block',
@@ -1159,7 +1159,7 @@ function phpblock_paypal_displayProducts($A = array(), $args = array())
 *
 *   @return                 HTML for the block
 */
-function phpblock_paypal_cart()
+function phpblock_paypal_cart($keepEmptyContainer = false)
 {
     $requestPath = '';
     if (!empty($_SERVER['REQUEST_URI'])) {
@@ -1168,6 +1168,15 @@ function phpblock_paypal_cart()
     }
 
     if (substr($requestPath, -13) === '/checkout.php') {
+        return '';
+    }
+
+    $cart = PAYPAL_getCart();
+
+    // Geeklog 2.1.1 PHP blocks are suppressed completely when their callback
+    // returns an empty string. Keep that legacy behaviour so an empty cart
+    // does not leave an empty titled block in the layout.
+    if ($cart->is_empty() && !$keepEmptyContainer) {
         return '';
     }
 
