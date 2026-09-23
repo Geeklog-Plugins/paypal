@@ -1186,6 +1186,65 @@ function phpblock_paypal_cart($keepEmptyContainer = false)
 }
 
 /**
+ * Provide PayPal autotags.
+ *
+ * [paypal:count] renders the current cart item count. The count is the sum of
+ * item quantities, matching the cart block and checkout item count.
+ *
+ * @param string $op
+ * @param string $content
+ * @param array  $autotag
+ * @return mixed
+ */
+function plugin_autotags_paypal($op, $content = '', $autotag = array())
+{
+    global $LANG_PAYPAL_1;
+
+    if ($op == 'tagname') {
+        return array('paypal');
+    }
+
+    if ($op == 'permission') {
+        return array('paypal');
+    }
+
+    if ($op == 'nopermission') {
+        return array();
+    }
+
+    if ($op == 'description') {
+        return array(
+            'paypal' => isset($LANG_PAYPAL_1['autotag_desc_paypal'])
+                ? $LANG_PAYPAL_1['autotag_desc_paypal']
+                : '[paypal:count] - Displays the current shopping cart item count.'
+        );
+    }
+
+    if ($op == 'parse') {
+        if (isset($autotag['tag'])
+            && $autotag['tag'] == 'paypal'
+            && isset($autotag['parm1'])
+            && strtolower(trim($autotag['parm1'])) == 'count'
+        ) {
+            $cart = PAYPAL_getCart();
+            $count = isset($cart->itemcount) ? (int) $cart->itemcount : 0;
+
+            if (isset($autotag['tagstr'])) {
+                $content = str_replace($autotag['tagstr'], (string) $count, $content);
+            }
+        }
+
+        return $content;
+    }
+
+    if ($op == 'closetag') {
+        return array();
+    }
+
+    return $content;
+}
+
+/**
 * Geeklog informs us that we're about to be enabled or disabled
 *
 * @param    boolean     $enable     true = we're being enabled, false = disabled
