@@ -1198,14 +1198,14 @@ function phpblock_paypal_cart($keepEmptyContainer = false)
  */
 function plugin_autotags_paypal($op, $content = '', $autotag = array())
 {
-    global $LANG_PAYPAL_1;
+    global $_TABLES, $LANG_PAYPAL_1, $_PAY_CONF, $_SCRIPTS;
 
     if ($op == 'tagname') {
-        return array('paypal');
+        return array('paypal', 'paypal_product');
     }
 
     if ($op == 'permission') {
-        return array('paypal');
+        return array('paypal', 'paypal_product');
     }
 
     if ($op == 'nopermission') {
@@ -1214,24 +1214,65 @@ function plugin_autotags_paypal($op, $content = '', $autotag = array())
 
     if ($op == 'description') {
         return array(
-            'paypal' => isset($LANG_PAYPAL_1['autotag_desc_paypal'])
-                ? $LANG_PAYPAL_1['autotag_desc_paypal']
-                : '[paypal:count] - Displays the current shopping cart item count.'
+            'paypal' => $LANG_PAYPAL_1['autotag_desc_paypal'],
+            'paypal_product' => $LANG_PAYPAL_1['autotag_desc_paypal_product']
         );
     }
 
     if ($op == 'parse') {
-        if (isset($autotag['tag'])
-            && $autotag['tag'] == 'paypal'
-            && isset($autotag['parm1'])
-            && strtolower(trim($autotag['parm1'])) == 'count'
+        if (!is_array($autotag)
+            || !isset($autotag['tag'])
+            || !isset($autotag['tagstr'])
+        ) {
+            return $content;
+        }
+
+        $parameter = isset($autotag['parm1'])
+            ? trim((string) $autotag['parm1'])
+            : '';
+
+        // Issue #1: [paypal:count] returns the sum of quantities currently
+        // stored in the visitor's cart.
+        if ($autotag['tag'] == 'paypal'
+            && strtolower($parameter) == 'count'
         ) {
             $cart = PAYPAL_getCart();
             $count = isset($cart->itemcount) ? (int) $cart->itemcount : 0;
 
-            if (isset($autotag['tagstr'])) {
-                $content = str_replace($autotag['tagstr'], (string) $count, $content);
+            return str_replace($autotag['tagstr'], (string) $count, $content);
+        }
+
+        $pid = COM_applyFilter($parameter);
+        if (!is_numeric($pid) || (int) $pid <= 0) {
+            return $content;
+        }
+        $pid = (int) $pid;
+
+        if ($autotag['tag'] == 'paypal') {
+            $url = $_PAY_CONF['site_url'] . '/product_detail.php?product=' . $pid;
+            if (empty($autotag['parm2'])) {
+                $linktext = DB_getItem(
+                    $_TABLES['paypal_products'],
+                    'name',
+                    "id = '{$pid}'"
+                );
+            } else {
+                $linktext = $autotag['parm2'];
             }
+
+            $link = COM_createLink($linktext, $url);
+
+            return str_replace($autotag['tagstr'], $link, $content);
+        }
+
+        if ($autotag['tag'] == 'paypal_product') {
+            $_SCRIPTS->setJavaScriptFile(
+                'paypal_cart',
+                '/' . $_PAY_CONF['paypal_folder'] . '/js/jcart-javascript.php'
+            );
+            $html = PAYPAL_displayProducts($pid, 1);
+
+            return str_replace($autotag['tagstr'], $html, $content);
         }
 
         return $content;
