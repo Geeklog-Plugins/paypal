@@ -70,8 +70,8 @@ not exposed as Agent/Hub content resources.
 
 ## 1.7.x — focused follow-up improvements
 
-- [ ] Issue #1: implement a documented `[paypal:count]` autotag for the current
-      cart item count after the session/cart contract is covered by tests.
+- [x] Issue #1: implement a documented `[paypal:count]` autotag for the current
+      cart item count using the session-safe cart state.
 - [ ] Issue #2: define the intended category/cart-list behavior and acceptance
       criteria before implementation.
 - [ ] Replace TimThumb-based thumbnail rendering with Geeklog/native image
@@ -103,7 +103,7 @@ they can change payment/storage behavior.
 The public issue tracker remains authoritative for individual bugs and feature
 requests:
 
-- #1 — cart count autotag: targeted for 1.7.x after cart/session stabilization.
+- #1 — cart count autotag: implemented in 1.7.0 with `[paypal:count]`.
 - #2 — category/cart listing behavior: specification required before coding.
 - #3 — PHP fatal `break` outside loop/switch: fixed in the 1.7.0 stabilization
   branch.
