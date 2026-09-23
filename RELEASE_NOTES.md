@@ -36,6 +36,9 @@ legacy payment flow.
   allowed shipping before fulfillment.
 - Legacy transaction/history views now guard optional IPN fields to avoid PHP 8
   warnings.
+- Implements upstream issue #1 with `[paypal:count]`, which renders the current
+  visitor cart item count while preserving the historical `[paypal:id]` and
+  `[paypal_product:id]` autotags.
 - Technical admin lists no longer apply content permission SQL to tables that
   do not contain Geeklog permission columns.
 
@@ -78,9 +81,8 @@ work, notably remaining admin AJAX/CRUD CSRF coverage, PHP 8 warning cleanup,
 TimThumb, jqPlot, jCart, MyISAM storage and the legacy PayPal IPN integration.
 These items are tracked in `ROADMAP.md`.
 
-Issue #1 (cart-count autotag) is planned as a focused 1.7.x improvement after
-cart/session tests are in place. Issue #2 needs clearer behavior and acceptance
-criteria before implementation.
+Issue #1 (cart-count autotag) is implemented in 1.7.0. Issue #2 still needs
+clearer behavior and acceptance criteria before implementation.
 
 ## PayPal compatibility and security (2026)
 
