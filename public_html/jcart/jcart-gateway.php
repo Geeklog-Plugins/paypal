@@ -239,7 +239,6 @@ else
 				$items_query_string .= '&handling_cart=' . $shipping;
 				//$items_query_string .= '&shipping_cart=' . $shipping;
 				$items_query_string .= '&custom=' . $_USER['uid'];
-				$items_query_string .= '&cbt=' . urlencode($LANG_PAYPAL_1['cbt'] . ' ' . $_CONF['site_name']);
 				$items_query_string .= '&charset=' . $_CONF['default_charset'];
 				if ($_PAY_CONF['image_url']) {
 					$items_query_string .= '&image_url=' . urlencode($_PAY_CONF['image_url']);
