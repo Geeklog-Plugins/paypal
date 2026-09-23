@@ -677,14 +677,24 @@ $categories = array();
 			if ((!isset($_REQUEST['pay_by']) || $_REQUEST['pay_by'] != 'check')) {
                 $retval .= '<section class="paypal-checkout-section paypal-payment-methods">'
                     . '<h2 class="paypal-checkout-section__title">'
-                    . $LANG_PAYPAL_1['payment_method'] . '</h2>';
+                    . $LANG_PAYPAL_CART['payment_methods_title'] . '</h2>';
 
 				if ($_PAY_CONF['enable_pay_by_paypal']) {
-                    $retval .= '<div class="paypal-payment-option paypal-payment-option--paypal">'
+                    $retval .= '<div class="paypal-payment-card paypal-payment-card--paypal">'
+                        . '<div class="paypal-payment-card__body">'
+                        . '<strong class="paypal-payment-card__title">'
+                        . htmlspecialchars($LANG_PAYPAL_CART['payment_card_paypal'], ENT_QUOTES, 'UTF-8')
+                        . '</strong>'
+                        . '<span class="paypal-payment-card__help">'
+                        . htmlspecialchars($LANG_PAYPAL_CART['payment_card_paypal_help'], ENT_QUOTES, 'UTF-8')
+                        . '</span>'
+                        . '</div>'
+                        . '<div class="paypal-payment-card__action">'
                         . '<input type="' . $input_type . '" ' . $src
                         . 'id="jcart-paypal-checkout" name="jcart_paypal_checkout" value="'
                         . $text['checkout_paypal_button'] . '"'
                         . $disable_paypal_checkout . '>'
+                        . '</div>'
                         . '</div>';
 				}
 
@@ -702,10 +712,16 @@ $categories = array();
 							$_SCRIPTS->setJavaScript($js, true);
 
 							$retval .= '<input type="hidden" name="pay_by">';
-                            $retval .= '<div class="paypal-payment-option">'
+                            $retval .= '<div class="paypal-payment-card paypal-payment-card--check">'
+                                . '<div class="paypal-payment-card__body">'
+                                . '<strong class="paypal-payment-card__title">'
+                                . htmlspecialchars($LANG_PAYPAL_CART['payment_check'], ENT_QUOTES, 'UTF-8')
+                                . '</strong>'
+                                . '</div>'
+                                . '<div class="paypal-payment-card__action">'
                                 . '<a class="paypal-secondary-action" href="javascript:payby(\'check\')">'
-                                . $LANG_PAYPAL_CART['payment_check']
-                                . '</a></div>';
+                                . htmlspecialchars($LANG_PAYPAL_CART['payment_check'], ENT_QUOTES, 'UTF-8')
+                                . '</a></div></div>';
 					}
 				}
 
