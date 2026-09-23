@@ -65,6 +65,8 @@
 - Removed the duplicated inline cart from the product catalog and made
   add-to-cart resilient with and without JavaScript.
 - Simplified and normalized the PayPal templates and form heading hierarchy.
+- Implemented upstream issue #1 with `[paypal:count]` while preserving the
+  historical product autotags.
 
 ### Documentation
 
