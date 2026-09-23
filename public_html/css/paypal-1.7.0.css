@@ -850,8 +850,15 @@
 #jcart-paypal-checkout{max-width:100%}
 .paypal-secondary-action{display:inline-flex;align-items:center;min-height:2.2rem;padding:.4rem .7rem;border:1px solid currentColor;border-radius:.45rem;text-decoration:none;font-weight:600}
 .paypal-secondary-action:hover,.paypal-secondary-action:focus{text-decoration:none}
-.paypal-checkout-footer{padding:.9rem 0 0}
-.paypal-continue-shopping{border-color:rgba(127,127,127,.35)}
+.paypal-checkout-footer{
+  padding:1rem 1rem 1.1rem;
+  margin-top:.35rem;
+  border-top:1px solid rgba(127,127,127,.14);
+}
+.paypal-continue-shopping{
+  margin:0;
+  border-color:rgba(127,127,127,.35);
+}
 @media (max-width:700px){
   #jcart .paypal-cart-columns{display:none}
   #jcart .paypal-cart-row{display:grid;grid-template-columns:1fr auto;gap:.35rem .8rem;padding:.75rem;border-bottom:1px solid rgba(127,127,127,.14)}
